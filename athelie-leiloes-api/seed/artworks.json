@@ -42,5 +42,181 @@
     "metUrl": "https://www.metmuseum.org/art/collection/search/438817",
     "image": "images/438817.jpg",
     "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 436535,
+    "title": "Wheat Field with Cypresses",
+    "artist": "Vincent van Gogh",
+    "date": "1889",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/436535",
+    "image": "images/436535.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 436105,
+    "title": "The Death of Socrates",
+    "artist": "Jacques Louis David",
+    "date": "1787",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/436105",
+    "image": "images/436105.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 11417,
+    "title": "Washington Crossing the Delaware",
+    "artist": "Emanuel Leutze",
+    "date": "1851",
+    "medium": "Oil on canvas",
+    "department": "The American Wing",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/11417",
+    "image": "images/11417.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 10497,
+    "title": "View from Mount Holyoke, Northampton, Massachusetts, after a Thunderstorm—The Oxbow",
+    "artist": "Thomas Cole",
+    "date": "1836",
+    "medium": "Oil on canvas",
+    "department": "The American Wing",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/10497",
+    "image": "images/10497.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 435809,
+    "title": "The Harvesters",
+    "artist": "Pieter Bruegel the Elder",
+    "date": "1565",
+    "medium": "Oil on oak",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/435809",
+    "image": "images/435809.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 437394,
+    "title": "Aristotle with a Bust of Homer",
+    "artist": "Rembrandt (Rembrandt van Rijn)",
+    "date": "1653",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/437394",
+    "image": "images/437394.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 435868,
+    "title": "The Card Players",
+    "artist": "Paul Cézanne",
+    "date": "1890–92",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/435868",
+    "image": "images/435868.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 437654,
+    "title": "Circus Sideshow (Parade de cirque)",
+    "artist": "Georges Seurat",
+    "date": "1887–88",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/437654",
+    "image": "images/437654.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 544740,
+    "title": "Yuny and His Wife Renenutet",
+    "artist": null,
+    "date": "ca. 1299–1290 BCE",
+    "medium": "Limestone, paint",
+    "department": "Egyptian Art",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/544740",
+    "image": "images/544740.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 436965,
+    "title": "The Monet Family in Their Garden at Argenteuil",
+    "artist": "Edouard Manet",
+    "date": "1874",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/436965",
+    "image": "images/436965.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 459055,
+    "title": "The Annunciation",
+    "artist": "Hans Memling",
+    "date": "1480–89",
+    "medium": "Oil on panel, transferred to canvas",
+    "department": "Robert Lehman Collection",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/459055",
+    "image": "images/459055.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 45734,
+    "title": "Quail and Millet",
+    "artist": "Kiyohara Yukinobu",
+    "date": "late 17th century",
+    "medium": "Hanging scroll; ink and color on silk",
+    "department": "Asian Art",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/45734",
+    "image": "images/45734.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 22270,
+    "title": "Armor",
+    "artist": null,
+    "date": "ca. 1560–65",
+    "medium": "Steel, leather",
+    "department": "Arms and Armor",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/22270",
+    "image": "images/22270.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 248132,
+    "title": "Marble statue of an old woman",
+    "artist": null,
+    "date": "14–68 CE",
+    "medium": "Marble, Pentelic",
+    "department": "Greek and Roman Art",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/248132",
+    "image": "images/248132.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 435621,
+    "title": "Joan of Arc",
+    "artist": "Jules Bastien-Lepage",
+    "date": "1879",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/435621",
+    "image": "images/435621.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 437153,
+    "title": "Oedipus and the Sphinx",
+    "artist": "Gustave Moreau",
+    "date": "1864",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/437153",
+    "image": "images/437153.jpg",
+    "contentType": "image/jpeg"
   }
 ]

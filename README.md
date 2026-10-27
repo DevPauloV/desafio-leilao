@@ -76,7 +76,9 @@ Senha de todos: **`athelie12345`**
 | Licitante | `licitante01@athelie.dev` |
 | Licitante | `licitante02@athelie.dev` |
 
-1. Abra o lote ao vivo com os dois licitantes, em janelas diferentes, e dispute.
+O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerrados e um cancelado.
+
+1. Abra o mesmo lote ao vivo (ex.: *Sunflowers*) com os dois licitantes, em janelas diferentes, e dispute.
 2. Tente um lance abaixo do mínimo, sem saldo ou cobrindo o próprio lance.
 3. Abra a **Auditoria** do lote.
 4. Como leiloeiro, crie um lote no painel e acompanhe até o comprovante.

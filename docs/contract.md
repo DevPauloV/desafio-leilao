@@ -277,9 +277,11 @@ Roda ao subir a API quando `SEED_ON_START=true` e também por `npm run seed`. É
   - 1 **ao vivo** com lances dos dois licitantes. É renovável: se ao subir não houver nenhum lote do seed ao vivo, o seed cria outro, para quem avaliar depois de dias ainda encontrar um leilão aberto;
   - 1 **agendado**, que começa no futuro;
   - 1 **encerrado e liquidado** com vencedor e comprovante;
-  - 1 **cancelado** com lance e estorno (não aparece na vitrine, só no painel).
+  - 1 **cancelado** com lance e estorno (não aparece na vitrine, só no painel);
+  - mais 16 do **catálogo** (`SEED_CATALOG`), um por obra, para a vitrine ter variedade: 9 ao vivo com fins entre 2 horas e 10 dias (alguns com lances, outros sem), 3 agendados e 4 encerrados (um sem lances, logo sem vencedor). Cada um é criado uma vez só; quando o lote acaba, ele fica nos encerrados.
+  - No total, 20 lotes com 20 obras diferentes: 10 ao vivo, 4 agendados, 5 encerrados e 1 cancelado.
 - Todo lance do seed passa pelas mesmas regras e funções da API (cadeia HMAC, saldo comprometido, liquidação). A auditoria de todos os lotes do seed dá `intact: true`, e as carteiras fecham (`committed` = soma dos lances que lideram).
-- **Identificação, sem campo novo:** lotes do seed são os do leiloeiro do seed. O ao vivo conta só se tiver lances; o agendado é qualquer lote dele que ainda não começou; o encerrado e o cancelado são reconhecidos pela obra (`item.metObjectId`). O agendado também é renovável, senão vira "ao vivo" depois de um dia e a vitrine fica sem agendado.
+- **Identificação, sem campo novo:** lotes do seed são os do leiloeiro do seed. O ao vivo é renovado só quando nenhum lote do seed está ao vivo com lances; o agendado, quando nenhum lote dele ainda não começou; o encerrado, o cancelado e os do catálogo são reconhecidos pela obra (`item.metObjectId`). O agendado também é renovável, senão vira "ao vivo" depois de um dia e a vitrine fica sem agendado.
 - O lote encerrado é criado ao vivo, recebe os lances pelo serviço, tem o fim movido para logo depois do último lance e é liquidado pela varredura real. Falha no seed é logada e não impede a API de subir; o log traz só contagens.
 
 ## 9. Variáveis de ambiente

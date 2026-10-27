@@ -10,11 +10,11 @@ Os usuários e os lotes são criados pelo seed quando a API sobe. A senha de tod
 | Licitante | `licitante01@athelie.dev` | Dar lances (começa com R$ 50.000 na carteira) |
 | Licitante | `licitante02@athelie.dev` | Disputar com o licitante 01 em outra janela |
 
-**Lotes prontos:** um ao vivo com lances, um agendado, um encerrado com comprovante e um cancelado com estorno (este só aparece no painel do leiloeiro). Se não houver lote ao vivo quando a API sobe, o seed cria outro, então sempre há um leilão aberto.
+**Lotes prontos:** 20 lotes, cada um com uma obra diferente do Met: 10 ao vivo (alguns já com lances, com fins entre 2 horas e 10 dias), 4 agendados, 5 encerrados com comprovante (um sem lances, logo sem vencedor) e 1 cancelado com estorno, que só aparece no painel do leiloeiro. Se não sobrar nenhum lote ao vivo com lances quando a API sobe, o seed cria outro, então sempre há um leilão aberto.
 
 ## 1. Disputa ao vivo
 
-Entre como `licitante01` numa janela e como `licitante02` numa janela anônima. Abra o lote da aba **Ao vivo** nas duas e dê lances alternados.
+Entre como `licitante01` numa janela e como `licitante02` numa janela anônima. Abra o mesmo lote da aba **Ao vivo** nas duas (por exemplo, *Sunflowers*) e dê lances alternados.
 
 → O lance aparece na hora nas duas janelas. Quem é superado recebe o aviso "Você foi superado" e vê o saldo comprometido voltar na carteira.
 

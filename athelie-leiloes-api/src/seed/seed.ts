@@ -3,7 +3,7 @@
 // passam pelos serviços reais, então a cadeia HMAC e as carteiras ficam como numa operação de verdade.
 import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
-import { LotState, Role } from '../constants.js';
+import { LotState, LotStatus, Role } from '../constants.js';
 import { settleDueLots } from '../jobs/settlement.js';
 import { Lot } from '../models/Lot.js';
 import { User } from '../models/User.js';
@@ -36,7 +36,30 @@ export const SEED_LOTS = {
   settled: { metObjectId: 437881, startingBid: 200_000, minIncrement: 10_000, bids: [200_000, 210_000] },
   cancelled: { metObjectId: 438817, startingBid: 120_000, minIncrement: 10_000, bids: [120_000] },
 } as const;
-type SeedLot = (typeof SEED_LOTS)[keyof typeof SEED_LOTS];
+type SeedLot = { metObjectId: number; startingBid: number; minIncrement: number; bids: readonly number[] };
+
+/**
+ * Mais 16 lotes, um por obra, para a vitrine ter variedade: ao vivo com fins espalhados, agendados e encerrados.
+ * Cada um é criado uma vez só (reconhecido pela obra). `startsIn` e `endsIn` contam a partir da hora do seed.
+ */
+export const SEED_CATALOG: readonly (SeedLot & { status: LotStatus; startsIn?: number; endsIn?: number })[] = [
+  { status: LotStatus.LIVE, metObjectId: 436535, startingBid: 120_000, minIncrement: 10_000, bids: [120_000, 130_000, 145_000], endsIn: 2 * HOUR },
+  { status: LotStatus.LIVE, metObjectId: 11417, startingBid: 250_000, minIncrement: 10_000, bids: [250_000, 275_000], endsIn: 6 * HOUR },
+  { status: LotStatus.LIVE, metObjectId: 435809, startingBid: 180_000, minIncrement: 10_000, bids: [], endsIn: 12 * HOUR },
+  { status: LotStatus.LIVE, metObjectId: 437394, startingBid: 300_000, minIncrement: 20_000, bids: [300_000], endsIn: DAY },
+  { status: LotStatus.LIVE, metObjectId: 435868, startingBid: 180_000, minIncrement: 10_000, bids: [180_000, 190_000, 200_000, 215_000], endsIn: 2 * DAY },
+  { status: LotStatus.LIVE, metObjectId: 437654, startingBid: 160_000, minIncrement: 10_000, bids: [], endsIn: 3 * DAY },
+  { status: LotStatus.LIVE, metObjectId: 436965, startingBid: 90_000, minIncrement: 5_000, bids: [90_000, 95_000], endsIn: 5 * DAY },
+  { status: LotStatus.LIVE, metObjectId: 45734, startingBid: 40_000, minIncrement: 2_000, bids: [40_000], endsIn: 7 * DAY },
+  { status: LotStatus.LIVE, metObjectId: 22270, startingBid: 70_000, minIncrement: 5_000, bids: [], endsIn: 10 * DAY },
+  { status: LotStatus.SCHEDULED, metObjectId: 459055, startingBid: 200_000, minIncrement: 10_000, bids: [], startsIn: 6 * HOUR, endsIn: 3 * DAY },
+  { status: LotStatus.SCHEDULED, metObjectId: 248132, startingBid: 60_000, minIncrement: 5_000, bids: [], startsIn: 2 * DAY, endsIn: 5 * DAY },
+  { status: LotStatus.SCHEDULED, metObjectId: 437153, startingBid: 150_000, minIncrement: 10_000, bids: [], startsIn: 4 * DAY, endsIn: 8 * DAY },
+  { status: LotStatus.ENDED, metObjectId: 436105, startingBid: 220_000, minIncrement: 10_000, bids: [220_000, 230_000, 250_000] },
+  { status: LotStatus.ENDED, metObjectId: 10497, startingBid: 100_000, minIncrement: 10_000, bids: [100_000, 110_000] },
+  { status: LotStatus.ENDED, metObjectId: 544740, startingBid: 80_000, minIncrement: 5_000, bids: [] },
+  { status: LotStatus.ENDED, metObjectId: 435621, startingBid: 140_000, minIncrement: 10_000, bids: [140_000] },
+];
 
 const artworksSchema = z.array(
   z.object({
@@ -103,12 +126,22 @@ export async function runSeed(): Promise<{ accounts: number; lots: number }> {
     lots += 1;
   }
   // Encerrado: lances ao vivo, fim logo depois do último lance e liquidação pelo job real.
-  if (!(await seedLot({ 'item.metObjectId': SEED_LOTS.settled.metObjectId }))) {
-    const lotId = await createLot(SEED_LOTS.settled, startedNow, new Date(now + HOUR));
+  async function createEnded(plan: SeedLot) {
+    const lotId = await createLot(plan, startedNow, new Date(now + HOUR));
     await Lot.updateOne({ _id: lotId }, { $set: { endsAt: new Date() } });
-    await settleDueLots();
+  }
+  if (!(await seedLot({ 'item.metObjectId': SEED_LOTS.settled.metObjectId }))) {
+    await createEnded(SEED_LOTS.settled);
     lots += 1;
   }
+  // Catálogo: cada obra entra uma vez; depois que o lote acaba, ela fica nos encerrados.
+  for (const plan of SEED_CATALOG) {
+    if (await seedLot({ 'item.metObjectId': plan.metObjectId })) continue;
+    if (plan.status === LotStatus.ENDED) await createEnded(plan);
+    else await createLot(plan, plan.startsIn ? new Date(now + plan.startsIn) : startedNow, new Date(now + plan.endsIn!));
+    lots += 1;
+  }
+  await settleDueLots();
   // Cancelado com lance: o cancelamento real estorna o comprometido do líder.
   if (!(await seedLot({ 'item.metObjectId': SEED_LOTS.cancelled.metObjectId }))) {
     const lotId = await createLot(SEED_LOTS.cancelled, startedNow, new Date(now + 2 * DAY));

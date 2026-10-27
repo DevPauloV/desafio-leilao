@@ -47,22 +47,26 @@ async function expectWalletsToClose() {
 }
 
 describe('seed', () => {
-  it('cria as 3 contas e os 4 lotes; rodar de novo não duplica nada', async () => {
-    expect(await seed.runSeed()).toEqual({ accounts: 3, lots: 4 });
+  it('cria as 3 contas e os 20 lotes, cada um com uma obra; rodar de novo não duplica nada', async () => {
+    expect(await seed.runSeed()).toEqual({ accounts: 3, lots: 20 });
     expect(await seed.runSeed()).toEqual({ accounts: 0, lots: 0 });
 
     const emails = Object.values(seed.SEED_ACCOUNTS).map((account) => account.email);
     expect(await User.countDocuments({ email: { $in: emails } })).toBe(3);
     const lots = await seedLots();
-    expect(lots).toHaveLength(4);
+    expect(lots).toHaveLength(20);
+    expect(new Set(lots.map((lot) => lot.item.metObjectId)).size).toBe(20);
 
-    const [live] = byStatus(lots, LotStatus.LIVE);
-    expect(live).toMatchObject({ bidCount: seed.SEED_LOTS.live.bids.length, currentBid: 175_000 });
-    expect(byStatus(lots, LotStatus.SCHEDULED)).toHaveLength(1);
-    const [ended] = byStatus(lots, LotStatus.ENDED);
+    expect(byStatus(lots, LotStatus.LIVE)).toHaveLength(10);
+    expect(byStatus(lots, LotStatus.SCHEDULED)).toHaveLength(4);
+    expect(byStatus(lots, LotStatus.ENDED)).toHaveLength(5);
+    expect(byStatus(lots, LotStatus.CANCELLED)).toHaveLength(1);
+
+    const byArtwork = (metObjectId: number) => lots.find((lot) => lot.item.metObjectId === metObjectId);
+    expect(byArtwork(seed.SEED_LOTS.live.metObjectId)).toMatchObject({ bidCount: seed.SEED_LOTS.live.bids.length, currentBid: 175_000 });
+    const ended = byArtwork(seed.SEED_LOTS.settled.metObjectId);
     expect(ended).toMatchObject({ state: LotState.SETTLED, result: { amount: 210_000 } });
     expect(ended!.result!.receiptCode).toMatch(/^[A-Za-z0-9_-]{22}$/);
-    expect(byStatus(lots, LotStatus.CANCELLED)).toHaveLength(1);
   });
 
   it('as contas entram com a senha do seed', async () => {
@@ -80,16 +84,16 @@ describe('seed', () => {
     await expectWalletsToClose();
   });
 
-  it('quando o lote ao vivo acaba, o próximo seed cria outro (e tudo continua íntegro)', async () => {
-    const [live] = byStatus(await seedLots(), LotStatus.LIVE);
-    await Lot.updateOne({ _id: live!._id }, { $set: { endsAt: new Date(Date.now() - 1) } });
+  it('quando nenhum lote ao vivo sobra, o próximo seed cria outro (e tudo continua íntegro)', async () => {
+    const live = byStatus(await seedLots(), LotStatus.LIVE).map((lot) => lot._id);
+    await Lot.updateMany({ _id: { $in: live } }, { $set: { endsAt: new Date(Date.now() - 1) } });
 
     expect(await seed.runSeed()).toEqual({ accounts: 0, lots: 1 });
     await settleDueLots();
 
     const lots = await seedLots();
     expect(byStatus(lots, LotStatus.LIVE)).toHaveLength(1);
-    expect(lots).toHaveLength(5);
+    expect(lots).toHaveLength(21);
     for (const lot of lots) {
       const res = await request(app).get(`/api/audit/lots/${lot._id.toString()}`);
       expect(res.body.verdict).toEqual({ intact: true });
