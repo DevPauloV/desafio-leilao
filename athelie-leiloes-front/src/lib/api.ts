@@ -16,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-const NETWORK_ERROR_MESSAGE = 'Não foi possível falar com o servidor. Confira sua conexão e tente de novo.';
+const NETWORK_ERROR_MESSAGE = 'Não conseguimos falar com o servidor agora. Confira sua internet e tente de novo em alguns segundos.';
 
 export function errorMessage(err: unknown): string {
   return err instanceof ApiError ? err.message : NETWORK_ERROR_MESSAGE;

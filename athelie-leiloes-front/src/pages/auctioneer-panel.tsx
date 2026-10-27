@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Artwork, MuseumLabel } from '@/components/artwork';
-import { EmptyWall } from '@/components/empty-wall';
+import { EmptyWall, ErrorWall } from '@/components/empty-wall';
 import { ErrorAlert, Field } from '@/components/form';
 import { LotStatusLabel } from '@/components/lot-status';
 import { PageTitle } from '@/components/page-title';
@@ -85,19 +85,14 @@ export function AuctioneerPanelPage() {
           Meus lotes
         </h2>
         {mineError ? (
-          <div className="grid justify-items-start gap-3">
-            <ErrorAlert>{mineError}</ErrorAlert>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setMineError(null);
-                reloadMine();
-              }}
-            >
-              Tentar de novo
-            </Button>
-          </div>
+          <ErrorWall
+            title="Seus lotes não carregaram"
+            message={mineError}
+            onRetry={() => {
+              setMineError(null);
+              reloadMine();
+            }}
+          />
         ) : !mine ? (
           <p role="status" className="rounded-[10px] border bg-card p-6 text-muted-foreground">
             Carregando seus lotes…

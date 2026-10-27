@@ -3,8 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { cn } from 'cn';
 import { ArrowRightIcon, ListFilterIcon, XIcon } from 'lucide-react';
 import { Artwork, MuseumLabel } from '@/components/artwork';
-import { EmptyWall } from '@/components/empty-wall';
-import { ErrorAlert } from '@/components/form';
+import { EmptyWall, ErrorWall } from '@/components/empty-wall';
 import { LotStatusLabel } from '@/components/lot-status';
 import { PageTitle } from '@/components/page-title';
 import { Button } from '@/components/ui/button';
@@ -237,12 +236,7 @@ export function ShowcasePage() {
         {TABS.map((tab) => (
           <TabsContent key={tab.status} value={tab.status} className="grid gap-8 text-[15px]">
             {error ? (
-              <div className="grid justify-items-start gap-3">
-                <ErrorAlert>{error}</ErrorAlert>
-                <Button type="button" variant="outline" onClick={() => setReload((n) => n + 1)}>
-                  Tentar de novo
-                </Button>
-              </div>
+              <ErrorWall title="A vitrine não carregou" message={error} onRetry={() => setReload((n) => n + 1)} />
             ) : !data ? (
               <LotGridSkeleton />
             ) : data.items.length === 0 ? (

@@ -5,6 +5,7 @@ import { Artwork, MuseumLabel } from '@/components/artwork';
 import { ErrorAlert } from '@/components/form';
 import { LotStatusLabel } from '@/components/lot-status';
 import { BigPaddle, Paddle, PaddleNumber } from '@/components/paddle';
+import { ErrorWall } from '@/components/empty-wall';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -167,22 +168,20 @@ export function LotRoomPage() {
   const { id = '' } = useParams();
   const { lot, error, refresh, applyOwnBid } = useLotRoom(id);
 
+  if (error && !error.notFound) {
+    return (
+      <div className="pt-7">
+        <ErrorWall title="A sala não carregou" message={error.message} onRetry={refresh} />
+      </div>
+    );
+  }
   if (error) {
     return (
       <div className="grid justify-items-start gap-3 pt-7">
-        <h1 className="text-3xl font-bold tracking-tight">{error.notFound ? 'Lote não encontrado' : 'Não foi possível abrir o lote'}</h1>
-        {error.notFound ? (
-          <Link to={ROUTES.SHOWCASE} className="text-primary underline-offset-4 hover:underline">
-            Voltar para a vitrine
-          </Link>
-        ) : (
-          <>
-            <ErrorAlert>{error.message}</ErrorAlert>
-            <Button type="button" variant="outline" onClick={refresh}>
-              Tentar de novo
-            </Button>
-          </>
-        )}
+        <h1 className="text-3xl font-bold tracking-tight">Lote não encontrado</h1>
+        <Link to={ROUTES.SHOWCASE} className="text-primary underline-offset-4 hover:underline">
+          Voltar para a vitrine
+        </Link>
       </div>
     );
   }

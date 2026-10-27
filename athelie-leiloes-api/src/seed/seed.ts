@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import mongoose from 'mongoose';
 import { z } from 'zod';
 import { LotState, LotStatus, Role } from '../constants.js';
 import { settleDueLots } from '../jobs/settlement.js';
@@ -25,6 +26,12 @@ export const SEED_DEPOSIT = 5_000_000;
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+/** Trava no banco: várias instâncias subindo juntas (Vercel) não rodam o seed ao mesmo tempo. */
+const SEED_LOCK_COLLECTION = 'seed_lock';
+const SEED_LOCK_ID = 'seed';
+/** Se o processo morrer no meio, a trava vence sozinha. */
+const SEED_LOCK_MS = 5 * MINUTE;
+const DUPLICATE_KEY = 11_000;
 
 /** Os lances de cada lote alternam licitante 01, 02, 01… */
 export const SEED_LOTS = {
@@ -76,8 +83,42 @@ async function ensureAccount(account: (typeof SEED_ACCOUNTS)[keyof typeof SEED_A
   return { id: user.id, created: true };
 }
 
-/** Idempotente: reconhece o que já existe pelos lotes do leiloeiro do seed, sem campo extra no banco. */
+/** `false` se outro processo está rodando o seed: o upsert da trava ainda válida bate no `_id` único. */
+async function acquireSeedLock(): Promise<boolean> {
+  const now = new Date();
+  try {
+    await seedLocks().updateOne(
+      { _id: SEED_LOCK_ID, until: { $lt: now } },
+      { $set: { until: new Date(now.getTime() + SEED_LOCK_MS) } },
+      { upsert: true },
+    );
+    return true;
+  } catch (err) {
+    if ((err as { code?: number }).code === DUPLICATE_KEY) return false;
+    throw err;
+  }
+}
+
+function seedLocks() {
+  const db = mongoose.connection.db;
+  if (!db) throw new Error('seed chamado antes do mongoose.connect');
+  return db.collection<{ _id: string; until: Date }>(SEED_LOCK_COLLECTION);
+}
+
 export async function runSeed(): Promise<{ accounts: number; lots: number }> {
+  if (!(await acquireSeedLock())) {
+    console.log('[seed] outro processo já está rodando o seed; pulando');
+    return { accounts: 0, lots: 0 };
+  }
+  try {
+    return await seedAll();
+  } finally {
+    await seedLocks().updateOne({ _id: SEED_LOCK_ID }, { $set: { until: new Date(0) } });
+  }
+}
+
+/** Idempotente: reconhece o que já existe pelos lotes do leiloeiro do seed, sem campo extra no banco. */
+async function seedAll(): Promise<{ accounts: number; lots: number }> {
   const artworks = artworksSchema.parse(JSON.parse(await readFile(new URL('artworks.json', SEED_DIR), 'utf8')));
   const accounts = {
     auctioneer: await ensureAccount(SEED_ACCOUNTS.auctioneer),

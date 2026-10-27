@@ -11,10 +11,11 @@ Casa de leilões online com obras do acervo do Metropolitan Museum. O leiloeiro 
 
 ![Vitrine da Athelie Leilões com os lotes ao vivo](docs/img/vitrine.png)
 
-| Aplicação | **https://athelie-leiloes-front.vercel.app** |
-|---|---|
-| API | https://athelie-leiloes-api.vercel.app (saúde em `/health`) |
-| Repositório | https://github.com/DevPauloV/desafio-leilao |
+<table>
+  <tr><td>Aplicação</td><td><a href="https://athelie-leiloes.vercel.app">https://athelie-leiloes.vercel.app</a></td></tr>
+  <tr><td>API</td><td><a href="https://athelie-leiloes-api.vercel.app">https://athelie-leiloes-api.vercel.app</a> (saúde em <code>/health</code>)</td></tr>
+  <tr><td>Repositório</td><td><a href="https://github.com/DevPauloV/desafio-leilao">https://github.com/DevPauloV/desafio-leilao</a></td></tr>
+</table>
 
 ## Funcionalidades
 

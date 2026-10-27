@@ -50,7 +50,10 @@ async function expectWalletsToClose() {
 
 describe('seed', { timeout: SEED_TEST_TIMEOUT_MS }, () => {
   it('cria as 3 contas e os 20 lotes, cada um com uma obra; rodar de novo não duplica nada', async () => {
-    expect(await seed.runSeed()).toEqual({ accounts: 3, lots: 20 });
+    // Duas instâncias subindo juntas: só uma roda o seed, a outra pula.
+    const results = await Promise.all([seed.runSeed(), seed.runSeed()]);
+    expect(results).toContainEqual({ accounts: 3, lots: 20 });
+    expect(results).toContainEqual({ accounts: 0, lots: 0 });
     expect(await seed.runSeed()).toEqual({ accounts: 0, lots: 0 });
 
     const emails = Object.values(seed.SEED_ACCOUNTS).map((account) => account.email);

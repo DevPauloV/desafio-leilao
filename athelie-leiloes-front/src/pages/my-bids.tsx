@@ -3,8 +3,7 @@ import { Link } from 'react-router';
 import { cn } from 'cn';
 import { ShieldCheckIcon } from 'lucide-react';
 import { Artwork } from '@/components/artwork';
-import { EmptyWall } from '@/components/empty-wall';
-import { ErrorAlert } from '@/components/form';
+import { EmptyWall, ErrorWall } from '@/components/empty-wall';
 import { PageTitle } from '@/components/page-title';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -146,12 +145,7 @@ export function MyBidsPage() {
       <PageTitle eyebrow={ROLE_LABELS[Role.BIDDER]} title="Meus arremates" />
 
       {error && !items ? (
-        <div className="grid justify-items-start gap-3">
-          <ErrorAlert>{error}</ErrorAlert>
-          <Button type="button" variant="outline" onClick={() => setReload((n) => n + 1)}>
-            Tentar de novo
-          </Button>
-        </div>
+        <ErrorWall title="Seus arremates não carregaram" message={error} onRetry={() => setReload((n) => n + 1)} />
       ) : !items ? (
         <p role="status" className="rounded-[10px] border bg-card p-6 text-muted-foreground">
           Carregando seus lances…

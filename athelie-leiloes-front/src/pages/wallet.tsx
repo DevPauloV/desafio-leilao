@@ -2,8 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { cn } from 'cn';
-import { ErrorAlert, Field } from '@/components/form';
+import { Field } from '@/components/form';
 import { PageTitle } from '@/components/page-title';
+import { ErrorWall } from '@/components/empty-wall';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DEPOSIT_FIELD_ID, MAX_DEPOSIT, ROLE_LABELS, Role, lotPath } from '@/constants';
@@ -30,12 +31,7 @@ export function WalletPage() {
         {wallet ? (
           <Balances wallet={wallet} />
         ) : error ? (
-          <div className="grid justify-items-start gap-3">
-            <ErrorAlert>{error}</ErrorAlert>
-            <Button type="button" variant="outline" onClick={() => void loadWallet()}>
-              Tentar de novo
-            </Button>
-          </div>
+          <ErrorWall title="A carteira não carregou" message={error} onRetry={() => void loadWallet()} />
         ) : (
           <p role="status" className="rounded-[10px] border bg-card p-6 text-muted-foreground">
             Carregando a carteira…

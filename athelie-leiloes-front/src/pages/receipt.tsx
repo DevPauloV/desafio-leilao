@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Artwork, MuseumLabel } from '@/components/artwork';
-import { ErrorAlert } from '@/components/form';
 import { Paddle } from '@/components/paddle';
+import { ErrorWall } from '@/components/empty-wall';
 import { Button } from '@/components/ui/button';
 import { ErrorCode, ROUTES, auditPath, receiptPath } from '@/constants';
 import { ApiError, api, assetUrl, errorMessage } from '@/lib/api';
@@ -59,25 +59,23 @@ export function ReceiptPage() {
       </p>
     );
   }
+  if (current.error && !current.notFound) {
+    return (
+      <div className="pt-7">
+        <ErrorWall title="O comprovante não carregou" message={current.error} onRetry={() => setReload((n) => n + 1)} />
+      </div>
+    );
+  }
   if (!current.receipt) {
     return (
       <div className="grid justify-items-start gap-3 pt-7">
-        <h1 className="text-3xl font-bold tracking-[-0.025em]">{current.notFound ? 'Comprovante não encontrado' : 'Não foi possível abrir o comprovante'}</h1>
-        {current.notFound ? (
-          <p className="text-muted-foreground">
-            Confira se o link está completo.{' '}
-            <Link to={ROUTES.SHOWCASE} className="text-primary underline-offset-4 hover:underline">
-              Ir para a vitrine
-            </Link>
-          </p>
-        ) : (
-          <>
-            <ErrorAlert>{current.error}</ErrorAlert>
-            <Button type="button" variant="outline" onClick={() => setReload((n) => n + 1)}>
-              Tentar de novo
-            </Button>
-          </>
-        )}
+        <h1 className="text-3xl font-bold tracking-tight">Comprovante não encontrado</h1>
+        <p className="text-muted-foreground">
+          Confira se o link está completo.{' '}
+          <Link to={ROUTES.SHOWCASE} className="text-primary underline-offset-4 hover:underline">
+            Ir para a vitrine
+          </Link>
+        </p>
       </div>
     );
   }
@@ -93,9 +91,9 @@ export function ReceiptPage() {
 
   return (
     <div className="pt-7">
-      <article className="grid max-w-[920px] items-start gap-9 rounded-[10px] border bg-card p-[22px] md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:p-8">
+      <article className="grid max-w-230 items-start gap-9 rounded-[10px] border bg-card p-5.5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:p-8">
         <Artwork src={assetUrl(lot.imageUrl)} alt={lot.title} />
-        <div className="grid min-w-0 gap-[22px]">
+        <div className="grid min-w-0 gap-5.5">
           <div className="flex flex-wrap items-baseline justify-between gap-3 border-b pb-3">
             <h1 className={`${eyebrow} text-primary`}>Comprovante de arremate</h1>
             <span className="font-mono text-[12.5px] text-muted-foreground">{receipt.code}</span>
@@ -108,7 +106,7 @@ export function ReceiptPage() {
           />
           <div>
             <div className={`${eyebrow} text-muted-foreground`}>Arrematado por</div>
-            <div className="text-[46px] leading-none font-bold tracking-[-0.025em] tabular-nums">{formatMoney(receipt.amount)}</div>
+            <div className="text-[46px] leading-none font-bold tracking-tight tabular-nums">{formatMoney(receipt.amount)}</div>
           </div>
           <dl className="m-0 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-5 gap-y-2.5 text-sm">
             <dt className="text-muted-foreground">Vencedor</dt>
