@@ -1,10 +1,18 @@
-# Athelie Leilões
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/logo-dark.svg">
+    <img src="docs/img/logo.svg" alt="Athelie Leilões" width="320">
+  </picture>
+</div>
+
+## Sobre o projeto
 
 Casa de leilões online com obras do acervo do Metropolitan Museum. O leiloeiro cria os lotes, os licitantes dão lances ao vivo, o vencedor recebe um comprovante, e qualquer pessoa audita o histórico de lances, sem login, com detecção de adulteração.
 
-| | |
-|---|---|
+![Vitrine da Athelie Leilões com os lotes ao vivo](docs/img/vitrine.png)
+
 | Aplicação | **https://athelie-leiloes-front.vercel.app** |
+|---|---|
 | API | https://athelie-leiloes-api.vercel.app (saúde em `/health`) |
 | Repositório | https://github.com/DevPauloV/desafio-leilao |
 
