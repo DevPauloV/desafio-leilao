@@ -1,0 +1,191 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/manrope";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
+/* Tokens do protótipo aprovado (docs/design/prototipo.html).
+   Nomes do protótipo -> variáveis do shadcn:
+   parede = background, painel = card/popover, tinta = foreground, apagado = muted-foreground,
+   linha = border/input, bordô = primary, rebaixado = muted/secondary, ruim = destructive.
+   Os que o shadcn não tem (ganhando, superado, parede da obra) viram tokens próprios. */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Manrope Variable", "Segoe UI", system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-win: var(--win);
+  --color-win-soft: var(--win-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-wall: var(--wall);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --animate-live: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+:root {
+  --background: #f2f3ef; /* parede */
+  --foreground: #191b1a; /* tinta */
+  --card: #ffffff; /* painel */
+  --card-foreground: #191b1a;
+  --popover: #ffffff;
+  --popover-foreground: #191b1a;
+  --primary: #7b1e2e; /* bordô */
+  --primary-foreground: #ffffff;
+  --primary-soft: #f3e3e5;
+  --secondary: #e8eae5; /* rebaixado */
+  --secondary-foreground: #191b1a;
+  --muted: #e8eae5;
+  --muted-foreground: #5e6461;
+  --accent: #f3e3e5;
+  --accent-foreground: #7b1e2e;
+  --destructive: #b42318;
+  --destructive-soft: #fbe6e4;
+  --border: #d7dad3; /* linha */
+  --input: #d7dad3;
+  --ring: #7b1e2e;
+  --win: #1e6b4a;
+  --win-soft: #e1f0e8;
+  --warn: #a3560f;
+  --warn-soft: #f7eadb;
+  --wall: #e6e8e2; /* parede onde a obra flutua */
+  --radius: 6px;
+}
+
+.dark {
+  --background: #111413;
+  --foreground: #eceeea;
+  --card: #191d1b;
+  --card-foreground: #eceeea;
+  --popover: #191d1b;
+  --popover-foreground: #eceeea;
+  --primary: #e0697b;
+  --primary-foreground: #1a0f11;
+  --primary-soft: #3a1b21;
+  --secondary: #0c0e0d;
+  --secondary-foreground: #eceeea;
+  --muted: #0c0e0d;
+  --muted-foreground: #9ba39f;
+  --accent: #3a1b21;
+  --accent-foreground: #e0697b;
+  --destructive: #f07a6e;
+  --destructive-soft: #321816;
+  --border: #2b312e;
+  --input: #2b312e;
+  --ring: #e0697b;
+  --win: #5cc293;
+  --win-soft: #14281f;
+  --warn: #e5a25b;
+  --warn-soft: #2d2113;
+  --wall: #1a1e1c;
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* O Tailwind v4 deixa botão com o cursor padrão. Tudo que é clicável mostra a mãozinha,
+     inclusive abas, gatilhos e itens de menu do Radix; desabilitado não. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  [role='tab']:not([data-disabled]),
+  [role='menuitem']:not([data-disabled]),
+  [role='menuitemradio']:not([data-disabled]),
+  [role='menuitemcheckbox']:not([data-disabled]),
+  [role='option']:not([data-disabled]),
+  select:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Barra de rolagem: pílula fina na cor da tinta, que vira bordô ao passar o mouse.
+     Chrome/Edge/Safari usam ::-webkit-scrollbar; o Firefox só entende scrollbar-color,
+     e no Chrome ela anularia as regras webkit, por isso fica restrita ao Firefox. */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--muted-foreground) 45%, transparent);
+    background-clip: padding-box;
+    border: 3px solid transparent;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary);
+    border-width: 2px;
+  }
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--primary);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in oklab, var(--muted-foreground) 45%, transparent) transparent;
+    }
+  }
+}

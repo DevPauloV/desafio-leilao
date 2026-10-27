@@ -1,0 +1,46 @@
+[
+  {
+    "metObjectId": 436524,
+    "title": "Sunflowers",
+    "artist": "Vincent van Gogh",
+    "date": "1887",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/436524",
+    "image": "images/436524.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 45434,
+    "title": "Under the Wave off Kanagawa (Kanagawa oki nami ura), also known as The Great Wave, from the series Thirty-six Views of Mount Fuji (Fugaku sanjūrokkei)",
+    "artist": "Katsushika Hokusai",
+    "date": "ca. 1830–32",
+    "medium": "Woodblock print; ink and color on paper",
+    "department": "Asian Art",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/45434",
+    "image": "images/45434.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 437881,
+    "title": "Young Woman with a Water Pitcher",
+    "artist": "Johannes Vermeer",
+    "date": "ca. 1662",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/437881",
+    "image": "images/437881.jpg",
+    "contentType": "image/jpeg"
+  },
+  {
+    "metObjectId": 438817,
+    "title": "The Dance Class",
+    "artist": "Edgar Degas",
+    "date": "1874",
+    "medium": "Oil on canvas",
+    "department": "European Paintings",
+    "metUrl": "https://www.metmuseum.org/art/collection/search/438817",
+    "image": "images/438817.jpg",
+    "contentType": "image/jpeg"
+  }
+]

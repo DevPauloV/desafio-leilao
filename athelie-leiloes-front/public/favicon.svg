@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Martelo de leilão sobre o bloco, no bordô da marca; no tema escuro, o bordô claro do app. -->
+  <style>
+    .g { fill: #7b1e2e; }
+    @media (prefers-color-scheme: dark) { .g { fill: #e0697b; } }
+  </style>
+  <g class="g">
+    <g transform="rotate(-45 16 16)">
+      <rect x="7.5" y="4" width="17" height="9" rx="2.2" />
+      <rect x="14.4" y="12" width="3.2" height="17" rx="1.6" />
+    </g>
+    <rect x="2.5" y="25.5" width="14" height="4" rx="2" />
+  </g>
+</svg>

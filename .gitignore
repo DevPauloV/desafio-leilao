@@ -1,0 +1,22 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# Segredos: só o .env.example é versionado
+.env
+.env.*
+!.env.example
+
+# Material do teste (não é público)
+*.pdf
+
+.vscode/
+.DS_Store
+
+.agents
+AGENTS.md
+CLAUDE.md
+.claude
+Teste tecnico Elite Dev - Verzel (1).pdf
+docs/design/

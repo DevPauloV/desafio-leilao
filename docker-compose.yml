@@ -1,0 +1,59 @@
+# Sobe o projeto inteiro: docker compose up --build
+# Front: http://localhost:${FRONT_PORT:-8080}   API: http://localhost:${API_PORT:-3000}
+
+services:
+  mongo:
+    image: mongo:7
+    # Replica set de 1 nó: necessário para transações (lance + saldo atômicos).
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      # Inicia o replica set na primeira vez; nas seguintes só confirma o status.
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]}).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  api:
+    build: ./athelie-leiloes-api
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_URI: mongodb://mongo:27017/athelie-leiloes?replicaSet=rs0
+    ports:
+      - "${API_PORT:-3000}:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  front:
+    build:
+      context: ./athelie-leiloes-front
+      args:
+        # URL da API vista pelo NAVEGADOR (não pelo container).
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    ports:
+      - "${FRONT_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
