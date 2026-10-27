@@ -194,9 +194,12 @@ describe('eventos do lance', () => {
 describe('eventos de cancelamento e liquidação', () => {
   it('lot:cancelled na sala e wallet:update para o líder estornado', async () => {
     const lot = await insertLot(auctioneer.id);
-    await bidAs(app, alice, lot.id, 1_000);
     const [aliceSocket, visitor] = await Promise.all([connect(alice.token), connect()]);
     await join(visitor, lot.id);
+    // O aviso do próprio lance passa pelo adapter e pode chegar depois: consome antes de ouvir o do estorno.
+    const ownWallet = nextEvent(aliceSocket, SocketEvent.WALLET_UPDATE);
+    await bidAs(app, alice, lot.id, 1_000);
+    await ownWallet;
 
     const cancelled = nextEvent(visitor, SocketEvent.LOT_CANCELLED);
     const wallet = nextEvent(aliceSocket, SocketEvent.WALLET_UPDATE);
@@ -208,9 +211,11 @@ describe('eventos de cancelamento e liquidação', () => {
 
   it('lot:ended com pseudônimo e valor (sem ids) e wallet:update para o vencedor', async () => {
     const lot = await insertLot(auctioneer.id);
-    const res = await bidAs(app, bruno, lot.id, 1_000);
     const [brunoSocket, visitor] = await Promise.all([connect(bruno.token), connect()]);
     await join(visitor, lot.id);
+    const ownWallet = nextEvent(brunoSocket, SocketEvent.WALLET_UPDATE);
+    const res = await bidAs(app, bruno, lot.id, 1_000);
+    await ownWallet;
     await Lot.updateOne({ _id: lot.id }, { $set: { endsAt: new Date(Date.now() - 1) } });
 
     const ended = nextEvent(visitor, SocketEvent.LOT_ENDED);

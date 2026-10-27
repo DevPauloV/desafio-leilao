@@ -12,6 +12,8 @@ let app: Express;
 let stop: () => Promise<void>;
 let seed: typeof SeedModule;
 let settleDueLots: (now?: Date) => Promise<number>;
+/** O seed cria 20 lotes com lances reais; com todos os arquivos em paralelo, passa dos 5 s padrão. */
+const SEED_TEST_TIMEOUT_MS = 30_000;
 
 beforeAll(async () => {
   ({ app, stop } = await startTestApp());
@@ -46,7 +48,7 @@ async function expectWalletsToClose() {
   expect(auctioneer.wallet.balance).toBe(sold.reduce((sum, lot) => sum + lot.result!.amount!, 0));
 }
 
-describe('seed', () => {
+describe('seed', { timeout: SEED_TEST_TIMEOUT_MS }, () => {
   it('cria as 3 contas e os 20 lotes, cada um com uma obra; rodar de novo não duplica nada', async () => {
     expect(await seed.runSeed()).toEqual({ accounts: 3, lots: 20 });
     expect(await seed.runSeed()).toEqual({ accounts: 0, lots: 0 });
