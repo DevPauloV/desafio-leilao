@@ -2,7 +2,6 @@
 
 Casa de leilões online. O leiloeiro cria lotes a partir de obras do acervo do Metropolitan Museum (The Met Collection API), os licitantes dão lances ao vivo, o vencedor recebe um comprovante público, e qualquer pessoa audita o histórico de lances de um lote, sem login, com detecção de adulteração.
 
-Teste técnico Verzel (Elite Dev).
 
 ## Links
 
