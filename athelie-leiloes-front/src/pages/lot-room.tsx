@@ -357,13 +357,11 @@ function Clock({ lot, now }: { lot: LotDetail; now: number }) {
     value = formatShortDate(lot.endsAt);
   }
   return (
-    <div className="flex items-center justify-between gap-3 border-y py-3">
-      <div>
-        <div className={eyebrow}>{label}</div>
-        <div className="font-mono text-[26px] font-medium tabular-nums">{value}</div>
-      </div>
+    <div className="border-y py-3">
+      <div className={eyebrow}>{label}</div>
+      <div className="font-mono text-[26px] font-medium tabular-nums">{value}</div>
       {lot.status !== LotStatus.ENDED && (
-        <p className="max-w-[22ch] text-right text-[12.5px] text-muted-foreground">{ANTI_SNIPING_TEXT}</p>
+        <p className="mt-1.5 text-[12.5px] text-muted-foreground">{ANTI_SNIPING_TEXT}</p>
       )}
     </div>
   );

@@ -4,6 +4,14 @@ Casa de leilões online. O leiloeiro cria lotes a partir de obras do acervo do M
 
 Teste técnico Verzel (Elite Dev).
 
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-Express_5-339933?logo=node.js&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-replica_set-47A248?logo=mongodb&logoColor=white)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-tempo_real-010101?logo=socket.io&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Testes](https://img.shields.io/badge/testes-123_passando-2E7D32)
+
 ## Links
 
 | | |
@@ -12,15 +20,39 @@ Teste técnico Verzel (Elite Dev).
 | API | https://SUA-API.up.railway.app (saúde em `/health`) |
 | Repositório | https://github.com/DevPauloV/desafio-leilao |
 
-### Usuários de demonstração
+Para rodar na sua máquina, basta um comando: `cp .env.example .env && docker compose up --build` ([detalhes](#como-rodar-localmente)).
+
+## Sumário
+
+1. [Usuários de demonstração](#usuários-de-demonstração)
+2. [Roteiro rápido de avaliação](#roteiro-rápido-de-avaliação)
+3. [Funcionalidades](#funcionalidades)
+4. [Telas](#telas)
+5. [Como rodar localmente](#como-rodar-localmente)
+6. [Variáveis de ambiente](#variáveis-de-ambiente)
+7. [Stack](#stack)
+8. [Arquitetura](#arquitetura)
+9. [Regras de negócio e interpretações](#regras-de-negócio-e-interpretações)
+10. [Histórico à prova de adulteração](#histórico-à-prova-de-adulteração)
+11. [Privacidade](#privacidade)
+12. [Independência da API do Met](#independência-da-api-do-met)
+13. [Segurança](#segurança)
+14. [Testes](#testes)
+15. [Deploy](#deploy)
+16. [Comportamentos inesperados e limitações conhecidas](#comportamentos-inesperados-e-limitações-conhecidas)
+17. [Uso de IA](#uso-de-ia)
+
+## Usuários de demonstração
 
 Todos com a senha **`athelie12345`**. O seed cria tudo isso ao subir a API.
 
 | Papel | E-mail | O que dá para fazer |
 |---|---|---|
 | Leiloeiro | `leiloeiro@athelie.dev` | Painel: buscar obras no Met, criar lotes, cancelar com estorno, ver resultados |
-| Licitante | `ana@athelie.dev` | Dar lances, carteira (R$ 50.000 iniciais), meus arremates |
-| Licitante | `bruno@athelie.dev` | Idem. Abra numa janela anônima para disputar com a Ana em tempo real |
+| Licitante | `licitante01@athelie.dev` | Dar lances, carteira (R$ 50.000 iniciais), meus arremates |
+| Licitante | `licitante02@athelie.dev` | Idem. Abra numa janela anônima para disputar com o licitante 01 em tempo real |
+
+Também dá para criar uma conta nova em `/criar-conta`, escolhendo o papel.
 
 Os lotes do seed:
 - um **ao vivo** com lances dos dois;
@@ -30,9 +62,10 @@ Os lotes do seed:
 
 Se não houver lote ao vivo nem agendado quando a API sobe, o seed cria outros. Assim, quem avaliar dias depois ainda encontra um leilão aberto.
 
-### Roteiro rápido de avaliação
+## Roteiro rápido de avaliação
+
 1. Abra a vitrine e entre na sala do lote ao vivo.
-2. Entre como `ana@athelie.dev` numa janela e como `bruno@athelie.dev` numa janela anônima. Dê lances alternados: os dois veem o lance na hora, e quem foi superado recebe um aviso.
+2. Entre como `licitante01@athelie.dev` numa janela e como `licitante02@athelie.dev` numa janela anônima. Dê lances alternados: os dois veem o lance na hora, e quem foi superado recebe um aviso.
 3. Teste as recusas:
    - lance abaixo do mínimo;
    - lance de quem já está ganhando;
@@ -40,6 +73,50 @@ Se não houver lote ao vivo nem agendado quando a API sobe, o seed cria outros. 
    - lance em lote agendado ou encerrado.
 4. Na sala, abra **Auditoria** (`/auditoria/:id`): o selo mostra "íntegro" e a cadeia de hashes de cada lance.
 5. Como leiloeiro, busque uma obra no painel ("monet", "vase"), crie um lote que termine em poucos minutos e acompanhe a liquidação e o comprovante.
+6. Para ver a auditoria acusar adulteração, rode o script de [demonstração](#histórico-à-prova-de-adulteração) e recarregue a página da auditoria.
+
+## Funcionalidades
+
+### Obrigatórias
+
+| Requisito | Onde ver |
+|---|---|
+| Leiloeiro cria lotes a partir de itens de uma API pública externa | `/painel`: busca no Met e "Criar lote" |
+| Lances ao vivo, vistos por todos na hora | `/lotes/:id` (Socket.IO) |
+| Primeiro lance ≥ inicial; seguintes ≥ atual + incremento; líder não cobre o próprio lance | [Regras](#regras-de-negócio-e-interpretações) |
+| Saldo disponível = total − comprometido, liberado na hora ao ser superado | `/carteira` |
+| Anti-sniping de 2 minutos | contagem da sala estende ao vivo |
+| Liquidação: debita o vencedor, credita o leiloeiro, gera comprovante | `/arremates` e `/r/:code` |
+| Histórico à prova de adulteração, inclusive direto no banco | `/auditoria/:id` e `npm run demo:tamper` |
+| Auditoria e comprovante sem dados pessoais | pseudônimo por lote ([Privacidade](#privacidade)) |
+| Vitrine, salas, auditoria e comprovante funcionam com a API externa fora | [Independência do Met](#independência-da-api-do-met) |
+| Mensagens de recusa claras | sala do lote, ao dar lance |
+| Vitrine com ao vivo, agendados e encerrados; cancelados ocultos | `/` |
+| Seed com 1 leiloeiro, 2 clientes e lote ao vivo com lances | [Usuários de demonstração](#usuários-de-demonstração) |
+| Deploy público | [Links](#links) |
+
+### Opcionais (todos feitos)
+
+| Opcional | Como ficou |
+|---|---|
+| Busca e filtro de lotes | busca por título ou artista e filtro por departamento na vitrine |
+| Cancelamento com estorno | leiloeiro cancela lote agendado ou ao vivo; o valor comprometido do líder volta na mesma transação |
+| Docker Compose | api, front e mongo com um comando |
+| Testes automatizados | 123 testes na API, incluindo concorrência ([Testes](#testes)) |
+| Dark mode | tema claro e escuro, com alternância no cabeçalho |
+
+## Telas
+
+| Rota | Quem acessa | O que faz |
+|---|---|---|
+| `/` | todos | Vitrine: lotes ao vivo, agendados e encerrados, com busca e filtro |
+| `/lotes/:id` | todos (lance só para licitante) | Sala ao vivo: lance atual, contagem regressiva, histórico e formulário de lance |
+| `/auditoria/:id` | todos, sem login | Selo de integridade e cadeia de hashes do lote |
+| `/r/:code` | todos, sem login | Comprovante do arremate |
+| `/painel` | leiloeiro | Busca no Met, criação de lotes, cancelamento e resultados dos próprios lotes |
+| `/carteira` | licitante | Saldo total, comprometido e disponível; depósito |
+| `/arremates` | licitante | Lotes em que deu lance: ganhando, superado, arrematado ou perdido, com link do comprovante |
+| `/entrar`, `/criar-conta` | todos | Login e cadastro |
 
 ## Como rodar localmente
 
@@ -83,7 +160,22 @@ npm ci
 npm run dev                    # http://localhost:5173 (usa a API em http://localhost:3000)
 ```
 
-Testes da API: `cd athelie-leiloes-api && npm test`. O MongoDB é em memória, com replica set; não precisa de banco rodando.
+## Variáveis de ambiente
+
+Todas ficam no `.env` da raiz, criado a partir do `.env.example`. A API valida tudo com Zod ao subir e não inicia se alguma estiver inválida.
+
+| Variável | Para que serve | Padrão do exemplo |
+|---|---|---|
+| `MONGO_URI` | conexão com o MongoDB (precisa ser replica set). No Compose, o próprio compose define | `mongodb://localhost:27017/athelie-leiloes?replicaSet=rs0` |
+| `JWT_SECRET` | assinatura dos tokens de login | troque antes de publicar |
+| `JWT_EXPIRES_IN` | validade do token | `1d` |
+| `AUDIT_SECRET` | chave do HMAC da cadeia de lances e dos pseudônimos | troque antes de publicar; não mude depois que houver lances |
+| `CORS_ORIGIN` | origens permitidas, separadas por vírgula | `http://localhost:8080,http://localhost:5173` |
+| `TRUST_PROXY` | número de proxies na frente da API (o rate limit usa o IP real) | `0` local, `1` no Railway |
+| `SEED_ON_START` | cria os dados de demonstração ao subir | `true` |
+| `MET_API_BASE` | base da The Met Collection API (sem chave) | `https://collectionapi.metmuseum.org/public/collection/v1` |
+| `VITE_API_URL` | URL da API como o navegador a enxerga (entra no build do front) | `http://localhost:3000` |
+| `API_PORT`, `FRONT_PORT` | portas expostas pelo Compose | `3000`, `8080` |
 
 ## Stack
 
@@ -98,6 +190,39 @@ Testes da API: `cd athelie-leiloes-api && npm test`. O MongoDB é em memória, c
 | Infra | Docker Compose (api, front, mongo) e deploy em Vercel + Railway + Atlas |
 
 ## Arquitetura
+
+```mermaid
+flowchart LR
+  browser["Navegador<br/>React + Vite"]
+  subgraph api["API (Node.js + Express)"]
+    rest["REST<br/>routes → controllers → services"]
+    socket["Socket.IO<br/>salas por lote e por usuário"]
+    job["Varredura de liquidação<br/>a cada 2 s"]
+  end
+  mongo[("MongoDB<br/>replica set")]
+  met["The Met<br/>Collection API"]
+
+  browser -- "HTTP (lances, carteira, painel)" --> rest
+  socket -- "eventos depois do commit" --> browser
+  rest -- "transações" --> mongo
+  job -- "transação por lote" --> mongo
+  rest -. "só o painel do leiloeiro" .-> met
+```
+
+**Caminho de um lance.** O lance entra pela API REST, não pelo socket ([ADR 0006](docs/adr/0006-lance-via-rest.md)). O Socket.IO só avisa os outros depois que a transação foi confirmada, então ninguém vê um lance que depois foi desfeito.
+
+```mermaid
+sequenceDiagram
+  participant L as Licitante
+  participant A as API
+  participant M as MongoDB
+  participant S as Sala (Socket.IO)
+  L->>A: POST /api/lots/:id/bids
+  A->>M: transação: valida regras e saldo, compromete o valor,<br/>libera o líder anterior, grava o lance com hash,<br/>atualiza o lote se o número de lances não mudou
+  M-->>A: commit
+  A-->>L: 201 lance aceito
+  A->>S: lance novo, novo fim (anti-sniping), aviso de superado
+```
 
 ```
 athelie-leiloes-api/src/
@@ -151,6 +276,14 @@ athelie-leiloes-front/src/
 
 Cada lance guarda um `hash` e o `prevHash` do anterior, formando uma cadeia. O hash é um **HMAC-SHA256** com o segredo `AUDIT_SECRET`, que só a API conhece. Ele cobre o lote, a sequência, o pseudônimo, o valor, o horário e o hash anterior. O lote guarda a **cabeça** da cadeia (número de lances e último hash), também assinada, e gravada na mesma transação do lance.
 
+```mermaid
+flowchart LR
+  g["início do lote"] --> b1["lance #1<br/>hash = HMAC(dados #1 + início)"]
+  b1 --> b2["lance #2<br/>hash = HMAC(dados #2 + hash #1)"]
+  b2 --> b3["lance #3<br/>hash = HMAC(dados #3 + hash #2)"]
+  b3 -.-> h["cabeça assinada no lote<br/>3 lances, último hash"]
+```
+
 A auditoria pública (`GET /api/audit/lots/:id`, tela `/auditoria/:id`) recalcula tudo a cada consulta e aponta o primeiro lance inválido e o tipo do problema:
 
 | Adulteração direto no banco | Como é detectada |
@@ -192,6 +325,27 @@ Só o painel do leiloeiro chama o Met, para buscar obras (até 20 por busca, tim
 - CORS restrito às origens do `CORS_ORIGIN`.
 - Senhas com bcrypt. Segredos só no `.env`; o `.env.example` traz valores de exemplo, que precisam ser trocados.
 
+## Testes
+
+```bash
+cd athelie-leiloes-api && npm test
+```
+
+São 123 testes com Vitest. O MongoDB roda em memória e em replica set (mongodb-memory-server), então não precisa de banco nem de Docker, e as transações são testadas de verdade.
+
+| Arquivo | O que cobre |
+|---|---|
+| `bid-rules.test.ts` | regras puras: estado do lote, lance mínimo, validação do lance e anti-sniping |
+| `bids.test.ts` | carteira, lances pela API, recusas, estorno no cancelamento e **10 lances simultâneos** |
+| `settlement.test.ts` | liquidação: débito, crédito, comprovante sem dados pessoais, lote sem lances e duas varreduras em paralelo |
+| `audit-chain.test.ts` | hash de cada lance, pseudônimo e assinatura da cabeça |
+| `audit.test.ts` | auditoria pública detectando cada tipo de adulteração, e "meus arremates" |
+| `lots.test.ts` | criação de lote, vitrine, busca e filtro, cancelamento, imagens e **Met fora do ar** |
+| `met.test.ts` | busca no Met, descarte de obras sem imagem ou fora do domínio público, Met fora do ar com nova tentativa |
+| `realtime.test.ts` | entrada na sala e eventos de lance, cancelamento e liquidação via Socket.IO |
+| `auth.test.ts` | cadastro, login, papéis, rate limit do login e infraestrutura HTTP |
+| `seed.test.ts` | seed idempotente e renovação dos lotes de demonstração |
+
 ## Deploy
 
 | Parte | Onde | Configuração |
@@ -215,7 +369,7 @@ O `PORT` é injetado pelo Railway. Cada push na `main` refaz os dois deploys.
 - **Met `/v1/search` aposentado.** O Met desativou o `/v1/search` em 01/10/2026. A busca usa `/v1.1/search`, e os detalhes continuam em `/v1/objects/:id`. Obras que dão erro no Met são puladas, sem derrubar a busca.
 - **Nem toda obra do Met entra.** Obras sem imagem ou fora do domínio público são descartadas, então uma busca pode trazer menos de 20 resultados.
 - **Resultado leva até ~2 s.** A liquidação roda em varredura a cada 2 s. Entre o fim e a liquidação, a sala mostra "Apurando resultado…", e em "Meus arremates" quem lidera continua como "ganhando".
-- **O seed não repõe saldo.** A cada renovação do lote ao vivo, os lances do seed comprometem mais saldo de Ana e Bruno. Depois de muitas renovações, deposite pela carteira ou resete o banco.
+- **O seed não repõe saldo.** A cada renovação do lote ao vivo, os lances do seed comprometem mais saldo dos dois licitantes. Depois de muitas renovações, deposite pela carteira ou resete o banco.
 - **Pseudônimos de 6 caracteres hexadecimais.** Uma colisão entre dois licitantes do mesmo lote é possível, mas muito improvável (1 em ~16 milhões por par).
 - **Uma instância da API.** O rate limit fica em memória, e as salas do Socket.IO ficam no processo. Para escalar, seria preciso Redis para os dois. A liquidação já é segura com várias instâncias.
 - **Reconexão do socket.** Numa queda de conexão, o front volta a entrar na sala e recarrega o estado. Um aviso de encerramento emitido durante a queda não é reenviado, mas o estado recarregado já mostra o lote encerrado.
@@ -225,4 +379,4 @@ O `PORT` é injetado pelo Railway. Cada push na `main` refaz os dois deploys.
 
 ## Uso de IA
 
-Usei IA (Claude Code) como ferramenta para agilizar a escrita de código, testes e documentação. A arquitetura, a modelagem, as regras e as técnicas (transações, cadeia HMAC, pseudônimos, deploy) foram decididas por mim, e todo código passou pela minha revisão e pelos testes antes de entrar. Os detalhes estão em [`docs/ai-usage.md`](docs/ai-usage.md).
+Usei IA (Claude Code) como ferramenta para agilizar a escrita de código, testes e documentação. A arquitetura, a modelagem, as regras e as técnicas (transações, cadeia HMAC, pseudônimos) foram decididas por mim, e todo código passou pela minha revisão e pelos testes antes de entrar. O deploy (Atlas, Railway e Vercel) eu fiz manualmente. Os detalhes estão em [`docs/ai-usage.md`](docs/ai-usage.md).

@@ -33,7 +33,7 @@ const byStatus = (lots: LotDoc[], status: string) => lots.filter((lot) => lotSta
 /** committed = soma dos lances que o licitante lidera; balance = depósito − arremates; leiloeiro = soma das vendas. */
 async function expectWalletsToClose() {
   const lots = await seedLots();
-  for (const account of [seed.SEED_ACCOUNTS.ana, seed.SEED_ACCOUNTS.bruno]) {
+  for (const account of [seed.SEED_ACCOUNTS.bidder01, seed.SEED_ACCOUNTS.bidder02]) {
     const user = (await seedUser(account.email))!;
     const id = user._id.toString();
     const leading = lots.filter((lot) => lot.state === LotState.ACTIVE && lot.leaderId?.toString() === id);
@@ -68,7 +68,7 @@ describe('seed', () => {
   it('as contas entram com a senha do seed', async () => {
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: seed.SEED_ACCOUNTS.ana.email, password: seed.SEED_PASSWORD });
+      .send({ email: seed.SEED_ACCOUNTS.bidder01.email, password: seed.SEED_PASSWORD });
     expect(res.status).toBe(200);
   });
 

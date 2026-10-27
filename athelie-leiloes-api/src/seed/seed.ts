@@ -18,9 +18,9 @@ const SEED_DIR = new URL('../../seed/', import.meta.url);
 /** Senha única das contas de demonstração (documentada no README). */
 export const SEED_PASSWORD = 'athelie12345';
 export const SEED_ACCOUNTS = {
-  auctioneer: { name: 'Helena Prado', email: 'leiloeiro@athelie.dev', role: Role.AUCTIONEER },
-  ana: { name: 'Ana Souza', email: 'ana@athelie.dev', role: Role.BIDDER },
-  bruno: { name: 'Bruno Lima', email: 'bruno@athelie.dev', role: Role.BIDDER },
+  auctioneer: { name: 'Leiloeiro', email: 'leiloeiro@athelie.dev', role: Role.AUCTIONEER },
+  bidder01: { name: 'Licitante 01', email: 'licitante01@athelie.dev', role: Role.BIDDER },
+  bidder02: { name: 'Licitante 02', email: 'licitante02@athelie.dev', role: Role.BIDDER },
 } as const;
 /** Depósito inicial de cada licitante: R$ 50.000,00. */
 export const SEED_DEPOSIT = 5_000_000;
@@ -29,7 +29,7 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/** Papel de cada obra (metObjectId de seed/artworks.json) e os lances, alternados: Ana, Bruno, Ana… */
+/** Papel de cada obra (metObjectId de seed/artworks.json) e os lances, alternados: licitante 01, licitante 02, licitante 01… */
 export const SEED_LOTS = {
   live: { metObjectId: 436524, startingBid: 150_000, minIncrement: 10_000, bids: [150_000, 160_000, 175_000] },
   scheduled: { metObjectId: 45434, startingBid: 80_000, minIncrement: 5_000, bids: [] },
@@ -68,11 +68,11 @@ export async function runSeed(): Promise<{ accounts: number; lots: number }> {
   const artworks = artworksSchema.parse(JSON.parse(await readFile(new URL('artworks.json', SEED_DIR), 'utf8')));
   const accounts = {
     auctioneer: await ensureAccount(SEED_ACCOUNTS.auctioneer),
-    ana: await ensureAccount(SEED_ACCOUNTS.ana),
-    bruno: await ensureAccount(SEED_ACCOUNTS.bruno),
+    bidder01: await ensureAccount(SEED_ACCOUNTS.bidder01),
+    bidder02: await ensureAccount(SEED_ACCOUNTS.bidder02),
   };
   const auctioneerId = accounts.auctioneer.id;
-  const bidders = [accounts.ana.id, accounts.bruno.id];
+  const bidders = [accounts.bidder01.id, accounts.bidder02.id];
 
   /** Cria o lote com a obra do plano e dá os lances pelo serviço real. */
   async function createLot(plan: SeedLot, startsAt: Date, endsAt: Date) {

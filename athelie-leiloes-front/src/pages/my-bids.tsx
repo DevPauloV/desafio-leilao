@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { cn } from 'cn';
+import { ShieldCheckIcon } from 'lucide-react';
 import { Artwork } from '@/components/artwork';
 import { EmptyWall } from '@/components/empty-wall';
 import { ErrorAlert } from '@/components/form';
 import { PageTitle } from '@/components/page-title';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LotStatus, MyBidStatus, ROLE_LABELS, ROUTES, Role, SocketEvent, auditPath, lotPath, receiptPath } from '@/constants';
 import { api, assetUrl, errorMessage } from '@/lib/api';
 import { formatMoney } from '@/lib/money';
@@ -13,32 +16,113 @@ import { socket } from '@/lib/socket';
 import { formatShortDate } from '@/lib/time';
 import type { MyBidItem } from '@/types';
 
-/** Rótulo e cor de cada situação, nas cores de status do protótipo. */
-const STATUS: Record<MyBidStatus, { label: string; variant: 'win' | 'warn' | 'accent' | 'neutral' }> = {
-  [MyBidStatus.WINNING]: { label: 'Ganhando', variant: 'win' },
-  [MyBidStatus.OUTBID]: { label: 'Superado', variant: 'warn' },
-  [MyBidStatus.WON]: { label: 'Arrematado', variant: 'accent' },
-  [MyBidStatus.LOST]: { label: 'Não arrematado', variant: 'neutral' },
-  [MyBidStatus.CANCELLED]: { label: 'Cancelado', variant: 'neutral' },
+/** Filtros da lista: agrupam as situações do licitante. */
+const Filter = { ALL: 'all', OPEN: 'open', WON: 'won', CLOSED: 'closed' } as const;
+type Filter = (typeof Filter)[keyof typeof Filter];
+
+const FILTERS = [
+  { value: Filter.ALL, label: 'Todos' },
+  { value: Filter.OPEN, label: 'Em disputa' },
+  { value: Filter.WON, label: 'Arrematados' },
+  { value: Filter.CLOSED, label: 'Encerrados' },
+] as const;
+
+const isFilter = (value: string): value is Filter => FILTERS.some((f) => f.value === value);
+
+/** Rótulo, cor, filtro e ação principal de cada situação. */
+const STATUS: Record<
+  MyBidStatus,
+  { label: string; variant: 'win' | 'warn' | 'accent' | 'neutral'; filter: Filter; action: string; primary: boolean }
+> = {
+  [MyBidStatus.OUTBID]: { label: 'Superado', variant: 'warn', filter: Filter.OPEN, action: 'Cobrir lance', primary: true },
+  [MyBidStatus.WINNING]: { label: 'Ganhando', variant: 'win', filter: Filter.OPEN, action: 'Abrir sala', primary: false },
+  [MyBidStatus.WON]: { label: 'Arrematado', variant: 'accent', filter: Filter.WON, action: 'Ver comprovante', primary: true },
+  [MyBidStatus.LOST]: { label: 'Não arrematado', variant: 'neutral', filter: Filter.CLOSED, action: 'Ver resultado', primary: false },
+  [MyBidStatus.CANCELLED]: { label: 'Cancelado', variant: 'neutral', filter: Filter.CLOSED, action: 'Ver lote', primary: false },
 };
 
-/** "termina 25 out, 14:00" / "encerrado 24 out, 21:14" / "cancelado". */
-function endText(item: MyBidItem): string {
-  if (item.myStatus === MyBidStatus.CANCELLED) return 'cancelado';
-  if (item.lot.status === LotStatus.LIVE || item.lot.status === LotStatus.SCHEDULED) return `termina ${formatShortDate(item.lot.endsAt)}`;
-  return `encerrado ${formatShortDate(item.lot.endsAt)}`;
+/** Os que pedem ação primeiro; dentro de cada situação, a ordem da API (lance mais recente). */
+const URGENCY: MyBidStatus[] = [MyBidStatus.OUTBID, MyBidStatus.WINNING, MyBidStatus.WON, MyBidStatus.LOST, MyBidStatus.CANCELLED];
+
+/** Colunas fixas a partir de `lg`, iguais no cabeçalho e nas linhas: situação e ações ficam alinhadas. */
+const ROW_GRID =
+  'grid grid-cols-[56px_minmax(0,1fr)] items-center gap-x-4 gap-y-2.5 px-5 lg:grid-cols-[56px_minmax(0,1fr)_112px_112px_136px_112px_180px]';
+
+/** "Termina" / "Encerrado" / "Cancelado" e a data do fim. */
+function deadline(item: MyBidItem): { label: string; date: string | null } {
+  if (item.myStatus === MyBidStatus.CANCELLED) return { label: 'Cancelado', date: null };
+  const open = item.lot.status === LotStatus.LIVE || item.lot.status === LotStatus.SCHEDULED;
+  return { label: open ? 'Termina' : 'Encerrado', date: formatShortDate(item.lot.endsAt) };
+}
+
+function BidRow({ item }: { item: MyBidItem }) {
+  const status = STATUS[item.myStatus];
+  const outbid = item.myStatus === MyBidStatus.OUTBID;
+  const actionPath = item.myStatus === MyBidStatus.WON && item.receiptCode ? receiptPath(item.receiptCode) : lotPath(item.lot.id);
+  const { label: deadlineLabel, date } = deadline(item);
+
+  return (
+    <li className={cn(ROW_GRID, 'border-t py-3.5 first:border-t-0', outbid && 'bg-warn-soft/45')}>
+      <Artwork src={assetUrl(item.lot.imageUrl)} alt="" thin />
+      <div className="grid min-w-0 gap-px">
+        <Link to={lotPath(item.lot.id)} className="truncate leading-tight font-semibold underline-offset-4 hover:text-primary hover:underline">
+          {item.lot.title}
+        </Link>
+        {item.lot.artist && <span className="truncate text-[13px] text-muted-foreground">{item.lot.artist}</span>}
+      </div>
+
+      {/* Abaixo de `lg` cada par vira uma linha com rótulo; a partir de `lg`, `contents` devolve as células à grade. */}
+      <div className="col-start-2 flex flex-wrap gap-x-5 lg:contents">
+        <div className="lg:text-right">
+          <span className="mr-1.5 text-xs text-muted-foreground lg:sr-only">Seu lance</span>
+          <span className="font-mono text-sm tabular-nums">{formatMoney(item.myHighestBid)}</span>
+        </div>
+        <div className="lg:text-right">
+          <span className="mr-1.5 text-xs text-muted-foreground lg:sr-only">Atual</span>
+          <span className={cn('font-mono text-sm tabular-nums', outbid ? 'font-semibold text-warn' : 'text-muted-foreground')}>
+            {formatMoney(item.lot.currentBid ?? item.myHighestBid)}
+          </span>
+        </div>
+      </div>
+
+      <div className="col-start-2 flex flex-wrap items-center gap-x-3 gap-y-1 lg:contents">
+        <div>
+          <Badge variant={status.variant} className="h-6 gap-1.5">
+            <span aria-hidden className="size-1.5 rounded-full bg-current" />
+            {status.label}
+          </Badge>
+        </div>
+        <div className="flex gap-1 text-[13px] lg:grid lg:gap-0">
+          <span className="font-semibold">{deadlineLabel}</span>
+          {date && <span className="text-muted-foreground">{date}</span>}
+        </div>
+      </div>
+
+      <div className="col-start-2 flex gap-2 lg:col-start-auto lg:justify-end">
+        <Button asChild size="sm" variant={status.primary ? 'default' : 'outline'} className="w-35">
+          <Link to={actionPath}>{status.action}</Link>
+        </Button>
+        <Button asChild size="icon" variant="outline" className="text-muted-foreground hover:text-primary">
+          <Link to={auditPath(item.lot.id)} aria-label="Auditoria do lote" title="Auditoria do lote">
+            <ShieldCheckIcon />
+          </Link>
+        </Button>
+      </div>
+    </li>
+  );
 }
 
 export function MyBidsPage() {
   const [reload, setReload] = useState(0);
   const [items, setItems] = useState<MyBidItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>(Filter.ALL);
 
   useEffect(() => {
     const controller = new AbortController();
     api<{ items: MyBidItem[] }>('/api/me/bids', { signal: controller.signal }).then(
       (data) => {
-        setItems(data.items);
+        setItems([...data.items].sort((a, b) => URGENCY.indexOf(a.myStatus) - URGENCY.indexOf(b.myStatus)));
         setError(null);
       },
       (err: unknown) => {
@@ -58,6 +142,8 @@ export function MyBidsPage() {
       socket.off(SocketEvent.WALLET_UPDATE, refresh);
     };
   }, []);
+
+  const inFilter = (item: MyBidItem, value: Filter) => value === Filter.ALL || STATUS[item.myStatus].filter === value;
 
   return (
     <div className="grid grid-cols-1 gap-7 pt-7">
@@ -85,48 +171,51 @@ export function MyBidsPage() {
           </Button>
         </EmptyWall>
       ) : (
-        <ul className="grid rounded-[10px] border bg-card" aria-live="polite">
-          {items.map((item) => {
-            const status = STATUS[item.myStatus];
-            const open = item.myStatus === MyBidStatus.WINNING || item.myStatus === MyBidStatus.OUTBID;
-            return (
-              <li
-                key={item.lot.id}
-                className="grid grid-cols-[56px_minmax(0,1fr)] items-center gap-x-5 gap-y-3 border-t px-5 py-4 first:border-t-0 sm:grid-cols-[64px_minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto]"
+        <Tabs value={filter} onValueChange={(value) => isFilter(value) && setFilter(value)} className="gap-5">
+          <TabsList aria-label="Situação dos lotes" className="h-auto! w-full rounded-[8px] bg-muted p-0.75 sm:w-fit">
+            {FILTERS.map((f) => (
+              <TabsTrigger
+                key={f.value}
+                value={f.value}
+                className="h-auto px-1.5 py-1.5 text-[13px] text-muted-foreground data-active:bg-card data-active:font-semibold data-active:text-foreground sm:px-3 sm:text-[13.5px] dark:data-active:border-transparent dark:data-active:bg-card"
               >
-                <Artwork src={assetUrl(item.lot.imageUrl)} alt="" thin />
-                <div className="grid gap-px">
-                  <Link to={lotPath(item.lot.id)} className="text-base leading-tight font-semibold underline-offset-4 hover:text-primary hover:underline">
-                    {item.lot.title}
-                  </Link>
-                  <span className="text-[13px] text-muted-foreground">
-                    {[item.lot.artist, endText(item)].filter(Boolean).join(' · ')}
-                  </span>
-                </div>
-                <div className="col-start-2 sm:col-start-auto">
-                  <div className="text-xs text-muted-foreground">{item.myStatus === MyBidStatus.WON ? 'Arrematado por' : 'Seu maior lance'}</div>
-                  <div className="font-mono text-sm tabular-nums">{formatMoney(item.myHighestBid)}</div>
-                </div>
-                <div className="col-start-2 sm:col-start-auto">
-                  <Badge variant={status.variant}>{status.label}</Badge>
-                </div>
-                <div className="col-start-2 flex flex-wrap gap-2 sm:col-start-auto sm:justify-end">
-                  {item.myStatus === MyBidStatus.WON && item.receiptCode && (
-                    <Button asChild size="sm">
-                      <Link to={receiptPath(item.receiptCode)}>Ver comprovante</Link>
-                    </Button>
+                {f.label}
+                <span className="ml-1 font-mono text-[11.5px]">{items.filter((item) => inFilter(item, f.value)).length}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {FILTERS.map((f) => {
+            const visible = items.filter((item) => inFilter(item, f.value));
+            return (
+              <TabsContent key={f.value} value={f.value} className="overflow-hidden rounded-[10px] border bg-card text-[15px]">
+                <div
+                  aria-hidden
+                  className={cn(
+                    ROW_GRID,
+                    'hidden border-b bg-muted/50 py-2.5 text-[11.5px] font-semibold tracking-[0.08em] text-muted-foreground uppercase lg:grid',
                   )}
-                  <Button asChild size="sm" variant={open ? 'default' : 'outline'}>
-                    <Link to={lotPath(item.lot.id)}>Abrir sala</Link>
-                  </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={auditPath(item.lot.id)}>Auditoria</Link>
-                  </Button>
+                >
+                  <span className="col-span-2">Obra</span>
+                  <span className="text-right">Seu lance</span>
+                  <span className="text-right">Atual / final</span>
+                  <span>Situação</span>
+                  <span>Prazo</span>
+                  <span />
                 </div>
-              </li>
+                {visible.length === 0 ? (
+                  <p className="px-5 py-8 text-center text-muted-foreground">Nenhum lote nessa situação.</p>
+                ) : (
+                  <ul aria-live="polite">
+                    {visible.map((item) => (
+                      <BidRow key={item.lot.id} item={item} />
+                    ))}
+                  </ul>
+                )}
+              </TabsContent>
             );
           })}
-        </ul>
+        </Tabs>
       )}
     </div>
   );

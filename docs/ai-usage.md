@@ -1,6 +1,6 @@
 # Uso de IA no projeto
 
-Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para ganhar velocidade no que é repetitivo ou trabalhoso de digitar. O raciocínio do projeto ficou comigo: entender o desafio, montar a arquitetura, modelar os dados, definir as regras e escolher as técnicas. A IA executava a partir do que eu especificava, e nada entrou sem eu revisar e testar.
+Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para ganhar velocidade no que é repetitivo ou trabalhoso de digitar. O raciocínio do projeto ficou comigo: entender o desafio, montar a arquitetura, modelar os dados, definir as regras e escolher as técnicas. A IA executava a partir do que eu especificava, e nada entrou sem eu revisar e testar. O deploy eu fiz manualmente: configurei o Atlas, o Railway e a Vercel e publiquei o repositório.
 
 ## Como dividi o trabalho
 
@@ -14,7 +14,12 @@ Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para 
   - cadeia de hashes com HMAC para a auditoria;
   - pseudônimo por lote para a privacidade.
 - Visual do front, aprovado por mim num protótipo antes de qualquer tela.
-- Forma do deploy e configuração de produção.
+- Deploy, feito manualmente por mim:
+  - escolha das plataformas;
+  - criação do cluster no Atlas;
+  - configuração do Railway e da Vercel;
+  - variáveis e segredos de produção;
+  - publicação do repositório no GitHub.
 
 **Onde a IA ajudou**
 - Escrever código a partir das especificações e do contrato que eu definia.
@@ -52,7 +57,7 @@ Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para 
 - Aprovei o visual num protótipo HTML antes de implementar. Troquei a tipografia proposta pela Manrope.
 
 **Deploy**
-- Vercel para o front, Railway para a API e MongoDB Atlas para o banco. A API não vai para funções serverless porque mantém WebSocket aberto e roda a liquidação em segundo plano. O Atlas entrou porque as transações exigem replica set.
+- Fiz o deploy manualmente, nos painéis de cada plataforma: Vercel para o front, Railway para a API e MongoDB Atlas para o banco. A API não vai para funções serverless porque mantém WebSocket aberto e roda a liquidação em segundo plano. O Atlas entrou porque as transações exigem replica set.
 - Segredos novos para produção, e conferência da lista de arquivos antes de publicar o repositório.
 
 ## Como revisei
