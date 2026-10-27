@@ -1,0 +1,130 @@
+# Back-end
+
+Node.js + Express 5 + TypeScript, MongoDB com Mongoose, Socket.IO no mesmo servidor HTTP e Zod em toda entrada. [Voltar ao README](../README.md)
+
+As rotas, os eventos e os códigos de erro estão no [contrato da API](contract.md).
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+  browser["Navegador<br/>React + Vite"]
+  subgraph api["API (Node.js + Express)"]
+    rest["REST<br/>routes → controllers → services"]
+    socket["Socket.IO<br/>salas por lote e por usuário"]
+    job["Varredura de liquidação<br/>a cada 2 s"]
+  end
+  mongo[("MongoDB<br/>replica set")]
+  met["The Met<br/>Collection API"]
+
+  browser -- "lances, carteira, painel" --> rest
+  socket -- "avisos depois do commit" --> browser
+  rest -- "transações" --> mongo
+  job -- "uma transação por lote" --> mongo
+  rest -. "só o painel do leiloeiro" .-> met
+```
+
+- **Camadas simples:** routes → controllers → services → models, sem repositórios nem abstrações extras ([ADR 0001](adr/0001-estrutura-do-back-end.md)).
+- **Regras puras em `domain/`:** as regras de lance e a cadeia de hashes não dependem de banco nem de HTTP, então são testadas isoladamente.
+- **Nada de string solta:** papéis, estados, códigos de erro, eventos e números das regras vêm de `constants.ts`.
+- **MongoDB em replica set,** porque lance, saldo e liquidação precisam de transação ([ADR 0002](adr/0002-mongodb-transacoes.md)).
+
+## Caminho de um lance
+
+O lance entra pela API REST, não pelo socket ([ADR 0006](adr/0006-lance-via-rest.md)). O Socket.IO só avisa depois do commit, então ninguém vê um lance que depois foi desfeito.
+
+```mermaid
+sequenceDiagram
+  participant L as Licitante
+  participant A as API
+  participant M as MongoDB
+  participant S as Sala (Socket.IO)
+  L->>A: POST /api/lots/:id/bids
+  A->>M: transação: valida regras e saldo, compromete o valor,<br/>libera o líder anterior, grava o lance com hash,<br/>atualiza o lote se o número de lances não mudou
+  M-->>A: commit
+  A-->>L: 201 lance aceito
+  A->>S: lance novo, novo fim (anti-sniping), aviso de superado
+```
+
+## Regras de negócio
+
+- **Papéis:** o leiloeiro cria e gerencia os próprios lotes e não dá lances. O licitante deposita saldo e dá lances.
+- **Lance mínimo:** o primeiro ≥ lance inicial; os seguintes ≥ lance atual + incremento. O valor exato é aceito. O líder não cobre o próprio lance.
+- **Saldo:** disponível = total − comprometido. O valor de quem lidera fica comprometido e é liberado na hora em que essa pessoa é superada. O lance só é aceito se couber no disponível.
+- **Anti-sniping:** lance nos últimos 2 minutos muda o fim para **horário do lance + 2 min**. Somar ao fim atual deixaria lances seguidos empurrarem o fim cada vez mais longe ([ADR 0003](adr/0003-interpretacoes-do-pdf.md)).
+- **Liquidação:** uma varredura a cada 2 s encerra os lotes vencidos. Numa única transação, debita o vencedor, credita o leiloeiro e gera o comprovante. Lote sem lances termina sem vencedor ([ADR 0007](adr/0007-liquidacao-por-varredura.md)).
+- **Cancelamento:** lote agendado ou ao vivo. Se houver lances, o valor comprometido do líder volta na mesma transação. Lote encerrado não pode ser cancelado.
+- **Concorrência:** cada lance é uma transação com update condicional pelo número de lances do lote, então dois lances simultâneos nunca valem sobre o mesmo estado. Dinheiro sempre em centavos inteiros.
+- **Recusas:** "abaixo do mínimo" (com o valor mínimo em R$), "saldo insuficiente", "você já está ganhando", "lote ainda não começou" e "lote encerrado".
+
+## Independência da API do Met
+
+Só o painel do leiloeiro chama o Met: até 20 obras por busca, timeout de 5 s e uma nova tentativa. Obras sem imagem ou fora do domínio público são descartadas.
+
+Ao criar o lote, os dados da obra são copiados para o lote e a imagem é baixada para o banco (servida por `GET /api/images/:id`). Vitrine, sala, auditoria e comprovante funcionam com o Met fora do ar. Com o Met fora, a busca no painel responde com uma mensagem clara ([ADR 0004](adr/0004-independencia-do-met.md)).
+
+## Segurança
+
+- JWT com autorização por papel e por dono em cada rota: o leiloeiro só cancela os próprios lotes, e o licitante só vê a própria carteira.
+- Zod em toda entrada (corpo, query, params, socket e variáveis de ambiente). A API não sobe com variável inválida.
+- `helmet`, corpo limitado a 10 KB, CORS restrito ao `CORS_ORIGIN` e senhas com bcrypt.
+- Rate limit no login (por IP) e nos lances (por usuário).
+- Logs sem dados pessoais nem valores de variáveis de ambiente.
+
+A privacidade e a detecção de adulteração estão em [Auditoria e privacidade](auditoria.md).
+
+## Testes
+
+```bash
+cd athelie-leiloes-api && npm test
+```
+
+São 123 testes com Vitest + Supertest. O MongoDB roda em memória e em replica set (mongodb-memory-server), então não precisa de banco nem de Docker, e as transações são testadas de verdade.
+
+| Arquivo | O que cobre |
+|---|---|
+| `bid-rules.test.ts` | regras puras: estado do lote, lance mínimo, validação do lance e anti-sniping |
+| `bids.test.ts` | carteira, lances, recusas, estorno no cancelamento e **10 lances simultâneos** |
+| `settlement.test.ts` | liquidação, comprovante sem dados pessoais, lote sem lances e duas varreduras em paralelo |
+| `audit-chain.test.ts` | hash de cada lance, pseudônimo e assinatura da cabeça |
+| `audit.test.ts` | auditoria detectando cada tipo de adulteração, e "meus arremates" |
+| `lots.test.ts` | criação de lote, vitrine, busca e filtro, cancelamento, imagens e **Met fora do ar** |
+| `met.test.ts` | busca no Met, descarte de obras inválidas, Met fora do ar com nova tentativa |
+| `realtime.test.ts` | entrada na sala e eventos de lance, cancelamento e liquidação |
+| `auth.test.ts` | cadastro, login, papéis e rate limit |
+| `seed.test.ts` | seed idempotente e renovação dos lotes de demonstração |
+
+## Estrutura
+
+```
+athelie-leiloes-api/src/
+├── server.ts            sobe HTTP, Socket.IO, varredura e seed
+├── app.ts               Express: middlewares e rotas
+├── config/env.ts        variáveis de ambiente validadas com Zod
+├── constants.ts         papéis, estados, erros, eventos e números das regras
+├── errors.ts            AppError (código + status HTTP) e tratamento central de erros
+├── routes/              rotas por recurso, com auth, papel, validação e rate limit
+├── middlewares/         autenticação e validação
+├── controllers/         traduzem HTTP para chamadas de serviço
+├── services/            regras de negócio: lances, carteira, lotes, liquidação, auditoria, Met
+├── domain/              funções puras: bid-rules.ts e audit-chain.ts
+├── models/              schemas do Mongoose (User, Lot, Bid, Image)
+├── realtime/socket.ts   salas por lote e salas pessoais
+├── jobs/settlement.ts   varredura que liquida lotes vencidos
+├── seed/                dados de demonstração
+└── scripts/             seed manual e demonstração de adulteração
+```
+
+## Decisões (ADRs)
+
+| ADR | Decisão |
+|---|---|
+| [0001](adr/0001-estrutura-do-back-end.md) | Back-end em camadas, sem repositórios nem abstrações extras |
+| [0002](adr/0002-mongodb-transacoes.md) | MongoDB em replica set, com transações para lance, saldo e liquidação |
+| [0003](adr/0003-interpretacoes-do-pdf.md) | Interpretações do enunciado (lance mínimo, anti-sniping, cancelamento) |
+| [0004](adr/0004-independencia-do-met.md) | Obra e imagem copiadas para o banco |
+| [0005](adr/0005-deploy.md) | Deploy em Vercel + Railway + Atlas |
+| [0006](adr/0006-lance-via-rest.md) | Lance pela REST; o Socket.IO só avisa |
+| [0007](adr/0007-liquidacao-por-varredura.md) | Liquidação por varredura, uma transação por lote |
+| [0008](adr/0008-cadeia-de-hashes-hmac.md) | Cadeia de hashes HMAC contra adulteração |
+| [0009](adr/0009-pseudonimo-por-lote.md) | Pseudônimo por lote nas telas públicas |

@@ -35,6 +35,8 @@ O seed também cria um lote agendado, um encerrado com comprovante e um cancelad
 
 ## O que tem
 
+Detalhes de cada tela e do fluxo de cada papel no [documento do front-end](docs/frontend.md).
+
 | Tela | O que faz |
 |---|---|
 | Vitrine `/` | Lotes ao vivo, agendados e encerrados (cancelados ficam ocultos), com busca e filtro |
@@ -62,90 +64,29 @@ Front em http://localhost:8080 e API em http://localhost:3000. O seed roda sozin
 |---|---|
 | Parar (mantém os dados) | `docker compose down` |
 | Resetar o banco | `docker compose down -v && docker compose up --build` |
-| Rodar os testes | `cd athelie-leiloes-api && npm test` (Mongo em memória, sem Docker) |
+| Rodar os testes | `cd athelie-leiloes-api && npm test` (123 testes, Mongo em memória, sem Docker) |
 
 **Sem Docker:** Node 20.19+ e um MongoDB **em replica set** (por exemplo, `mongod --replSet rs0` e `mongosh --eval "rs.initiate()"` uma vez, ou um Atlas gratuito). Depois, `npm ci && npm run dev` em `athelie-leiloes-api` e em `athelie-leiloes-front` (front em http://localhost:5173).
 
 As variáveis estão explicadas no próprio [`.env.example`](.env.example). A API valida todas com Zod e não sobe se alguma estiver errada. Fora da sua máquina, troque `JWT_SECRET` e `AUDIT_SECRET` (`openssl rand -hex 32`).
 
-## Arquitetura
+## Documentação
 
-```mermaid
-flowchart LR
-  browser["Navegador<br/>React + Vite"]
-  subgraph api["API (Node.js + Express)"]
-    rest["REST<br/>routes → controllers → services"]
-    socket["Socket.IO<br/>salas por lote e por usuário"]
-    job["Varredura de liquidação<br/>a cada 2 s"]
-  end
-  mongo[("MongoDB<br/>replica set")]
-  met["The Met<br/>Collection API"]
-
-  browser -- "lances, carteira, painel" --> rest
-  socket -- "avisos depois do commit" --> browser
-  rest -- "transações" --> mongo
-  job -- "uma transação por lote" --> mongo
-  rest -. "só o painel do leiloeiro" .-> met
-```
-
-- **Stack:** React + Vite + shadcn/ui + Tailwind no front; Express 5 + Mongoose + Socket.IO na API; Zod em toda entrada; Vitest nos testes.
-- **Back-end em camadas simples** (routes → controllers → services → models). As regras de lance e a cadeia de hashes são funções puras em `domain/`, testadas isoladamente.
-- **O lance entra pela REST, não pelo socket.** O Socket.IO só avisa depois que a transação foi confirmada, então ninguém vê um lance que depois foi desfeito.
-- **Só o painel depende do Met.** Ao criar o lote, a obra e a imagem são copiadas para o banco. Vitrine, sala, auditoria e comprovante funcionam com o Met fora do ar (há teste para isso).
-
-Contrato completo (rotas, eventos e erros) em [`docs/contract.md`](docs/contract.md). Cada decisão importante tem um ADR curto:
-
-| ADR | Decisão |
+| Documento | O que tem |
 |---|---|
-| [0001](docs/adr/0001-estrutura-do-back-end.md) | Back-end em camadas, sem repositórios nem abstrações extras |
-| [0002](docs/adr/0002-mongodb-transacoes.md) | MongoDB em replica set, com transações para lance, saldo e liquidação |
-| [0003](docs/adr/0003-interpretacoes-do-pdf.md) | Interpretações do enunciado (lance mínimo, anti-sniping, cancelamento) |
-| [0004](docs/adr/0004-independencia-do-met.md) | Obra e imagem copiadas para o banco |
-| [0005](docs/adr/0005-deploy.md) | Deploy em Vercel + Railway + Atlas |
-| [0006](docs/adr/0006-lance-via-rest.md) | Lance pela REST; o Socket.IO só avisa |
-| [0007](docs/adr/0007-liquidacao-por-varredura.md) | Liquidação por varredura, uma transação por lote |
-| [0008](docs/adr/0008-cadeia-de-hashes-hmac.md) | Cadeia de hashes HMAC contra adulteração |
-| [0009](docs/adr/0009-pseudonimo-por-lote.md) | Pseudônimo por lote nas telas públicas |
+| [Front-end](docs/frontend.md) | Telas, fluxo de cada papel, eventos em tempo real e estrutura de pastas |
+| [Back-end](docs/backend.md) | Arquitetura, caminho de um lance, regras de negócio, segurança, testes e estrutura de pastas |
+| [Rotas da API](docs/contract.md) | Rotas REST, eventos Socket.IO, modelos, códigos de erro e variáveis de ambiente |
+| [Auditoria e privacidade](docs/auditoria.md) | Cadeia de hashes HMAC, o que ela detecta, demonstração de adulteração e pseudônimos |
+| [Decisões (ADRs)](docs/adr/) | Por que cada escolha importante foi feita e o que foi descartado |
+| [Uso de IA](docs/ai-usage.md) | Onde e como a IA foi usada e o que foi revisado |
 
-## Regras de negócio
+## Destaques técnicos
 
-- **Lance mínimo:** o primeiro ≥ lance inicial; os seguintes ≥ lance atual + incremento. O líder não cobre o próprio lance, e o leiloeiro não dá lances.
-- **Saldo:** disponível = total − comprometido. O valor de quem lidera fica comprometido e é liberado na hora em que essa pessoa é superada.
-- **Anti-sniping:** lance nos últimos 2 minutos muda o fim para **horário do lance + 2 min**. Somar ao fim atual deixaria lances seguidos empurrarem o fim cada vez mais longe.
-- **Liquidação:** numa única transação, debita o vencedor, credita o leiloeiro e gera o comprovante. Lote sem lances termina sem vencedor.
-- **Cancelamento:** lote agendado ou ao vivo; o valor comprometido do líder volta na mesma transação.
-- **Concorrência:** cada lance é uma transação com update condicional pelo número de lances do lote, então dois lances simultâneos nunca valem sobre o mesmo estado. Os testes disparam 10 ao mesmo tempo. Dinheiro sempre em centavos inteiros.
-
-## Histórico à prova de adulteração
-
-Cada lance guarda o hash do anterior, formando uma cadeia. O hash é um **HMAC-SHA256** com um segredo (`AUDIT_SECRET`) que só a API conhece. O lote guarda a **cabeça** da cadeia (quantidade de lances e último hash), também assinada.
-
-```mermaid
-flowchart LR
-  b1["lance #1<br/>HMAC(dados #1)"] --> b2["lance #2<br/>HMAC(dados #2 + hash #1)"]
-  b2 --> b3["lance #3<br/>HMAC(dados #3 + hash #2)"]
-  b3 -.-> h["cabeça assinada no lote<br/>3 lances, último hash"]
-```
-
-A auditoria recalcula tudo a cada consulta e aponta o primeiro lance com problema:
-
-| Adulteração direto no banco | Como é detectada |
-|---|---|
-| Alterar valor, horário ou licitante | o hash recalculado não confere |
-| Remover um lance do meio | a sequência e o hash anterior do próximo quebram |
-| Remover o último ou inserir um lance | a contagem diverge da cabeça assinada |
-| Trocar líder, lance atual ou vencedor do lote | diverge do último lance da cadeia |
-
-**Por que HMAC e não SHA-256 puro:** com SHA-256, quem tem acesso ao banco recalcula a cadeia inteira depois de adulterar. Com HMAC, isso exige o segredo.
-
-**Para ver funcionando:** `docker compose exec api npm run demo:tamper -- <lotId> alter` (ou `remove`, `remove --last`, `insert`) e recarregue `/auditoria/<lotId>`.
-
-**Limites:** quem tem o banco **e** o segredo consegue forjar a cadeia. Também é possível voltar a cabeça para uma versão antiga (tirada do oplog ou de um backup); num lote liquidado, o comprovante guarda o hash final e denuncia isso. Detalhes no [ADR 0008](docs/adr/0008-cadeia-de-hashes-hmac.md).
-
-## Privacidade e segurança
-
-- Telas públicas mostram só um **pseudônimo por lote** (`Licitante #A1B2C3`), derivado por HMAC. A mesma pessoa tem códigos diferentes em cada lote, então não dá para segui-la entre leilões. Nenhuma rota pública devolve id, nome ou e-mail.
-- JWT com autorização por papel e por dono em cada rota, senhas com bcrypt, Zod em toda entrada (HTTP e socket), `helmet`, CORS restrito e rate limit no login e nos lances.
+- **Lance seguro sob concorrência.** Cada lance é uma transação no MongoDB, com update condicional pelo número de lances do lote. Dois lances simultâneos nunca valem sobre o mesmo estado (os testes disparam 10 ao mesmo tempo). [Mais](docs/backend.md#regras-de-negócio)
+- **Histórico à prova de adulteração.** Os lances formam uma cadeia de hashes HMAC-SHA256 com um segredo que não está no banco. Alterar, remover ou inserir um lance, mesmo direto no Mongo, aparece na auditoria pública. [Mais](docs/auditoria.md)
+- **Funciona com o Met fora do ar.** Ao criar o lote, a obra e a imagem são copiadas para o banco; só o painel do leiloeiro depende da API externa. [Mais](docs/backend.md#independência-da-api-do-met)
+- **Privacidade.** Telas públicas mostram só um pseudônimo por lote, diferente em cada leilão. [Mais](docs/auditoria.md#privacidade)
 
 ## Deploy
 
