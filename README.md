@@ -48,6 +48,7 @@ Opcionais feitos: busca e filtro, cancelamento com estorno, Docker Compose, test
 
 **Mais documentação:**
 - [Rotas da API](docs/contract.md): rotas REST, eventos Socket.IO e códigos de erro.
+- [Testes automatizados](docs/testes.md): como rodar e o que cada teste cobre, incluindo concorrência.
 - [Auditoria e privacidade](docs/auditoria.md): como a cadeia de hashes HMAC detecta adulteração.
 - [Decisões (ADRs)](docs/adr/): por que cada escolha importante foi feita.
 
@@ -62,7 +63,7 @@ docker compose up --build
 
 Front em http://localhost:8080 e API em http://localhost:3000. Para resetar o banco: `docker compose down -v`.
 
-Testes (123, sem precisar de Docker): `cd athelie-leiloes-api && npm test`.
+**Testes automatizados** (123, sem precisar de Docker nem de MongoDB): `cd athelie-leiloes-api && npm ci && npm test`. Como funcionam e o que cobrem: [docs/testes.md](docs/testes.md).
 
 Para rodar sem Docker, veja o [back-end](docs/backend.md#rodar-sem-docker).
 

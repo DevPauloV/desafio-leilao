@@ -77,24 +77,7 @@ As variáveis estão explicadas no [`.env.example`](../.env.example), e a API n�
 
 ## Testes
 
-```bash
-cd athelie-leiloes-api && npm test
-```
-
-São 123 testes com Vitest + Supertest. O MongoDB roda em memória e em replica set (mongodb-memory-server), então não precisa de banco nem de Docker, e as transações são testadas de verdade.
-
-| Arquivo | O que cobre |
-|---|---|
-| `bid-rules.test.ts` | regras puras: estado do lote, lance mínimo, validação do lance e anti-sniping |
-| `bids.test.ts` | carteira, lances, recusas, estorno no cancelamento e **10 lances simultâneos** |
-| `settlement.test.ts` | liquidação, comprovante sem dados pessoais, lote sem lances e duas varreduras em paralelo |
-| `audit-chain.test.ts` | hash de cada lance, pseudônimo e assinatura da cabeça |
-| `audit.test.ts` | auditoria detectando cada tipo de adulteração, e "meus arremates" |
-| `lots.test.ts` | criação de lote, vitrine, busca e filtro, cancelamento, imagens e **Met fora do ar** |
-| `met.test.ts` | busca no Met, descarte de obras inválidas, Met fora do ar com nova tentativa |
-| `realtime.test.ts` | entrada na sala e eventos de lance, cancelamento e liquidação |
-| `auth.test.ts` | cadastro, login, papéis e rate limit |
-| `seed.test.ts` | seed idempotente e renovação dos lotes de demonstração |
+São 123 testes automatizados na API, com o MongoDB em memória, incluindo os de concorrência. Como rodar e o que cada arquivo cobre: [Testes automatizados](testes.md).
 
 ## Estrutura
 
