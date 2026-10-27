@@ -73,6 +73,22 @@ Ao criar o lote, os dados da obra são copiados para o lote e a imagem é baixad
 
 A privacidade e a detecção de adulteração estão em [Auditoria e privacidade](auditoria.md).
 
+## Rodar sem Docker
+
+Precisa de Node.js 20.19+ e de um MongoDB **em replica set**, porque as transações exigem isso. Por exemplo: `mongod --replSet rs0` e, uma única vez, `mongosh --eval "rs.initiate()"`. Também serve um cluster gratuito do Atlas.
+
+```bash
+cp .env.example .env          # ajuste MONGO_URI se precisar
+
+cd athelie-leiloes-api
+npm ci && npm run dev          # http://localhost:3000 (lê ../.env)
+
+cd ../athelie-leiloes-front
+npm ci && npm run dev          # http://localhost:5173
+```
+
+As variáveis estão explicadas no [`.env.example`](../.env.example), e a API não sobe se alguma estiver inválida. Fora da sua máquina, troque `JWT_SECRET` e `AUDIT_SECRET` (`openssl rand -hex 32`).
+
 ## Testes
 
 ```bash
