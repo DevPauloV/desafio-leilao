@@ -37,10 +37,7 @@ beforeEach(async () => {
 
 const audit = async (lotId: string) => (await request(app).get(`/api/audit/lots/${lotId}`)).body;
 
-/**
- * Lote com 3 lances reais: X 1.000, Y 1.100, X 1.200 (X vence). Licitantes novos a cada lote, para não
- * esbarrar no rate limit de lances por usuário (BID_RATE_LIMIT_MAX por minuto).
- */
+/** X 1.000, Y 1.100, X 1.200 (X vence); licitantes novos a cada lote, para não esbarrar no rate limit de lances. */
 async function lotWithThreeBids() {
   const [x, y] = [await registerUser(app, Role.BIDDER), await registerUser(app, Role.BIDDER)];
   await Promise.all([depositFor(app, x, 100_000), depositFor(app, y, 100_000)]);
@@ -186,7 +183,6 @@ describe('GET /api/audit/lots/:id', () => {
 });
 
 describe('auditoria: estado do lote preso à cadeia e dados adulterados', () => {
-  /** Lote de lotWithThreeBids (Alice vence com 1.200), já liquidado. */
   async function settledLot() {
     const lot = await lotWithThreeBids();
     await Lot.updateOne({ _id: lot.id }, { $set: { endsAt: new Date(Date.now() - 1) } });

@@ -5,8 +5,6 @@ import { ApiError, api, getToken, setToken } from './api';
 import { reconnectSocket } from './socket';
 import { setWallet } from './wallet';
 
-// Sessão do usuário num store simples: o app inteiro lê com useAuth(), sem provider.
-
 type AuthState = { user: User | null; loading: boolean };
 
 let state: AuthState = { user: null, loading: getToken() !== null };
@@ -17,14 +15,13 @@ function set(next: AuthState) {
   listeners.forEach((listener) => listener());
 }
 
-/** Ao abrir o app: confirma o token salvo com GET /api/auth/me. */
 export async function loadSession(): Promise<void> {
   if (!getToken()) return;
   try {
     const { user } = await api<{ user: User }>('/api/auth/me');
     set({ user, loading: false });
   } catch (err) {
-    // Token vencido ou de usuário removido: descarta. Falha de rede mantém o token para a próxima tentativa.
+    // Só 401 descarta o token; falha de rede o mantém para a próxima tentativa.
     if (err instanceof ApiError && err.status === 401) {
       setToken(null);
       reconnectSocket();
@@ -46,10 +43,7 @@ export const login = (input: { email: string; password: string }) => start('/api
 export const register = (input: { name: string; email: string; password: string; role: Role }) =>
   start('/api/auth/register', input);
 
-/**
- * Para onde ir depois de entrar: a página que pediu login, se o papel puder abri-la; senão, a tela principal do papel.
- * Sem a checagem, uma conta nova de licitante caía no painel do leiloeiro que a sessão anterior tinha aberto.
- */
+/** Checa o papel de `from`: sem isso, um licitante novo caía no painel aberto pela sessão anterior. */
 export function homeFor(role: Role, from?: string): string {
   const required = from ? (ROUTE_ROLES as Record<string, Role | undefined>)[from] : undefined;
   if (from && (required === undefined || required === role)) return from;

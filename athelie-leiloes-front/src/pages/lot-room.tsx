@@ -38,22 +38,21 @@ import type {
 const ANTI_SNIPING_TEXT = `Um lance nos últimos ${ANTI_SNIPING_WINDOW_MS / MINUTE_MS} minutos estende o fim para ${
   ANTI_SNIPING_EXTENSION_MS / MINUTE_MS
 } minutos depois dele.`;
-/** Folga depois do início/fim para a API já calcular o novo status ao reler. */
+/** Folga para a API já ter o novo status quando a sala relê no início/fim. */
 const BOUNDARY_RELOAD_DELAY_MS = SECOND_MS;
 
 const eyebrow = 'text-[11.5px] font-semibold tracking-[0.14em] text-muted-foreground uppercase';
 
-/** Atalhos de lance: o mínimo e o mínimo mais 1 ou 3 incrementos. */
 const QUICK_BID_STEPS = [1, 3] as const;
 
-/** Estado inteiro novo (REST ou `lot:state`). Uma resposta atrasada não apaga lance mais novo: a contagem só cresce. */
+/** Uma resposta atrasada não apaga lance mais novo: `bidCount` só cresce. */
 function newerOf(current: LotDetail | null, next: LotDetail): LotDetail {
   return current && current.id === next.id && next.bidCount < current.bidCount ? current : next;
 }
 
 type BidUpdate = Omit<BidNewEvent, 'lotId' | 'serverTime'> & { serverTime?: string };
 
-/** Lance novo (do `bid:new` ou da resposta do POST). Sem duplicar: o mesmo `seq` ou um mais antigo não entra de novo. */
+/** Chega pelo `bid:new` e pela resposta do POST: `seq` repetido ou mais antigo é ignorado. */
 function withBid(lot: LotDetail, update: BidUpdate): LotDetail {
   if (update.bid.seq <= (lot.bids[0]?.seq ?? 0)) return lot;
   return {
@@ -74,10 +73,6 @@ const extendedToast = (lotId: string, endsAt: string) =>
     description: ANTI_SNIPING_TEXT,
   });
 
-/**
- * Estado da sala: lido pela API ao abrir e mantido pelo Socket.IO (`lot:join` ao conectar e a cada reconexão).
- * Releituras pela API (`refresh`) só quando o dado depende do servidor: a posição de quem dá lance e o comprovante.
- */
 function useLotRoom(id: string) {
   const { user } = useAuth();
   const isBidder = user?.role === Role.BIDDER;
@@ -208,8 +203,7 @@ function Room({ lot, onChanged, onOwnBid }: { lot: LotDetail; onChanged: () => v
   const leader = lot.bids[0] ?? null;
   const isMine = (pseudonym: string) => me?.pseudonym === pseudonym;
 
-  // O socket não avisa quando um lote agendado abre, e o `lot:ended` só sai depois da liquidação:
-  // relê uma vez no horário de início e no de fim, para trocar o status na hora.
+  // O socket não avisa a abertura e o `lot:ended` só sai após a liquidação: relê no início e no fim.
   const boundary = lot.status === LotStatus.SCHEDULED ? lot.startsAt : lot.status === LotStatus.LIVE ? lot.endsAt : null;
   useEffect(() => {
     if (!boundary) return;
@@ -326,10 +320,8 @@ function Room({ lot, onChanged, onOwnBid }: { lot: LotDetail; onChanged: () => v
   );
 }
 
-/** "Você está ganhando" / "Você foi superado" para quem já deu lance. */
 function PositionBanner({ lot }: { lot: LotDetail }) {
   const me = lot.me;
-  // Encerrado, o resultado aparece no lugar do formulário (LotResult).
   if (!me || me.position === null || lot.status !== LotStatus.LIVE) return null;
   const amount = formatMoney(lot.currentBid ?? 0);
   const [title, text] = me.isLeader
@@ -367,7 +359,6 @@ function Clock({ lot, now }: { lot: LotDetail; now: number }) {
   );
 }
 
-/** Formulário de lance, ou o motivo de não haver um (visitante, leiloeiro, lote fora do ar). */
 function BidArea({ lot, onChanged, onOwnBid }: { lot: LotDetail; onChanged: () => void; onOwnBid: (response: BidResponse) => void }) {
   const { user } = useAuth();
   const location = useLocation();
@@ -395,7 +386,6 @@ function BidArea({ lot, onChanged, onOwnBid }: { lot: LotDetail; onChanged: () =
   return <BidForm lot={lot} onChanged={onChanged} onOwnBid={onOwnBid} />;
 }
 
-/** Resultado do lote encerrado. Antes da liquidação (até ~2 s depois do fim), "Apurando resultado…". */
 function LotResult({ lot }: { lot: LotDetail }) {
   const notice = 'rounded-lg bg-muted px-3.5 py-3 text-sm text-muted-foreground';
   const result = lot.result;
@@ -471,7 +461,7 @@ function BidForm({ lot, onChanged, onOwnBid }: { lot: LotDetail; onChanged: () =
       setRefusal(errorMessage(err));
     } finally {
       setSubmitting(false);
-      // A posição (e, na recusa, o lote que pode ter mudado) vem do servidor. A carteira chega pelo `wallet:update`.
+      // Relê a posição (e o lote, se recusado); a carteira chega pelo `wallet:update`.
       onChanged();
     }
   }

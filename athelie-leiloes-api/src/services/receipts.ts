@@ -4,14 +4,13 @@ import { AppError } from '../errors.js';
 import { Lot } from '../models/Lot.js';
 import { imageUrl } from './lots.js';
 
-/** base64url de RECEIPT_CODE_BYTES bytes, sem padding. */
+/** base64url sem padding. */
 const RECEIPT_CODE_LENGTH = Math.ceil((RECEIPT_CODE_BYTES * 4) / 3);
 export const receiptParams = z.object({
   code: z.string().regex(new RegExp(`^[A-Za-z0-9_-]{${RECEIPT_CODE_LENGTH}}$`)),
 });
 export type ReceiptParams = z.infer<typeof receiptParams>;
 
-/** Comprovante público: obra, valor e pseudônimo do vencedor. Nunca nome, e-mail ou id de usuário. */
 export async function getReceipt(code: string) {
   const lot = await Lot.findOne({ 'result.receiptCode': code }).lean();
   if (!lot?.result) throw new AppError(ErrorCode.NOT_FOUND);

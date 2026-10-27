@@ -1,10 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { cn } from 'cn';
 
-/**
- * Obra flutuando numa parede neutra (área 4:5), sem moldura: formatos diferentes ficam alinhados.
- * `children` vai por cima da parede (selos da vitrine). Dentro de um `group`, a obra sobe no hover.
- */
 export function Artwork({
   src,
   alt,
@@ -45,7 +41,6 @@ export function Artwork({
   );
 }
 
-/** Etiqueta de parede de museu: artista, título, data · técnica. */
 export function MuseumLabel({
   artist,
   title,
@@ -57,7 +52,7 @@ export function MuseumLabel({
   title: string;
   meta?: string | null;
   titleClassName?: string;
-  /** Uma linha por campo, com reticências: cards da vitrine ficam com a mesma altura. */
+  /** Trunca cada linha para os cards da vitrine terem a mesma altura. */
   compact?: boolean;
 }) {
   const line = compact && 'truncate';

@@ -1,4 +1,3 @@
-// Liquidação por varredura (ADR 0007): uma transação por lote vencido, sem estado intermediário.
 import { randomBytes } from 'node:crypto';
 import mongoose from 'mongoose';
 import { env } from '../config/env.js';
@@ -9,12 +8,7 @@ import { User } from '../models/User.js';
 import { emitToLot, emitToUser, notifyAfterCommit } from '../realtime/socket.js';
 import { getWallet } from '../services/wallet.js';
 
-/**
- * Liquida um lote se ele ainda estiver ativo e vencido em `now`. Devolve false se outra varredura chegou
- * antes ou se um lance de última hora prorrogou o fim. A troca para `settled` é a primeira escrita: se ela
- * não casar, nada mais é feito; se outra transação mexer no lote ao mesmo tempo, o Mongo acusa conflito e
- * esta é refeita, relendo o lote.
- */
+/** `false` se outra varredura chegou antes ou um lance de última hora prorrogou o fim (update condicional). */
 async function settleLot(lotId: string, now: Date): Promise<boolean> {
   const outcome = await mongoose.connection.transaction(async (session) => {
     const due = { _id: lotId, state: LotState.ACTIVE, endsAt: { $lte: now } };
@@ -61,7 +55,6 @@ async function settleLot(lotId: string, now: Date): Promise<boolean> {
   return true;
 }
 
-/** Liquida todos os lotes ativos com `endsAt ≤ now`. Erro num lote é logado e não para os outros. */
 export async function settleDueLots(now: Date = new Date()): Promise<number> {
   const due = await Lot.find({ state: LotState.ACTIVE, endsAt: { $lte: now } }, { _id: 1 }).lean();
   let settled = 0;
@@ -70,14 +63,13 @@ export async function settleDueLots(now: Date = new Date()): Promise<number> {
     try {
       if (await settleLot(lotId, now)) settled += 1;
     } catch (err) {
-      // Só o id do lote e a mensagem; nada de dados de usuário.
       console.error(`[liquidação] falha no lote ${lotId}:`, err instanceof Error ? err.message : err);
     }
   }
   return settled;
 }
 
-/** Roda logo ao subir (pega o que venceu com a API desligada) e depois a cada intervalo, sem sobrepor execuções. */
+/** Roda já no boot para liquidar o que venceu com a API desligada. */
 export function startSettlementSweep(): NodeJS.Timeout {
   let running = false;
   const sweep = async () => {

@@ -26,7 +26,7 @@ import { emitToLot, emitToUser, notifyAfterCommit } from '../realtime/socket.js'
 import * as met from './met.js';
 import { getWallet } from './wallet.js';
 
-/** Valor em centavos, com mensagens que citam o campo (`label` já com artigo: "O lance inicial"). */
+/** `label` vem com artigo ("O lance inicial"). */
 const cents = (label: string) =>
   z.int({ error: `Informe um valor válido para ${label.toLowerCase()}.` }).positive(`${label} precisa ser maior que zero.`);
 const isoDate = z.iso
@@ -51,7 +51,6 @@ export const createLotSchema = z
   });
 export type CreateLotInput = z.infer<typeof createLotSchema>;
 
-/** A vitrine nunca mostra cancelados. */
 const SHOWCASE_ORDER = [LotStatus.LIVE, LotStatus.SCHEDULED, LotStatus.ENDED] as const;
 
 export const listLotsQuery = z.object({
@@ -67,7 +66,6 @@ export const listLotsQuery = z.object({
 });
 export type ListLotsQuery = z.infer<typeof listLotsQuery>;
 
-/** Texto do usuário como literal numa regex: "(" ou ".*" procuram esses caracteres, não viram padrão. */
 function escapeRegex(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -102,7 +100,6 @@ type MyPosition = {
   receiptCode?: string;
 };
 
-/** Resultado público do lote liquidado: sem ids, o vencedor só pelo pseudônimo. */
 function publicResult(result: NonNullable<LotDoc['result']>) {
   return {
     sold: result.winnerId != null,
@@ -133,11 +130,10 @@ function toLotDetail(lot: LotDoc, now: Date, bids: BidView[], me?: MyPosition) {
   };
 }
 
-/** Dados da obra copiados para o lote (do Met, na criação, ou do repositório, no seed). */
 export type ArtworkCopy = Omit<met.Artwork, 'imageUrl'>;
 type LotTerms = Pick<CreateLotInput, 'startingBid' | 'minIncrement' | 'startsAt' | 'endsAt'>;
 
-/** Busca a obra no Met de novo (não confia no navegador), copia os dados e a imagem e cria o lote. */
+/** Busca a obra no Met de novo: não confia nos dados vindos do navegador. */
 export async function createLot(auctioneerId: string, input: CreateLotInput) {
   const unusable = () => new AppError(ErrorCode.VALIDATION_ERROR, { fields: { metObjectId: UNUSABLE_ARTWORK } });
   const artwork = await met.fetchObject(input.metObjectId);
@@ -148,7 +144,7 @@ export async function createLot(auctioneerId: string, input: CreateLotInput) {
   return toLotDetail(lot, new Date(), []);
 }
 
-/** Grava imagem e lote juntos, numa transação: se o lote falhar, não sobra imagem órfã. */
+/** Numa transação: se o lote falhar, não sobra imagem órfã. */
 export async function saveLot(auctioneerId: string, artwork: ArtworkCopy, image: met.DownloadedImage, terms: LotTerms) {
   const lotId = new Types.ObjectId();
   const lot = await mongoose.connection.transaction(async (session) => {
@@ -183,10 +179,7 @@ export async function saveLot(auctioneerId: string, artwork: ArtworkCopy, image:
   return lot.toObject();
 }
 
-/**
- * Vitrine: ao vivo pelo fim mais próximo, agendados pelo início mais próximo, encerrados pelo fim mais recente.
- * O status é calculado no banco para ordenar e paginar; a expressão espelha `lotStatus` (o teste confere).
- */
+/** O status é recalculado no banco para ordenar e paginar; espelha `lotStatus` (o teste confere). */
 export async function listLots(query: ListLotsQuery) {
   const now = new Date();
   const visible = { state: { $ne: LotState.CANCELLED } };
@@ -237,7 +230,7 @@ export async function listLots(query: ListLotsQuery) {
     },
   ];
   const [result] = await Lot.aggregate<{ items: LotDoc[]; total: { count: number }[] }>(pipeline);
-  // Para o seletor da vitrine: independe dos filtros aplicados.
+  // Departamentos de toda a vitrine, independentes dos filtros.
   const departments = (await Lot.distinct('item.department', visible)).filter(
     (department): department is string => typeof department === 'string',
   );
@@ -250,7 +243,6 @@ export async function listLots(query: ListLotsQuery) {
   };
 }
 
-/** Ranking pelo maior lance de cada licitante ("2º de 4"); `position` é null para quem ainda não deu lance. */
 async function myPosition(lot: LotDoc, userId: string): Promise<MyPosition> {
   const ranking = await Bid.aggregate<{ _id: Types.ObjectId }>([
     { $match: { lotId: lot._id } },
@@ -268,7 +260,7 @@ async function myPosition(lot: LotDoc, userId: string): Promise<MyPosition> {
   };
 }
 
-/** Detalhe público. Cancelados também respondem (a sala mostra o aviso). `me` só para licitante logado. */
+/** Cancelados também respondem: a sala mostra o aviso. */
 export async function getLot(id: string, viewer?: AuthUser) {
   const lot = await Lot.findById(id).lean();
   if (!lot) throw new AppError(ErrorCode.NOT_FOUND);
@@ -277,7 +269,7 @@ export async function getLot(id: string, viewer?: AuthUser) {
   return toLotDetail(lot, new Date(), bids.map(toBidView), me);
 }
 
-/** Só o dono cancela; de outro leiloeiro responde NOT_FOUND. Com lances, devolve o comprometido do líder. */
+/** Lote de outro leiloeiro responde NOT_FOUND, sem revelar que existe. */
 export async function cancelLot(auctioneerId: string, id: string) {
   const { response, refundedUserId } = await mongoose.connection.transaction(async (session) => {
     const lot = await Lot.findOne({ _id: id, auctioneerId }).session(session).lean();
@@ -305,7 +297,6 @@ export async function cancelLot(auctioneerId: string, id: string) {
   return response;
 }
 
-/** Lotes do leiloeiro, inclusive cancelados, com o resultado e o total recebido nos vendidos. */
 export async function listMyLots(auctioneerId: string) {
   const now = new Date();
   const lots = await Lot.find({ auctioneerId }).sort({ createdAt: -1 }).lean();

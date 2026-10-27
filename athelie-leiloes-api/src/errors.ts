@@ -6,12 +6,10 @@ type ErrorBody = { error: { code: ErrorCode; message: string; details?: Record<s
 
 const brl = new Intl.NumberFormat(LOCALE, { style: 'currency', currency: CURRENCY });
 
-/** Centavos em reais: 105000 → "R$ 1.050,00". */
 export function formatBRL(cents: number): string {
   return brl.format(cents / 100);
 }
 
-/** Troca cada `{campo}` da mensagem pelo valor de `details.campo` (centavos) em R$. */
 function fillMessage(template: string, details?: Record<string, unknown>): string {
   return template.replace(/\{(\w+)\}/g, (placeholder, key: string) => {
     const value = details?.[key];
@@ -19,7 +17,6 @@ function fillMessage(template: string, details?: Record<string, unknown>): strin
   });
 }
 
-/** Erro de negócio: o handler central traduz `code` em status HTTP e mensagem pt-BR. */
 export class AppError extends Error {
   readonly status: number;
 
@@ -37,7 +34,6 @@ function body(code: ErrorCode, details?: Record<string, unknown>, message: strin
   return { error: { code, message, ...(details && { details }) } };
 }
 
-/** Primeira mensagem de cada campo: `{ "email": "...", "wallet.balance": "..." }`. */
 function fieldErrors(error: z.ZodError): Record<string, string> {
   const fields: Record<string, string> = {};
   for (const issue of error.issues) {
@@ -53,7 +49,7 @@ function isClientHttpError(err: unknown): boolean {
   return typeof err.status === 'number' && err.status >= 400 && err.status < 500 && err.expose === true;
 }
 
-/** Mesmo formato do handler HTTP, para quem responde fora dele (ack do socket). */
+/** Para o ack do socket, que responde fora do handler HTTP. */
 export function errorBodyOf(err: unknown): ErrorBody {
   if (err instanceof AppError) return body(err.code, err.details, err.message);
   return body(ErrorCode.INTERNAL_ERROR);

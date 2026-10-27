@@ -1,8 +1,3 @@
-// Demonstração da auditoria (ADR 0008): adultera os lances de um lote direto no Mongo, como faria quem
-// tem acesso ao banco mas não ao AUDIT_SECRET, e mostra o veredito antes e depois.
-//
-// Uso: npm run demo:tamper -- <lotId> <alter|remove|insert> [--last]
-//   No container: docker compose exec api npm run demo:tamper -- <lotId> alter
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import mongoose, { Types } from 'mongoose';
@@ -11,9 +6,9 @@ import { objectId } from '../middlewares/validate.js';
 import { Bid } from '../models/Bid.js';
 
 const Tamper = {
-  ALTER: 'alter', // muda o valor de um lance do meio
-  REMOVE: 'remove', // apaga um lance do meio (ou o último, com --last)
-  INSERT: 'insert', // insere um lance falso no fim
+  ALTER: 'alter',
+  REMOVE: 'remove',
+  INSERT: 'insert',
 } as const;
 type Tamper = (typeof Tamper)[keyof typeof Tamper];
 
@@ -22,7 +17,7 @@ const USAGE = `Uso: npm run demo:tamper -- <lotId> <${Object.values(Tamper).join
   alter   muda o valor de um lance do meio
   remove  apaga um lance do meio (${LAST_FLAG}: apaga o último)
   insert  insere um lance falso no fim, com um hash qualquer`;
-// Valor somado ao lance alterado e ao lance falso (R$ 10,00).
+// Centavos (R$ 10,00).
 const TAMPER_AMOUNT = 1_000;
 
 const args = z.object({ lotId: objectId, tamper: z.enum(Tamper), last: z.boolean() });
@@ -38,14 +33,13 @@ if (!parsed.success) {
 }
 const { lotId, tamper, last } = parsed.data;
 
-// Fora do Docker, lê o .env da raiz do projeto; no container as variáveis já vêm do Compose.
+// Fora do Docker lê o .env da raiz; no container as variáveis vêm do Compose.
 const LOCAL_ENV_FILE = '../.env';
 if (existsSync(LOCAL_ENV_FILE)) process.loadEnvFile(LOCAL_ENV_FILE);
-// Depois do .env: estes módulos validam as variáveis de ambiente ao carregar.
+// Import dinâmico: estes módulos validam o env ao carregar, então só depois do .env.
 const { env } = await import('../config/env.js');
 const { auditLot } = await import('../services/audit.js');
 
-/** Aplica a adulteração e devolve a descrição do que mudou. */
 async function apply(kind: Tamper): Promise<string> {
   const bids = await Bid.find({ lotId }).sort({ seq: 1 }).lean();
   const lastBid = bids.at(-1);

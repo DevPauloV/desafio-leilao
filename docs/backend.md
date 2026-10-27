@@ -77,7 +77,7 @@ As variáveis estão explicadas no [`.env.example`](../.env.example), e a API n�
 
 ## Testes
 
-São 123 testes automatizados na API, com o MongoDB em memória, incluindo os de concorrência. Como rodar e o que cada arquivo cobre: [Testes automatizados](testes.md).
+São 124 testes automatizados na API, com o MongoDB em memória, incluindo os de concorrência. Como rodar e o que cada arquivo cobre: [Testes automatizados](testes.md).
 
 ## Estrutura
 

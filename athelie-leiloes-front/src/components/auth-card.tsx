@@ -1,9 +1,5 @@
 import type { ReactNode } from 'react';
 
-/**
- * Cartão das telas de entrar e criar conta, centralizado no espaço abaixo do cabeçalho.
- * A altura mínima desconta o cabeçalho e o respiro do fim da página (maiores a partir de md).
- */
 export function AuthCard({
   title,
   description,

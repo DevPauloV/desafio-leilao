@@ -8,7 +8,6 @@ const LABELS: Record<LotStatus, string> = {
   [LotStatus.CANCELLED]: 'Cancelado',
 };
 
-/** Status com ponto: ao vivo em bordô e pulsando; agendado com ponto cheio; encerrado e cancelado com ponto vazado. */
 export function LotStatusLabel({ status }: { status: LotStatus }) {
   const live = status === LotStatus.LIVE;
   const hollow = status === LotStatus.ENDED || status === LotStatus.CANCELLED;

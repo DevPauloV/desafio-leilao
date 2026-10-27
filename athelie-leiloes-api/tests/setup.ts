@@ -1,4 +1,3 @@
-// Infra comum dos testes de integração: Mongo em replica set (transações), app e um Met falso.
 import type { Express } from 'express';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose, { Types } from 'mongoose';
@@ -45,10 +44,7 @@ export async function registerUser(app: Express, role: Role): Promise<{ token: s
   return { token: res.body.token, id: res.body.user.id };
 }
 
-/**
- * Lote gravado direto no banco (sem o Met), para montar estados que a API não produz direto:
- * ao vivo desde já, encerrado, liquidado. Por padrão, ao vivo há 1 minuto e por mais 60 (longe do anti-sniping).
- */
+/** Lote gravado direto no banco, para estados que a API não produz direto (ao vivo já, encerrado, liquidado). */
 export async function insertLot(
   auctioneerId: string,
   { item, ...overrides }: Record<string, unknown> & { item?: Record<string, unknown> } = {},
@@ -58,7 +54,6 @@ export async function insertLot(
   return Lot.create({
     _id,
     auctioneerId,
-    // Cabeça vazia assinada, como a API grava na criação.
     chainHead: { lastHash: GENESIS_HASH, signature: headSignature(TEST_AUDIT_SECRET, _id.toString(), 0, GENESIS_HASH) },
     item: { metObjectId: 1, title: 'Obra', imageId: image._id, ...item },
     startingBid: 1_000,
@@ -69,11 +64,8 @@ export async function insertLot(
   });
 }
 
-// ---- Met falso ----
-
 export const IMAGE_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4]);
 
-/** Obra como o Met devolve em /objects/:id; por padrão, utilizável num lote. */
 export function metObject(id: number, overrides: Record<string, unknown> = {}) {
   return {
     objectID: id,
@@ -89,7 +81,6 @@ export function metObject(id: number, overrides: Record<string, unknown> = {}) {
   };
 }
 
-/** `fetch` que responde como o Met: busca, detalhes das obras dadas e a imagem. */
 export function fakeMetFetch(objects: { objectID: number }[]) {
   return vi.fn(async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(input instanceof Request ? input.url : input);
@@ -106,14 +97,11 @@ export function fakeMetFetch(objects: { objectID: number }[]) {
   });
 }
 
-/** `fetch` de um Met fora do ar. */
 export function failingFetch() {
   return vi.fn(async (): Promise<Response> => {
     throw new TypeError('fetch failed');
   });
 }
-
-// ---- Atalhos de carteira e lance ----
 
 export type TestUser = { token: string; id: string };
 

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-/** Eyebrow + título + descrição, como no topo de cada tela do protótipo. */
 export function PageTitle({ eyebrow, title, children }: { eyebrow?: string; title: string; children?: ReactNode }) {
   return (
     <div className="grid gap-1.5">

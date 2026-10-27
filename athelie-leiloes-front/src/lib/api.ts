@@ -1,13 +1,10 @@
 import { ErrorCode, STORAGE_KEYS } from '@/constants';
 
-// URL da API vista pelo navegador. Entra no build (Dockerfile); sem ela, o dev aponta para a API local.
 export const API_URL = ((import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:3000').replace(/\/+$/, '');
 
-/** Erro no formato do contrato. `message` vem pronta em pt-BR e é exibida como está; `code` serve só para lógica. */
 export class ApiError extends Error {
   readonly code: ErrorCode;
   readonly status: number;
-  /** Mensagem por campo, quando a API recusa a validação (`details.fields`). */
   readonly fields: Record<string, string>;
 
   constructor(code: ErrorCode, message: string, status: number, fields: Record<string, string> = {}) {
@@ -21,12 +18,11 @@ export class ApiError extends Error {
 
 const NETWORK_ERROR_MESSAGE = 'Não foi possível falar com o servidor. Confira sua conexão e tente de novo.';
 
-/** Mensagem para exibir de qualquer erro capturado. */
 export function errorMessage(err: unknown): string {
   return err instanceof ApiError ? err.message : NETWORK_ERROR_MESSAGE;
 }
 
-// O localStorage pode estar bloqueado (modo privado, política do navegador): nesse caso a sessão dura só a aba.
+// O localStorage pode estar bloqueado (modo privado): aí a sessão fica só em memória.
 let memoryToken: string | null = null;
 
 export function getToken(): string | null {
@@ -47,7 +43,7 @@ export function setToken(token: string | null): void {
   }
 }
 
-/** A API devolve imagens como caminho relativo ("/api/images/<id>"); URLs absolutas (prévia do Met) passam direto. */
+/** Imagens da API vêm como caminho relativo; a prévia do Met já é URL absoluta. */
 export function assetUrl(path: string): string {
   return /^https?:\/\//.test(path) ? path : `${API_URL}${path}`;
 }

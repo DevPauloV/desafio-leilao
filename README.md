@@ -63,7 +63,7 @@ docker compose up --build
 
 Front em http://localhost:8080 e API em http://localhost:3000. Para resetar o banco: `docker compose down -v`.
 
-**Testes automatizados** (123, sem precisar de Docker nem de MongoDB): `cd athelie-leiloes-api && npm ci && npm test`. Como funcionam e o que cobrem: [docs/testes.md](docs/testes.md).
+**Testes automatizados** (124, sem precisar de Docker nem de MongoDB): `cd athelie-leiloes-api && npm ci && npm test`. Como funcionam e o que cobrem: [docs/testes.md](docs/testes.md).
 
 Para rodar sem Docker, veja o [back-end](docs/backend.md#rodar-sem-docker).
 
@@ -89,6 +89,7 @@ O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerr
 ## Comportamentos inesperados
 
 - O Met aposentou o `/v1/search` em 01/10/2026; a busca usa o `/v1.1/search`. Obras sem imagem ou fora do domínio público são puladas, então a busca pode trazer menos de 20.
+- O Met cataloga cada impressão de uma gravura (ex.: Hokusai) com um id próprio. A busca mostra uma vez só cada obra com mesmo título, artista e data.
 - O resultado do lote aparece até ~2 s depois do fim ("Apurando resultado…").
 - O seed não repõe saldo: depois de muitas reinicializações, deposite pela carteira ou resete o banco.
 - Rate limit e salas do socket ficam em memória, então a API roda em uma instância.

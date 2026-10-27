@@ -15,7 +15,6 @@ import { formatMoney } from '@/lib/money';
 import { formatDateTimeSeconds } from '@/lib/time';
 import type { AuditView, LotDetail } from '@/types';
 
-/** O que a auditoria encontrou, em português, a partir do problema e do primeiro lance inválido. */
 const PROBLEM_TEXT: Record<AuditProblem, (seq: number) => string> = {
   [AuditProblem.ALTERED]: (seq) => `Lance #${seq} foi alterado.`,
   [AuditProblem.MISSING]: (seq) => `Lance #${seq} foi removido.`,
@@ -23,10 +22,8 @@ const PROBLEM_TEXT: Record<AuditProblem, (seq: number) => string> = {
   [AuditProblem.HEAD_MISMATCH]: () => 'O fim do histórico não confere com o registro do lote.',
 };
 
-/** Caracteres do hash mostrados no começo e no fim. */
 const HASH_PREVIEW_LENGTH = 4;
 
-/** "9be1…44a0", com o hash completo no title. */
 function ShortHash({ hash }: { hash: string }) {
   return (
     <span title={hash} className="font-mono text-xs text-muted-foreground">
@@ -35,7 +32,6 @@ function ShortHash({ hash }: { hash: string }) {
   );
 }
 
-/** Auditoria pública do lote: qualquer pessoa, sem login, confere a cadeia de lances. */
 export function AuditPage() {
   const { id = '' } = useParams();
   const { user } = useAuth();
@@ -43,7 +39,7 @@ export function AuditPage() {
   const [reload, setReload] = useState(0);
   const requestKey = `${id}:${reload}`;
   const [response, setResponse] = useState<{ key: string; audit?: AuditView; error?: string } | null>(null);
-  // Guarda a última auditoria: "Verificar de novo" não apaga a tela enquanto confere.
+  // Guarda a última auditoria para "Verificar de novo" não apagar a tela enquanto confere.
   const [audit, setAudit] = useState<AuditView | null>(null);
   const [myPseudonym, setMyPseudonym] = useState<string | null>(null);
 
@@ -61,7 +57,7 @@ export function AuditPage() {
     return () => controller.abort();
   }, [id, requestKey]);
 
-  // O pseudônimo do próprio licitante vem do lote (`me`), para marcar "Você" na tabela.
+  // A auditoria não identifica o usuário: o pseudônimo dele vem do lote (`me`), para marcar "Você".
   useEffect(() => {
     if (!isBidder) return;
     const controller = new AbortController();

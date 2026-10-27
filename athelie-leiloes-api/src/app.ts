@@ -14,11 +14,10 @@ import { walletRouter } from './routes/wallet.js';
 
 const JSON_BODY_LIMIT = '10kb';
 
-/** Monta o app sem abrir porta: o server.ts chama listen e os testes usam supertest. */
+/** Sem listen: o server.ts abre a porta e os testes usam supertest. */
 export function createApp(): Express {
   const app = express();
 
-  // Atrás de proxy, o rate limit precisa do IP real do cliente (vem no X-Forwarded-For).
   app.set('trust proxy', env.TRUST_PROXY);
   app.use(helmet());
   app.use(cors({ origin: env.CORS_ORIGIN }));

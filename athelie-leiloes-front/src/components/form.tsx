@@ -4,10 +4,6 @@ import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-/**
- * Campo com rótulo, dica e erro ligados ao input (aria-describedby / aria-invalid).
- * Campo de senha ganha o botão de mostrar/ocultar.
- */
 export function Field({
   id,
   label,
@@ -62,7 +58,6 @@ export function Field({
   );
 }
 
-/** Mensagem de erro em destaque (a API já manda o texto pronto). */
 export function ErrorAlert({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <p

@@ -1,8 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { STORAGE_KEYS, Theme } from '@/constants';
 
-// Tema: segue o sistema até a pessoa escolher; a escolha fica no localStorage.
-// O index.html aplica a classe `dark` antes do primeiro paint (sem piscar); aqui ficam a troca e o acompanhamento.
+// O index.html já aplica a classe `dark` antes do primeiro paint (sem piscar); aqui ficam a troca e o acompanhamento.
 
 const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 const listeners = new Set<() => void>();
@@ -17,7 +16,6 @@ function readSaved(): Theme {
   return Theme.SYSTEM;
 }
 
-/** Classe que liga as cores escuras: a variante `dark` do Tailwind, a mesma que o index.html aplica. */
 const DARK_CLASS = 'dark';
 
 let preference: Theme = readSaved();
@@ -35,7 +33,6 @@ darkQuery.addEventListener('change', () => {
 
 export type ResolvedTheme = typeof Theme.LIGHT | typeof Theme.DARK;
 
-/** A interface só oferece claro e escuro; "sistema" é apenas o estado inicial, antes da primeira escolha. */
 export function setTheme(theme: ResolvedTheme): void {
   preference = theme;
   try {
@@ -51,7 +48,6 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-/** O tema que está valendo de fato (a escolha ou, antes dela, o do sistema). */
 export function useTheme(): { resolved: ResolvedTheme } {
   const dark = useSyncExternalStore(subscribe, isDark);
   return { resolved: dark ? Theme.DARK : Theme.LIGHT };

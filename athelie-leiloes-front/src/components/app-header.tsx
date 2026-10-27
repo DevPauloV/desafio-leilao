@@ -30,9 +30,6 @@ import { setTheme, useTheme, type ResolvedTheme } from '@/lib/theme';
 import { loadWallet, useWallet } from '@/lib/wallet';
 import type { User, Wallet } from '@/types';
 
-// Telas grandes (md+): links no cabeçalho, botão de tema, pílula de saldo e menu da conta.
-// Celular: links no menu ☰; tema e depósito vão para o menu da conta.
-
 const THEME_OPTIONS: { value: ResolvedTheme; label: string; icon: LucideIcon }[] = [
   { value: Theme.LIGHT, label: 'Claro', icon: SunIcon },
   { value: Theme.DARK, label: 'Escuro', icon: MoonIcon },
@@ -49,9 +46,7 @@ function navItems(role: Role | undefined): NavItem[] {
   return items;
 }
 
-/** "Paulo Victor Oliveira Canalle" -> "Paulo Victor". */
 const shortName = (name: string) => name.trim().split(/\s+/).slice(0, 2).join(' ');
-/** "Paulo Victor Oliveira Canalle" -> "PV". */
 const initials = (name: string) =>
   shortName(name)
     .split(' ')
@@ -75,9 +70,7 @@ export function AppHeader() {
     if (isBidder) void loadWallet();
   }, [isBidder, user?.id]);
 
-  // Recarrega na vitrine em vez de navegar dentro do app: o roteador troca de página como transição, e a
-  // proteção da tela atual vê "sem usuário" antes disso, mandando para /entrar com "voltar para" esta página.
-  // A recarga também garante que nada da conta anterior fica em memória.
+  // Recarga, não navigate: a rota protegida veria "sem usuário" antes e mandaria para /entrar; e limpa a memória.
   function handleLogout() {
     logout();
     window.location.replace(ROUTES.SHOWCASE);
@@ -103,7 +96,6 @@ export function AppHeader() {
       </nav>
 
       <div className="ml-auto flex items-center gap-2.5 text-[13px]">
-        {/* Logado, no celular o tema fica dentro do menu da conta. */}
         <ThemeButton className={user ? 'hidden md:flex' : undefined} />
         {loading ? null : user ? (
           <>
@@ -115,7 +107,6 @@ export function AppHeader() {
             <Button asChild variant="ghost" size="sm" className="h-9.5 px-4 text-[13.5px]">
               <Link to={ROUTES.LOGIN}>Entrar</Link>
             </Button>
-            {/* No celular não cabe; a tela de entrar tem o link para criar conta. */}
             <Button asChild size="sm" className="hidden h-9.5 px-4.5 text-[13.5px] sm:inline-flex">
               <Link to={ROUTES.REGISTER}>Criar conta</Link>
             </Button>
@@ -162,7 +153,7 @@ function MobileNav({ items }: { items: NavItem[] }) {
       <DropdownMenuContent align="start" sideOffset={10} className="w-[calc(100vw-2rem)] rounded-[14px] p-2 shadow-xl md:hidden">
         <nav aria-label="Navegação do app" className="grid gap-0.5">
           {items.map((item) => (
-            // O Slot do item junta className como texto, então o ativo vem do aria-current que o NavLink já põe.
+            // O Slot junta className como texto; o estilo ativo vem do aria-current do NavLink.
             <DropdownMenuItem
               key={item.to}
               asChild
@@ -295,7 +286,6 @@ function WalletSummary({ wallet }: { wallet: Wallet }) {
           <dd className="text-[14.5px] font-semibold text-warn tabular-nums">{formatMoney(wallet.committed)}</dd>
         </div>
       </dl>
-      {/* Na tela grande o "+" da pílula faz esse papel. */}
       <DropdownMenuItem
         asChild
         className="h-11 justify-center gap-2 rounded-lg bg-primary text-sm font-bold text-primary-foreground focus:bg-primary/90 focus:text-primary-foreground md:hidden"

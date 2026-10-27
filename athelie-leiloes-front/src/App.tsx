@@ -16,7 +16,6 @@ import { RegisterPage } from '@/pages/register';
 import { ShowcasePage } from '@/pages/showcase';
 import { WalletPage } from '@/pages/wallet';
 
-/** Rota só para quem está logado com o papel certo. Sem login, vai para "Entrar" e volta depois. */
 function RequireRole({ role, children }: { role: Role; children: ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -38,11 +37,10 @@ function RequireRole({ role, children }: { role: Role; children: ReactNode }) {
   return children;
 }
 
-/** Centralizada no espaço abaixo do cabeçalho, como o cartão de entrar. */
 function NotFound() {
   const location = useLocation();
   const navigate = useNavigate();
-  // "default" é a primeira entrada do app nesta aba: sem página anterior dentro do app, o botão de voltar some.
+  // "default" = primeira entrada do app nesta aba: não há página anterior para voltar.
   const hasPrevious = location.key !== 'default';
   return (
     <div className="flex min-h-[calc(100dvh-7.5rem)] flex-col items-center justify-center gap-5 py-10 text-center md:min-h-[calc(100dvh-8.5rem)]">

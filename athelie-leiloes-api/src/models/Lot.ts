@@ -1,15 +1,12 @@
 import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
 import { GENESIS_HASH, LotState } from '../constants.js';
 
-/** Centavos: inteiro positivo. */
 const cents = { type: Number, required: true, min: 1, validate: Number.isInteger };
-/** Campo opcional da obra: o Met às vezes não tem o dado. */
 const optionalText = { type: String, default: null };
 
 const lotSchema = new Schema(
   {
     auctioneerId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    // Cópia da obra no momento da criação; vitrine, sala, auditoria e comprovante só leem daqui.
     item: {
       type: new Schema(
         {
@@ -38,7 +35,6 @@ const lotSchema = new Schema(
       type: new Schema(
         {
           lastHash: { type: String, default: GENESIS_HASH },
-          // HMAC de "head:lotId:bidCount:lastHash" (domain/audit-chain.ts); assinada na criação e a cada lance.
           signature: { type: String, default: '' },
         },
         { _id: false },
@@ -64,7 +60,7 @@ const lotSchema = new Schema(
   { timestamps: true },
 );
 
-// Varredura de liquidação (lotes ativos com fim vencido) e filtro da vitrine por estado.
+// Varredura de liquidação e filtro da vitrine por estado.
 lotSchema.index({ state: 1, endsAt: 1 });
 // Só lotes vendidos têm código de comprovante.
 lotSchema.index(

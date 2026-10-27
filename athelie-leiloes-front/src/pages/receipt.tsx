@@ -13,7 +13,7 @@ import type { ReceiptView } from '@/types';
 
 const eyebrow = 'text-[11.5px] font-semibold tracking-[0.14em] uppercase';
 
-/** Copia para a área de transferência; sem a API do navegador (http, permissão negada), usa o jeito antigo. */
+/** Sem a Clipboard API (http, permissão negada), cai no execCommand. */
 async function copyText(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
@@ -32,7 +32,6 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-/** Comprovante público: qualquer pessoa com o link abre, sem login. O vencedor aparece só pela raquete. */
 export function ReceiptPage() {
   const { code = '' } = useParams();
   const [reload, setReload] = useState(0);

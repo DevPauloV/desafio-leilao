@@ -16,7 +16,6 @@ import { socket } from '@/lib/socket';
 import { formatShortDate } from '@/lib/time';
 import type { MyBidItem } from '@/types';
 
-/** Filtros da lista: agrupam as situações do licitante. */
 const Filter = { ALL: 'all', OPEN: 'open', WON: 'won', CLOSED: 'closed' } as const;
 type Filter = (typeof Filter)[keyof typeof Filter];
 
@@ -29,7 +28,6 @@ const FILTERS = [
 
 const isFilter = (value: string): value is Filter => FILTERS.some((f) => f.value === value);
 
-/** Rótulo, cor, filtro e ação principal de cada situação. */
 const STATUS: Record<
   MyBidStatus,
   { label: string; variant: 'win' | 'warn' | 'accent' | 'neutral'; filter: Filter; action: string; primary: boolean }
@@ -41,14 +39,12 @@ const STATUS: Record<
   [MyBidStatus.CANCELLED]: { label: 'Cancelado', variant: 'neutral', filter: Filter.CLOSED, action: 'Ver lote', primary: false },
 };
 
-/** Os que pedem ação primeiro; dentro de cada situação, a ordem da API (lance mais recente). */
+/** Quem pede ação primeiro; o sort estável mantém a ordem da API dentro de cada situação. */
 const URGENCY: MyBidStatus[] = [MyBidStatus.OUTBID, MyBidStatus.WINNING, MyBidStatus.WON, MyBidStatus.LOST, MyBidStatus.CANCELLED];
 
-/** Colunas fixas a partir de `lg`, iguais no cabeçalho e nas linhas: situação e ações ficam alinhadas. */
 const ROW_GRID =
   'grid grid-cols-[56px_minmax(0,1fr)] items-center gap-x-4 gap-y-2.5 px-5 lg:grid-cols-[56px_minmax(0,1fr)_112px_112px_136px_112px_180px]';
 
-/** "Termina" / "Encerrado" / "Cancelado" e a data do fim. */
 function deadline(item: MyBidItem): { label: string; date: string | null } {
   if (item.myStatus === MyBidStatus.CANCELLED) return { label: 'Cancelado', date: null };
   const open = item.lot.status === LotStatus.LIVE || item.lot.status === LotStatus.SCHEDULED;
@@ -71,7 +67,7 @@ function BidRow({ item }: { item: MyBidItem }) {
         {item.lot.artist && <span className="truncate text-[13px] text-muted-foreground">{item.lot.artist}</span>}
       </div>
 
-      {/* Abaixo de `lg` cada par vira uma linha com rótulo; a partir de `lg`, `contents` devolve as células à grade. */}
+      {/* `lg:contents` devolve as células à grade; abaixo de `lg`, cada par vira uma linha com rótulo. */}
       <div className="col-start-2 flex flex-wrap gap-x-5 lg:contents">
         <div className="lg:text-right">
           <span className="mr-1.5 text-xs text-muted-foreground lg:sr-only">Seu lance</span>
@@ -132,7 +128,7 @@ export function MyBidsPage() {
     return () => controller.abort();
   }, [reload]);
 
-  // Superado em algum lote, lance próprio ou liquidação (que gera `wallet:update`): a lista muda, então relê.
+  // Ser superado, dar lance ou liquidar (estes dois via `wallet:update`) muda a lista: relê.
   useEffect(() => {
     const refresh = () => setReload((n) => n + 1);
     socket.on(SocketEvent.BID_OUTBID, refresh);

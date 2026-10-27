@@ -117,6 +117,18 @@ describe('GET /api/met/search', () => {
     expect(res.body.error.code).toBe(ErrorCode.EXTERNAL_API_UNAVAILABLE);
   });
 
+  it('impressões da mesma obra (ids diferentes, mesmo título, artista e data) aparecem uma vez só', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fakeMetFetch([metObject(1, { title: 'A Grande Onda' }), metObject(2), metObject(3, { title: 'A Grande Onda' })]),
+    );
+
+    const res = await search('hokusai');
+
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((item: { metObjectId: number }) => item.metObjectId)).toEqual([1, 2]);
+  });
+
   it('obras todas inválidas (sem falha do Met) → 200 com lista vazia', async () => {
     vi.stubGlobal('fetch', fakeMetFetch([metObject(1, { isPublicDomain: false })]));
 

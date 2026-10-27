@@ -1,15 +1,11 @@
 import { cn } from 'cn';
 
-// Raquete numerada: o pseudônimo do licitante no lote ("Licitante #7F3A2C") aparece como "#7F3A2C",
-// como as raquetes dos leilões presenciais. Os lances da própria pessoa aparecem em bordô, com "Você".
-
-/** "Licitante #7F3A2C" -> "#7F3A2C". */
 const paddleNumber = (pseudonym: string) => {
   const hash = pseudonym.indexOf('#');
   return hash >= 0 ? pseudonym.slice(hash) : pseudonym;
 };
 
-/** `mine`: o próprio licitante ("Você · #XXXX"). `accent`: destaque em bordô sem "Você" (vencedor no comprovante público). */
+/** `accent`: bordô sem "Você" (vencedor no comprovante público). */
 export function Paddle({ pseudonym, mine = false, accent = false }: { pseudonym: string; mine?: boolean; accent?: boolean }) {
   return (
     <span
@@ -25,15 +21,12 @@ export function Paddle({ pseudonym, mine = false, accent = false }: { pseudonym:
   );
 }
 
-/** Só o número da raquete, em texto corrido. */
 export function PaddleNumber({ pseudonym }: { pseudonym: string }) {
   return <b className="font-mono font-semibold">{paddleNumber(pseudonym)}</b>;
 }
 
-/** Quebra do número na raquete grande: "#7F3A" em cima, "2C" embaixo. */
 const BIG_PADDLE_LINE_LENGTH = 5;
 
-/** Raquete grande da sala, com o número em duas linhas. */
 export function BigPaddle({ pseudonym }: { pseudonym: string }) {
   const number = paddleNumber(pseudonym);
   return (

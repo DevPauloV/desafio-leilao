@@ -1,4 +1,3 @@
-// Cadeia de hashes dos lances (contrato, seção 5). Funções puras: o segredo (AUDIT_SECRET) entra como parâmetro.
 import { createHmac } from 'node:crypto';
 import { AuditProblem, GENESIS_HASH, LotState, PSEUDONYM_HEX_LENGTH } from '../constants.js';
 
@@ -8,7 +7,6 @@ function hmacHex(secret: string, data: string): string {
   return createHmac('sha256', secret).update(data).digest('hex');
 }
 
-/** Identificador público estável do licitante dentro de um lote; muda de lote para lote. */
 export function pseudonym(secret: string, userId: string, lotId: string): string {
   const code = hmacHex(secret, `${userId}:${lotId}`).slice(0, PSEUDONYM_HEX_LENGTH).toUpperCase();
   return `${PSEUDONYM_PREFIX}${code}`;
@@ -23,7 +21,6 @@ export type ChainedBid = {
   prevHash: string;
 };
 
-/** Hash do lance: depende de todos os campos públicos e do hash anterior (encadeia). */
 export function bidHash(secret: string, bid: ChainedBid): string {
   return hmacHex(
     secret,
@@ -31,14 +28,13 @@ export function bidHash(secret: string, bid: ChainedBid): string {
   );
 }
 
-/** Assinatura da cabeça da cadeia, guardada no lote: revela remoção do último lance. */
 export function headSignature(secret: string, lotId: string, bidCount: number, lastHash: string): string {
   return hmacHex(secret, `head:${lotId}:${bidCount}:${lastHash}`);
 }
 
 export type StoredBid = ChainedBid & { hash: string; bidderId: string };
 
-/** O que o lote afirma sobre a cadeia. Ids só para conferir pseudônimos; nunca saem na resposta. */
+/** Ids só para conferir pseudônimos; nunca saem na resposta. */
 export type ChainedLot = {
   id: string;
   state: string;
@@ -52,7 +48,7 @@ export type ChainedLot = {
 
 export type Verdict = { intact: boolean; firstInvalidSeq?: number; problem?: AuditProblem };
 
-/** Campo adulterado com tipo errado (ex.: createdAt como texto) faz o cálculo falhar: conta como não confere. */
+/** Campo adulterado com tipo errado faz o cálculo lançar: conta como não confere. */
 function holds(check: () => boolean): boolean {
   try {
     return check();
@@ -61,10 +57,6 @@ function holds(check: () => boolean): boolean {
   }
 }
 
-/**
- * O que o lote diz sobre o líder, o lance atual e o resultado tem de bater com o último lance da cadeia.
- * Sem isso, trocar o vencedor ou o líder direto no banco passaria pela auditoria (e pela liquidação).
- */
 function lotMatchesChain(secret: string, lot: ChainedLot, last: StoredBid | null): boolean {
   const ownsLast = (userId: string | null) => userId != null && pseudonym(secret, userId, lot.id) === last?.pseudonym;
   if (lot.state === LotState.CANCELLED) return true; // só a cadeia e a cabeça
@@ -81,18 +73,13 @@ function lotMatchesChain(secret: string, lot: ChainedLot, last: StoredBid | null
       ? ownsLast(winnerId) && winnerPseudonym === last.pseudonym && amount === last.amount
       : winnerId == null && winnerPseudonym == null && amount == null;
   }
-  return false; // liquidado sem resultado ou estado desconhecido
+  return false;
 }
 
-/**
- * Recalcula a cadeia de um lote (contrato, seção 5). `bids` em ordem de seq (e de inserção, no empate).
- * Cada lance é `valid` se o seq é o esperado, o prevHash aponta para o hash gravado no lance anterior, o
- * hash recalculado bate e o pseudônimo é o do autor: só o lance adulterado fica marcado.
- * O veredito traz o primeiro problema encontrado.
- */
+/** `bids` em ordem de seq e, no empate, de inserção. */
 export function verifyChain(secret: string, lot: ChainedLot, bids: StoredBid[]) {
   const head = lot.chainHead ?? null;
-  // Sem assinatura válida, a contagem da cabeça não é confiável para classificar os lances: o problema é a cabeça.
+  // Sem assinatura válida, a contagem da cabeça não é confiável: o problema é a cabeça.
   const headSigned =
     head != null && holds(() => headSignature(secret, lot.id, lot.bidCount, head.lastHash) === head.signature);
   let first: { seq: number; problem: AuditProblem } | null = headSigned
@@ -126,7 +113,6 @@ export function verifyChain(secret: string, lot: ChainedLot, bids: StoredBid[]) 
     }
   }
 
-  // A cabeça assinada promete quantos lances existem e qual é o último; o lote, quem lidera ou venceu e por quanto.
   const headMatches =
     head != null && (last?.seq ?? 0) === lot.bidCount && (last?.hash ?? GENESIS_HASH) === head.lastHash;
   const stateMatches = holds(() => lotMatchesChain(secret, lot, last));

@@ -5,7 +5,6 @@ import type { IdParams } from '../middlewares/validate.js';
 import * as lotsService from '../services/lots.js';
 import type { CreateLotInput, ListLotsQuery } from '../services/lots.js';
 
-/** Usuário logado (as rotas que chamam isto passam por requireAuth). */
 function authUserId(req: Request<unknown, unknown, unknown, unknown>): string {
   if (!req.auth) throw new AppError(ErrorCode.UNAUTHENTICATED);
   return req.auth.id;

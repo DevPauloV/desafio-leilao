@@ -28,13 +28,11 @@ export function signToken(user: AuthUser): string {
   });
 }
 
-/** Usuário do header `Authorization: Bearer <jwt>`; `null` se ausente, inválido ou expirado. */
 function readToken(header: string | undefined): AuthUser | null {
   const token = header && /^Bearer (\S+)$/.exec(header)?.[1];
   return token ? verifyToken(token) : null;
 }
 
-/** Usuário de um JWT (também usado no handshake do socket); `null` se inválido ou expirado. */
 export function verifyToken(token: string): AuthUser | null {
   try {
     const payload = tokenPayload.parse(jwt.verify(token, env.JWT_SECRET, { algorithms: [ALGORITHM] }));
@@ -51,7 +49,6 @@ export const requireAuth: RequestHandler = (req, _res, next) => {
   next();
 };
 
-/** Para rotas públicas que personalizam a resposta: token ausente ou inválido = visitante anônimo. */
 export const optionalAuth: RequestHandler = (req, _res, next) => {
   const user = readToken(req.headers.authorization);
   if (user) req.auth = user;

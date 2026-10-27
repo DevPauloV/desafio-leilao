@@ -17,7 +17,6 @@ import { formatMoney } from '@/lib/money';
 import { clockOffset, formatCountdown, formatShortDate, useServerNow } from '@/lib/time';
 import type { LotPage, LotSummary } from '@/types';
 
-/** Abas da vitrine, com os textos da lista vazia de cada uma. Cancelados nunca aparecem. */
 const TABS = [
   {
     status: LotStatus.LIVE,
@@ -46,11 +45,10 @@ type ShowcaseStatus = ShowcaseTab['status'];
 
 const isShowcaseStatus = (value: string | null): value is ShowcaseStatus => TABS.some((tab) => tab.status === value);
 
-/** Espera depois da última tecla antes de buscar. */
 const SEARCH_DEBOUNCE_MS = 300;
-/** Chaves da URL da vitrine: o estado fica nela para compartilhar e voltar com o navegador. */
+/** O estado da vitrine fica na URL, para compartilhar e voltar com o navegador. */
 const Param = { STATUS: 'status', PAGE: 'page', QUERY: 'q', DEPARTMENT: 'department' } as const;
-/** Valor do item "Todos os departamentos": o Select do Radix não aceita string vazia como valor de item. */
+/** O Select do Radix não aceita string vazia como valor de item. */
 const ALL_DEPARTMENTS = '__all__';
 
 type Filters = { q: string; department: string };
@@ -70,8 +68,7 @@ export function ShowcasePage() {
   const q = params.get(Param.QUERY)?.trim() ?? '';
   const department = params.get(Param.DEPARTMENT) ?? '';
 
-  // O campo de busca tem estado próprio (atualiza a cada tecla) e só vai para a URL depois do debounce.
-  // Se a URL mudar por fora (voltar do navegador, "Limpar filtros"), o campo acompanha.
+  // O campo só vai para a URL após o debounce, mas acompanha a URL se ela mudar por fora (voltar, "Limpar filtros").
   const [typed, setTyped] = useState(q);
   const [lastUrlQuery, setLastUrlQuery] = useState(q);
   if (q !== lastUrlQuery) {
@@ -82,7 +79,7 @@ export function ShowcasePage() {
   const [reload, setReload] = useState(0);
   const [counts, setCounts] = useState<Partial<Record<ShowcaseStatus, number>>>({});
   const [departments, setDepartments] = useState<string[]>([]);
-  // Resposta guardada com a chave da busca que a gerou: se a chave atual for outra, está carregando.
+  // A resposta guarda a chave da busca que a gerou: chave diferente da atual = carregando.
   const requestKey = `${status}:${page}:${q}:${department}:${reload}`;
   const [response, setResponse] = useState<{ key: string; status: ShowcaseStatus; data?: LotPage; error?: string } | null>(null);
 
@@ -100,7 +97,6 @@ export function ShowcasePage() {
     return () => controller.abort();
   }, [status, page, q, department, requestKey]);
 
-  // Contadores das abas com os mesmos filtros: o total de cada status.
   useEffect(() => {
     const controller = new AbortController();
     for (const tab of TABS) {
@@ -121,8 +117,7 @@ export function ShowcasePage() {
   const now = useServerNow(offset);
   const totalPages = data ? Math.max(1, Math.ceil(data.total / LOTS_PAGE_SIZE)) : 1;
 
-  // Página além da última (link antigo, lotes que saíram da lista): volta para a última que existe.
-  // Sem isso a lista fica vazia e a paginação some, sem caminho de volta.
+  // Página além da última (link antigo): volta para a última, senão a lista fica vazia e a paginação some.
   const freshTotal = current?.data?.total;
   useEffect(() => {
     if (freshTotal === undefined) return;
@@ -139,7 +134,6 @@ export function ShowcasePage() {
     );
   }, [freshTotal, page, setParams]);
 
-  /** Atualiza a URL; trocar aba ou filtro volta para a página 1. */
   function navigate(next: { status?: ShowcaseStatus; page?: number } & Partial<Filters>, replace = false) {
     const nextStatus = next.status ?? status;
     const nextQ = next.q ?? q;
@@ -154,7 +148,7 @@ export function ShowcasePage() {
     if (next.page) window.scrollTo({ top: 0 });
   }
 
-  // Busca com debounce. `replace` para não criar uma entrada no histórico a cada pausa na digitação.
+  // `replace`: não cria uma entrada no histórico a cada pausa na digitação.
   useEffect(() => {
     const term = typed.trim();
     if (term === q) return;
@@ -164,7 +158,7 @@ export function ShowcasePage() {
           const next = new URLSearchParams(current);
           if (term) next.set(Param.QUERY, term);
           else next.delete(Param.QUERY);
-          next.delete(Param.PAGE); // filtro novo volta para a página 1
+          next.delete(Param.PAGE);
           return next;
         },
         { replace: true },
@@ -185,7 +179,6 @@ export function ShowcasePage() {
       <PageTitle eyebrow="Leilão de obras do The Met" title="Obras em leilão" />
 
       <Tabs value={status} onValueChange={(value) => isShowcaseStatus(value) && navigate({ status: value })} className="gap-7">
-        {/* Celular: abas na largura toda, dividindo o espaço; embaixo, busca e o botão de departamento na mesma linha. */}
         <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2.5">
           <TabsList aria-label="Status dos lotes" className="h-auto! w-full rounded-[8px] bg-muted p-0.75 sm:w-fit">
             {TABS.map((tab) => (
@@ -215,7 +208,6 @@ export function ShowcasePage() {
               value={department || ALL_DEPARTMENTS}
               onValueChange={(value) => navigate({ department: value === ALL_DEPARTMENTS ? '' : value })}
             >
-              {/* No celular vira só o ícone; com departamento escolhido, fica em bordô para mostrar que há filtro. */}
               <SelectTrigger
                 aria-label={department ? `Departamento: ${department}` : 'Filtrar por departamento'}
                 title={department || 'Filtrar por departamento'}
@@ -308,18 +300,13 @@ export function ShowcasePage() {
   );
 }
 
-/** Nome curto da obra: o Met costuma trazer nome original e série entre parênteses depois do título. */
+/** O Met costuma pôr nome original e série entre parênteses depois do título. */
 const shortTitle = (title: string) => title.split(' (')[0];
 
-/** Selo translúcido sobre a imagem do card. */
 const pill = 'inline-flex items-center rounded-full border border-border/70 bg-card/85 px-2.5 py-1 backdrop-blur-sm';
 
 const resultCount = (n: number) => `${n} ${n === 1 ? 'resultado' : 'resultados'}`;
 
-/**
- * Aba sem lotes. Sem filtro: explica o que aparece ali. Com filtro: mostra cada filtro com "×" e, se outra
- * aba tem resultado com os mesmos filtros (as contagens das abas já vêm filtradas), leva direto para lá.
- */
 function ShowcaseEmpty({
   tab,
   counts,
@@ -402,7 +389,6 @@ function FilterChip({ label, value, onRemove }: { label: string; value: string; 
 function LotCard({ lot, now }: { lot: LotSummary; now: number }) {
   const hasBids = lot.bidCount > 0;
   const unsold = lot.status === LotStatus.ENDED && !hasBids;
-  // O tempo fica só no selo sobre a imagem; embaixo, só valor e lances.
   let value: string;
   let valueCaption: string | null;
   let timeCaption: string;
@@ -460,7 +446,6 @@ function LotCard({ lot, now }: { lot: LotSummary; now: number }) {
   );
 }
 
-/** Cards de carregamento: uma linha da grade no computador. */
 const SKELETON_CARDS = 3;
 
 function LotGridSkeleton() {

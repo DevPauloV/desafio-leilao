@@ -1,4 +1,4 @@
-// Gateway Socket.IO: só transmite (ADR 0006). Nenhuma regra de negócio aqui; o lance vai por REST.
+// Só transmite avisos; o lance vai pela REST (ADR 0006).
 import type { Server as HttpServer } from 'node:http';
 import { Server } from 'socket.io';
 import { z } from 'zod';
@@ -17,7 +17,6 @@ const lotPayload = z.object({ lotId: objectId });
 
 let io: Server | null = null;
 
-/** Liga o Socket.IO ao servidor HTTP do Express, com a mesma lista de origens do CORS. */
 export function attachSocket(httpServer: HttpServer): Server {
   io = new Server(httpServer, { cors: { origin: env.CORS_ORIGIN } });
 
@@ -61,7 +60,7 @@ export function emitToUser(userId: string, event: SocketEvent, payload: unknown)
   io?.to(userRoom(userId)).emit(event, payload);
 }
 
-/** Avisos saem depois do commit: uma falha aqui só é logada e nunca desfaz nem derruba a operação. */
+/** Falha ao avisar só é logada: a operação já foi commitada. */
 export async function notifyAfterCommit(what: string, send: () => Promise<void>): Promise<void> {
   try {
     await send();

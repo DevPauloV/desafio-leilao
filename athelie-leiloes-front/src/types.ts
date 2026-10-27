@@ -1,4 +1,3 @@
-// Tipos das respostas da API (docs/contract.md, seção 6). Dinheiro em centavos; datas em ISO 8601.
 import type { AuditProblem, LotStatus, MyBidStatus, Role } from '@/constants';
 
 export type User = { id: string; name: string; email: string; role: Role };
@@ -11,7 +10,6 @@ export type LotSummary = {
   artist: string | null;
   date: string | null;
   medium: string | null;
-  /** Caminho relativo à API ("/api/images/<id>"). */
   imageUrl: string;
   status: LotStatus;
   startsAt: string;
@@ -22,7 +20,6 @@ export type LotSummary = {
   department: string | null;
 };
 
-/** `departments`: departamentos dos lotes visíveis, para o seletor da vitrine (não depende dos filtros). */
 export type LotPage = { items: LotSummary[]; page: number; total: number; serverTime: string; departments: string[] };
 
 export type MyLot = LotSummary & { result: { sold: boolean; amount: number | null } | null };
@@ -63,12 +60,8 @@ export type LotDetail = LotSummary & {
   minIncrement: number;
   minimumNextBid: number;
   serverTime: string;
-  /** Mais recente primeiro, até 50. */
   bids: BidView[];
-  /** Só com token de licitante. `position` é null enquanto ele não deu lance. */
-  /** `receiptCode` só para o vencedor de lote liquidado. */
   me?: { pseudonym: string; isLeader: boolean; position: number | null; totalBidders: number; receiptCode?: string };
-  /** Só em lote liquidado; público, sem ids. */
   result?: { sold: boolean; winnerPseudonym: string | null; amount: number | null; settledAt: string };
 };
 
@@ -78,7 +71,6 @@ export type Wallet = {
   balance: number;
   committed: number;
   available: number;
-  /** Lotes ativos em que o usuário lidera (soma = comprometido). */
   leading: { lotId: string; title: string; amount: number; endsAt: string }[];
 };
 
@@ -100,7 +92,6 @@ export type ReceiptView = {
   chainHash: string;
 };
 
-// Eventos Socket.IO (docs/contract.md, seção 7).
 export type BidNewEvent = {
   lotId: string;
   bid: BidView;
@@ -117,7 +108,6 @@ export type BidOutbidEvent = { lotId: string; title: string; currentBid: number 
 
 export type AuditView = {
   lot: { id: string; title: string; artist: string | null; imageUrl: string; status: LotStatus; startsAt: string; endsAt: string };
-  /** Em ordem de `seq`. */
   bids: (BidView & { prevHash: string; hash: string; valid: boolean })[];
   verdict: { intact: boolean; firstInvalidSeq?: number; problem?: AuditProblem };
   checkedAt: string;

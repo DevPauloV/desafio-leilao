@@ -13,7 +13,6 @@ import { formatShortDate } from '@/lib/time';
 import { loadWallet, setWallet, useWallet } from '@/lib/wallet';
 import type { Wallet } from '@/types';
 
-/** Valores dos botões rápidos de depósito, em centavos. */
 const QUICK_DEPOSITS = [100_000, 500_000, 1_000_000];
 
 export function WalletPage() {
@@ -119,7 +118,7 @@ function DepositForm() {
   const [submitting, setSubmitting] = useState(false);
   const location = useLocation();
 
-  // Atalho "Depositar" do cabeçalho: foca o campo (e rola até ele), também se a carteira já estiver aberta.
+  // `location.key` refoca o campo quando o atalho "Depositar" é usado com a carteira já aberta.
   useEffect(() => {
     if (location.hash === `#${DEPOSIT_FIELD_ID}`) document.getElementById(DEPOSIT_FIELD_ID)?.focus();
   }, [location.hash, location.key]);

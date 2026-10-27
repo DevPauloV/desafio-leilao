@@ -12,7 +12,6 @@ export const depositSchema = z.object({
 });
 export type DepositInput = z.infer<typeof depositSchema>;
 
-/** Saldo total, comprometido (soma dos lances em que lidera), disponível e os lotes que compõem o comprometido. */
 export async function getWallet(userId: string) {
   const user = await User.findById(userId).lean();
   if (!user) throw new AppError(ErrorCode.UNAUTHENTICATED);
@@ -31,10 +30,7 @@ export async function getWallet(userId: string) {
   };
 }
 
-/**
- * Depósito: um único `$inc` num único documento já é atômico, então não precisa de transação
- * (nenhum outro documento muda junto).
- */
+/** Um `$inc` num único documento já é atômico: dispensa transação. */
 export async function deposit(userId: string, amount: number) {
   const updated = await User.updateOne({ _id: userId }, { $inc: { 'wallet.balance': amount } });
   if (updated.matchedCount !== 1) throw new AppError(ErrorCode.UNAUTHENTICATED);

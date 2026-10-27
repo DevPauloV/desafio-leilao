@@ -1,4 +1,3 @@
-// Único ponto de contato com o Met (ADR 0004). Só a busca do painel e a criação de lote passam por aqui.
 import { z } from 'zod';
 import { env } from '../config/env.js';
 import {
@@ -15,15 +14,14 @@ import { AppError } from '../errors.js';
 
 // O Met às vezes bloqueia requisições sem User-Agent.
 const HEADERS = { 'User-Agent': 'AthelieLeiloes/0.1 (teste tecnico; leilao de obras do Met)' };
-// Formatos que o navegador exibe como imagem sem executar nada (SVG fica de fora).
+// SVG fica de fora: pode carregar script.
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-// O /v1/search foi aposentado em 2026-10-01; a busca agora é /v1.1/search (com `limit`).
-// Os detalhes de obra continuam em /v1/objects, que é o MET_API_BASE.
+// A busca mudou para /v1.1/search; os objetos seguem em /v1 (MET_API_BASE).
 const searchUrl = () => new URL('../v1.1/search', `${env.MET_API_BASE}/`);
 const objectUrl = (id: number) => `${env.MET_API_BASE}/objects/${id}`;
 
-/** Campo de texto do Met: vem "" quando falta; vira null. */
+// O Met manda "" quando o campo falta.
 const text = z
   .string()
   .nullish()
@@ -43,7 +41,7 @@ const objectSchema = z.object({
   objectURL: text,
 });
 
-// A imagem só é baixada de um host do próprio Met, por https.
+// Contra SSRF: só baixa por https de host do Met.
 const metImageUrl = z.url({ protocol: /^https$/, hostname: /(^|\.)metmuseum\.org$/ });
 
 export const metSearchQuery = z.object({ q: z.string().trim().min(1).max(MET_QUERY_MAX_LENGTH) });
@@ -57,16 +55,11 @@ export type Artwork = {
   medium: string | null;
   department: string | null;
   metUrl: string | null;
-  /** `primaryImageSmall` do Met. */
   imageUrl: string;
 };
 
 export type DownloadedImage = { data: Buffer; contentType: string };
 
-/**
- * GET no Met com timeout e retry. Devolve `null` para 404.
- * Rede, timeout, 4xx (exceto 404) e 5xx viram EXTERNAL_API_UNAVAILABLE depois de MET_RETRIES novas tentativas.
- */
 async function metGet<T>(url: string | URL, read: (res: Response) => Promise<T>): Promise<T | null> {
   for (let attempt = 0; ; attempt++) {
     try {
@@ -83,7 +76,6 @@ async function metGet<T>(url: string | URL, read: (res: Response) => Promise<T>)
   }
 }
 
-/** Obra utilizável num lote: domínio público (imagem CC0), com título e imagem hospedada no Met. */
 function toArtwork(raw: z.infer<typeof objectSchema>): Artwork | null {
   if (!raw.isPublicDomain || !raw.title || !metImageUrl.safeParse(raw.primaryImageSmall).success) return null;
   return {
@@ -98,7 +90,6 @@ function toArtwork(raw: z.infer<typeof objectSchema>): Artwork | null {
   };
 }
 
-/** Obra pelo id; `null` se não existe ou não pode ir a leilão. */
 export async function fetchObject(id: number): Promise<Artwork | null> {
   const raw = await metGet(objectUrl(id), (res) => res.json());
   if (raw === null) return null;
@@ -106,20 +97,23 @@ export async function fetchObject(id: number): Promise<Artwork | null> {
   return parsed.success ? toArtwork(parsed.data) : null;
 }
 
-/**
- * Até MET_SEARCH_LIMIT obras utilizáveis, na ordem de relevância do Met.
- * Obra que falha (rede, timeout, 5xx) é descartada como as inválidas. Só responde EXTERNAL_API_UNAVAILABLE
- * se a busca falhar ou se todas as obras consultadas falharem.
- */
 export async function searchArtworks(q: string): Promise<Artwork[]> {
   const url = searchUrl();
   url.search = new URLSearchParams({ q, hasImages: 'true', limit: String(MET_SEARCH_CANDIDATES) }).toString();
   const raw = await metGet(url, (res) => res.json());
   const parsed = searchSchema.safeParse(raw);
-  if (raw !== null && !parsed.success) throw new AppError(ErrorCode.EXTERNAL_API_UNAVAILABLE); // formato inesperado
+  if (raw !== null && !parsed.success) throw new AppError(ErrorCode.EXTERNAL_API_UNAVAILABLE);
   const ids = (parsed.data?.objectIDs ?? []).slice(0, MET_SEARCH_CANDIDATES);
 
   const artworks: Artwork[] = [];
+  // Impressões da mesma gravura têm ids diferentes no Met.
+  const seen = new Set<string>();
+  const isNew = (artwork: Artwork) => {
+    const key = JSON.stringify([artwork.title, artwork.artist, artwork.date]);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  };
   let consulted = 0;
   let failed = 0;
   const fetchOrSkip = (id: number) =>
@@ -128,18 +122,16 @@ export async function searchArtworks(q: string): Promise<Artwork[]> {
       failed += 1;
       return null;
     });
-  // Alguns ids por vez, parando assim que juntar obras suficientes.
   for (let i = 0; i < ids.length && artworks.length < MET_SEARCH_LIMIT; i += MET_CONCURRENCY) {
     const batchIds = ids.slice(i, i + MET_CONCURRENCY);
     consulted += batchIds.length;
     const batch = await Promise.all(batchIds.map(fetchOrSkip));
-    artworks.push(...batch.filter((artwork) => artwork !== null));
+    artworks.push(...batch.filter((artwork) => artwork !== null).filter(isNew));
   }
   if (consulted > 0 && failed === consulted) throw new AppError(ErrorCode.EXTERNAL_API_UNAVAILABLE);
   return artworks.slice(0, MET_SEARCH_LIMIT);
 }
 
-/** Bytes da imagem; `null` se não existe, não é um formato aceito ou passa de MAX_IMAGE_BYTES. */
 export async function downloadImage(url: string): Promise<DownloadedImage | null> {
   if (!metImageUrl.safeParse(url).success) return null;
   return metGet(url, async (res) => {

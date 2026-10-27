@@ -18,8 +18,7 @@ const BCRYPT_ROUNDS = 10;
 const BCRYPT_MAX_BYTES = 72;
 const DUPLICATE_KEY = 11000;
 
-// Hash de uma senha qualquer: o login compara contra ele quando o e-mail não existe,
-// para o tempo de resposta não revelar quais e-mails estão cadastrados.
+// Login com e-mail inexistente compara contra este hash, para o tempo de resposta não revelar quais e-mails existem.
 const DUMMY_HASH = bcrypt.hashSync('senha-que-ninguem-usa', BCRYPT_ROUNDS);
 
 const email = z

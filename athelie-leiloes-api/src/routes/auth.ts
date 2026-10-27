@@ -7,7 +7,7 @@ import { requireAuth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { loginSchema, registerSchema } from '../services/auth.js';
 
-// Por IP, em memória (uma instância da API).
+// Por IP e em memória: vale enquanto houver uma só instância da API.
 const loginLimiter = rateLimit({
   windowMs: LOGIN_RATE_LIMIT_WINDOW_MS,
   limit: LOGIN_RATE_LIMIT_MAX,

@@ -22,7 +22,6 @@ beforeEach(async () => {
   await User.deleteMany({});
 });
 
-/** Nenhuma resposta pode carregar o hash da senha. */
 function expectNoPasswordHash(body: unknown) {
   const json = JSON.stringify(body);
   expect(json).not.toContain('passwordHash');

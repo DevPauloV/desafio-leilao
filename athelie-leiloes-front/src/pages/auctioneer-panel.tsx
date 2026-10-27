@@ -19,7 +19,7 @@ import { MINUTE_MS, toDateTimeLocal } from '@/lib/time';
 import type { CreateLotInput, MetArtwork, MyLot, MyLotsResponse } from '@/types';
 
 const DAY_MS = 24 * 60 * MINUTE_MS;
-/** Início sugerido: daqui a 2 minutos (a API recusa início no passado). */
+/** Folga para o início sugerido, já que a API recusa início no passado. */
 const DEFAULT_START_DELAY_MS = 2 * MINUTE_MS;
 
 const sectionHeading = 'text-[13px] font-semibold tracking-[0.1em] text-muted-foreground uppercase';
@@ -47,7 +47,7 @@ export function AuctioneerPanelPage() {
     return () => controller.abort();
   }, [reload]);
 
-  // `lot:ended` também chega na sala pessoal do leiloeiro dono: relê a lista para mostrar o resultado e o total.
+  // `lot:ended` também chega na sala pessoal do leiloeiro dono: relê para mostrar resultado e total.
   useEffect(() => {
     const onEnded = () => setReload((n) => n + 1);
     socket.on(SocketEvent.LOT_ENDED, onEnded);
@@ -316,7 +316,6 @@ function MyLotsTable({ lots, onChanged }: { lots: MyLot[]; onChanged: () => void
         <TableBody>
           {lots.map((lot) => {
             const open = lot.status === LotStatus.LIVE || lot.status === LotStatus.SCHEDULED;
-            // Sem lances: só cancela. Com lances (ao vivo): cancela e o comprometido do líder volta para ele.
             const canCancel = open;
             const refund = lot.bidCount > 0 && lot.currentBid !== null;
             return (

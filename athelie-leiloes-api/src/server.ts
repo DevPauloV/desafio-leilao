@@ -8,7 +8,6 @@ import { runSeed } from './seed/seed.js';
 
 await mongoose.connect(env.MONGO_URI);
 
-// Express e Socket.IO no mesmo servidor HTTP (mesma porta).
 const server = createServer(createApp());
 attachSocket(server);
 // Antes da varredura, para as duas não liquidarem ao mesmo tempo. Falha no seed não impede a API de subir.

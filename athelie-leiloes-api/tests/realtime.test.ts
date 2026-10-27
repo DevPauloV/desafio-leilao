@@ -76,7 +76,6 @@ function nextEvent<T = Record<string, unknown>>(socket: Socket, event: string): 
   });
 }
 
-/** Lista dos nomes de evento que o cliente recebeu. */
 function record(socket: Socket): string[] {
   const events: string[] = [];
   socket.onAny((event: string) => events.push(event));

@@ -1,13 +1,9 @@
-// Espelho das constantes da API que o front usa (docs/contract.md, seções 1 e 2).
-// Nenhum destes valores aparece como string solta no código.
-
 type ValueOf<T> = T[keyof T];
 
 export const Role = { AUCTIONEER: 'auctioneer', BIDDER: 'bidder' } as const;
 export type Role = ValueOf<typeof Role>;
 export const ROLE_LABELS: Record<Role, string> = { [Role.AUCTIONEER]: 'Leiloeiro', [Role.BIDDER]: 'Licitante' };
 
-/** Calculado pela API a partir do estado do lote e do horário do servidor. */
 export const LotStatus = {
   SCHEDULED: 'scheduled',
   LIVE: 'live',
@@ -16,7 +12,6 @@ export const LotStatus = {
 } as const;
 export type LotStatus = ValueOf<typeof LotStatus>;
 
-/** Situação do licitante em cada lote de GET /api/me/bids. */
 export const MyBidStatus = {
   WINNING: 'winning',
   OUTBID: 'outbid',
@@ -26,7 +21,6 @@ export const MyBidStatus = {
 } as const;
 export type MyBidStatus = ValueOf<typeof MyBidStatus>;
 
-/** Problema encontrado pela auditoria (o primeiro da cadeia). */
 export const AuditProblem = {
   ALTERED: 'altered',
   MISSING: 'missing',
@@ -55,9 +49,8 @@ export const ErrorCode = {
 } as const;
 export type ErrorCode = ValueOf<typeof ErrorCode>;
 
-/** Eventos Socket.IO (docs/contract.md, seção 7). */
 export const SocketEvent = {
-  /** Evento do próprio Socket.IO, a cada conexão e reconexão. */
+  /** Nativo do Socket.IO (não é do contrato): dispara também a cada reconexão. */
   CONNECT: 'connect',
   LOT_JOIN: 'lot:join',
   LOT_LEAVE: 'lot:leave',
@@ -70,29 +63,20 @@ export const SocketEvent = {
   WALLET_UPDATE: 'wallet:update',
 } as const;
 
-// Números de regra da API usados na interface.
 export const ANTI_SNIPING_WINDOW_MS = 120_000;
 export const ANTI_SNIPING_EXTENSION_MS = 120_000;
-/** Teto por depósito, em centavos (R$ 100.000,00). */
 export const MAX_DEPOSIT = 10_000_000;
 
-/** Lotes por página em GET /api/lots (definido pela API). */
 export const LOTS_PAGE_SIZE = 12;
-/** Tamanho máximo do termo de busca em GET /api/lots (`q`). */
 export const SEARCH_MAX_LENGTH = 80;
-/** Lances mais recentes que a API manda no detalhe do lote (LOT_DETAIL_BIDS_LIMIT na API). */
 export const LOT_DETAIL_BIDS_LIMIT = 50;
-/** Idioma e moeda de toda formatação de data e dinheiro (Intl). */
 export const LOCALE = 'pt-BR';
 export const CURRENCY = 'BRL';
-/** Tamanho máximo do termo de busca de obras no painel, em GET /api/met/search (`q`). */
 export const MET_QUERY_MAX_LENGTH = 100;
-/** Cadastro: os mesmos limites que a API valida (contrato, seção 1). */
 export const NAME_MIN_LENGTH = 2;
 export const NAME_MAX_LENGTH = 80;
 export const PASSWORD_MIN_LENGTH = 8;
 
-/** Rotas das telas. */
 export const ROUTES = {
   SHOWCASE: '/',
   LOGIN: '/entrar',
@@ -105,7 +89,6 @@ export const ROUTES = {
   AUDIT: '/auditoria/:id',
 } as const;
 
-/** Telas de um papel só. Fonte única para a proteção das rotas e para o redirecionamento depois do login. */
 export const ROUTE_ROLES = {
   [ROUTES.AUCTIONEER_PANEL]: Role.AUCTIONEER,
   [ROUTES.WALLET]: Role.BIDDER,
@@ -116,11 +99,9 @@ export const lotPath = (id: string) => ROUTES.LOT.replace(':id', encodeURICompon
 export const receiptPath = (code: string) => ROUTES.RECEIPT.replace(':code', encodeURIComponent(code));
 export const auditPath = (id: string) => ROUTES.AUDIT.replace(':id', encodeURIComponent(id));
 
-/** Campo de depósito da carteira: o atalho "Depositar" do cabeçalho leva até ele já focado. */
 export const DEPOSIT_FIELD_ID = 'deposit';
 export const DEPOSIT_PATH = `${ROUTES.WALLET}#${DEPOSIT_FIELD_ID}`;
 
-/** Chaves do localStorage. */
 export const STORAGE_KEYS = { TOKEN: 'athelie:token', THEME: 'athelie:theme' } as const;
 
 export const Theme = { SYSTEM: 'system', LIGHT: 'light', DARK: 'dark' } as const;

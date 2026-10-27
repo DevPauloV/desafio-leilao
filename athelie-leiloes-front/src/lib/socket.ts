@@ -8,20 +8,17 @@ import { API_URL, getToken } from './api';
 import { formatMoney } from './money';
 import { setWallet } from './wallet';
 
-// Uma conexão só para o app inteiro. Sem token, só assiste às salas; com token, recebe também os avisos pessoais.
-// O token é lido a cada (re)conexão, então basta reconectar ao entrar ou sair.
+// `auth` como função: o token é relido a cada (re)conexão, então basta reconectar ao entrar ou sair.
 export const socket = io(API_URL, {
   autoConnect: false,
   auth: (send) => send(getToken() ? { token: getToken() } : {}),
 });
 
-/** Reconecta com o token atual (chamado ao entrar e ao sair). */
 export function reconnectSocket(): void {
   socket.disconnect();
   socket.connect();
 }
 
-/** Avisos da sala pessoal `user:<id>`, com qualquer página aberta. Usado uma vez, no App. */
 export function usePersonalEvents(): void {
   const navigate = useNavigate();
   useEffect(() => {

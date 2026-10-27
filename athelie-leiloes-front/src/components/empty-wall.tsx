@@ -1,8 +1,5 @@
 import type { ReactNode } from 'react';
 
-// Lista vazia como uma parede de galeria: moldura vazia pendurada na mesma cor "parede" dos cards de obra.
-// `searching` põe uma lupa bordô na moldura, para o filtro que não achou nada.
-
 export function EmptyWall({ title, searching = false, children }: { title: string; searching?: boolean; children?: ReactNode }) {
   return (
     <div role="status" className="grid justify-items-center gap-2.5 rounded-[10px] bg-wall px-5 pt-10 pb-11 text-center">

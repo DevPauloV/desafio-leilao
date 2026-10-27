@@ -17,22 +17,13 @@ export const placeBidSchema = z.object({
 });
 export type PlaceBidInput = z.infer<typeof placeBidSchema>;
 
-/**
- * Faz o withTransaction refazer a transação inteira (nova leitura e nova validação).
- * Na prática quase nunca chega aqui: dentro da transação, uma escrita concorrente no mesmo documento já
- * gera WriteConflict, que o driver repete sozinho. As condições abaixo são a segunda barreira.
- */
+/** Erro transitório: o withTransaction refaz tudo com estado novo (segunda barreira, além do WriteConflict). */
 function retryWithFreshState(): mongo.MongoError {
   const error = new mongo.MongoError('Estado mudou durante o lance; repetindo a transação.');
   error.addErrorLabel('TransientTransactionError');
   return error;
 }
 
-/**
- * Lance numa única transação: valida, atualiza o lote (condicionado ao bidCount lido), compromete o saldo
- * do novo líder, libera o do anterior e grava o lance encadeado. Em conflito, a transação é refeita e o
- * lance é validado de novo contra o estado novo. Os avisos do socket saem só depois do commit.
- */
 export async function placeBid(userId: string, lotId: string, amount: number) {
   const { response, title, bidCount, previousLeaderId } = await mongoose.connection.transaction(async (session) => {
     const now = new Date();
@@ -79,7 +70,6 @@ export async function placeBid(userId: string, lotId: string, amount: number) {
     );
     if (walletUpdate.modifiedCount !== 1) throw retryWithFreshState();
 
-    // O líder anterior foi superado: o valor dele volta ao disponível na hora.
     if (lot.leaderId && lot.currentBid != null) {
       await User.updateOne({ _id: lot.leaderId }, { $inc: { 'wallet.committed': -lot.currentBid } }, { session });
     }
@@ -114,7 +104,6 @@ export async function placeBid(userId: string, lotId: string, amount: number) {
   return response;
 }
 
-/** Situação do licitante num lote em que deu lance (contrato, seção 6). */
 function myBidStatus(lot: LotDoc, userId: string): MyBidStatus {
   if (lot.state === LotState.CANCELLED) return MyBidStatus.CANCELLED;
   if (lot.state === LotState.SETTLED) {
@@ -124,9 +113,7 @@ function myBidStatus(lot: LotDoc, userId: string): MyBidStatus {
   return lot.leaderId?.toString() === userId ? MyBidStatus.WINNING : MyBidStatus.OUTBID;
 }
 
-/** Um item por lote em que o licitante deu lance, pelo lance mais recente dele primeiro. */
 export async function listMyBids(userId: string) {
-  // Usa o índice { bidderId, lotId }.
   const mine = await Bid.aggregate<{ _id: Types.ObjectId; myHighestBid: number }>([
     { $match: { bidderId: new Types.ObjectId(userId) } },
     { $group: { _id: '$lotId', myHighestBid: { $max: '$amount' }, lastBidAt: { $max: '$createdAt' } } },

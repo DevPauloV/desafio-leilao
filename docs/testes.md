@@ -1,6 +1,6 @@
 # Testes automatizados
 
-A API tem 123 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
+A API tem 124 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
 
 ## Como rodar
 
@@ -16,7 +16,7 @@ O resultado esperado no fim é:
 
 ```
  Test Files  10 passed (10)
-      Tests  123 passed (123)
+      Tests  124 passed (124)
 ```
 
 Na primeira execução, o `mongodb-memory-server` baixa um binário do MongoDB (cerca de 100 MB), então demora mais. Das próximas vezes, leva uns 20 segundos.
@@ -48,7 +48,7 @@ Outros jeitos de rodar:
 | `audit-chain.test.ts` | Hash de cada lance, pseudônimo e assinatura da cabeça da cadeia |
 | `audit.test.ts` | Auditoria pública detectando cada tipo de adulteração feita direto no banco, e "meus arremates" |
 | `lots.test.ts` | Criação de lote, vitrine, busca e filtro, cancelamento, imagens e **vitrine funcionando com o Met fora do ar** |
-| `met.test.ts` | Busca no Met: descarte de obras sem imagem ou fora do domínio público, nova tentativa e erro claro quando o Met cai |
+| `met.test.ts` | Busca no Met: descarte de obras sem imagem ou fora do domínio público, impressões repetidas da mesma obra, nova tentativa e erro claro quando o Met cai |
 | `realtime.test.ts` | Entrada na sala e eventos de lance, prorrogação, cancelamento e liquidação pelo Socket.IO |
 | `auth.test.ts` | Cadastro, login, papéis, rate limit do login, CORS e rota inexistente |
 | `seed.test.ts` | Seed com 20 lotes de obras diferentes, sem duplicar ao rodar de novo, auditoria íntegra e carteiras fechando |

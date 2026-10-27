@@ -39,7 +39,6 @@ beforeEach(async () => {
 const walletOf = async (user: TestUser) => (await User.findById(user.id).lean())!.wallet;
 const endNow = (lotId: string) => Lot.updateOne({ _id: lotId }, { $set: { endsAt: new Date(Date.now() - 1) } });
 
-/** Lote ao vivo em que Alice deu 1.000 e Bruno cobriu com 1.100; depois vence. */
 async function lotWonByBruno() {
   await depositFor(app, alice, 50_000);
   await depositFor(app, bruno, 50_000);

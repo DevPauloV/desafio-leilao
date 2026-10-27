@@ -7,10 +7,6 @@ import { Bid } from '../models/Bid.js';
 import { Lot } from '../models/Lot.js';
 import { imageUrl } from './lots.js';
 
-/**
- * Auditoria pública: recalcula a cadeia do lote a cada consulta (contrato, seção 5).
- * Lote cancelado também é auditável. Nunca devolve ids de usuário.
- */
 export async function auditLot(id: string) {
   const lot = await Lot.findById(id).lean();
   if (!lot) throw new AppError(ErrorCode.NOT_FOUND);
@@ -18,7 +14,6 @@ export async function auditLot(id: string) {
   const bids = await Bid.find({ lotId: lot._id }).sort({ seq: 1, _id: 1 }).lean();
 
   const { result } = lot;
-  // Ids viram texto só para conferir pseudônimos dentro da verificação; não entram na resposta.
   const { bids: checked, verdict } = verifyChain(
     env.AUDIT_SECRET,
     {

@@ -11,7 +11,7 @@ import { createLotSchema, listLotsQuery } from '../services/lots.js';
 
 const auctioneerOnly = [requireAuth, requireRole(Role.AUCTIONEER)];
 
-// Por usuário (em memória, uma instância da API). Vem depois do requireAuth, então req.auth sempre existe.
+// Por usuário e em memória; vem depois do requireAuth, então req.auth sempre existe.
 const bidLimiter = rateLimit({
   windowMs: BID_RATE_LIMIT_WINDOW_MS,
   limit: BID_RATE_LIMIT_MAX,
