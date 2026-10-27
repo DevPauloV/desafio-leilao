@@ -8,12 +8,7 @@ Cada lance guarda um `hash` e o `prevHash` do anterior, formando uma cadeia. O h
 
 O lote guarda a **cabeça** da cadeia (quantidade de lances e último hash), também assinada e gravada na mesma transação do lance.
 
-```mermaid
-flowchart LR
-  b1["lance #1<br/>HMAC(dados #1)"] --> b2["lance #2<br/>HMAC(dados #2 + hash #1)"]
-  b2 --> b3["lance #3<br/>HMAC(dados #3 + hash #2)"]
-  b3 -.-> h["cabeça assinada no lote<br/>3 lances, último hash"]
-```
+![Cadeia de hashes: cada lance soma seus dados ao hash anterior, e o lote guarda a cabeça assinada](img/cadeia-de-hashes.svg)
 
 **Por que HMAC e não SHA-256 puro:** com SHA-256, quem tem acesso ao banco recalcula a cadeia inteira depois de adulterar, e tudo volta a parecer válido. Com HMAC, refazer a cadeia exige o segredo, que não está no banco.
 

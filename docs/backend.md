@@ -6,23 +6,7 @@ As rotas, os eventos e os códigos de erro estão no [contrato da API](contract.
 
 ## Arquitetura
 
-```mermaid
-flowchart LR
-  browser["Navegador<br/>React + Vite"]
-  subgraph api["API (Node.js + Express)"]
-    rest["REST<br/>routes → controllers → services"]
-    socket["Socket.IO<br/>salas por lote e por usuário"]
-    job["Varredura de liquidação<br/>a cada 2 s"]
-  end
-  mongo[("MongoDB<br/>replica set")]
-  met["The Met<br/>Collection API"]
-
-  browser -- "lances, carteira, painel" --> rest
-  socket -- "avisos depois do commit" --> browser
-  rest -- "transações" --> mongo
-  job -- "uma transação por lote" --> mongo
-  rest -. "só o painel do leiloeiro" .-> met
-```
+![Arquitetura: navegador, API com REST, Socket.IO e liquidação, MongoDB e API do Met](img/arquitetura.svg)
 
 - **Camadas simples:** routes → controllers → services → models, sem repositórios nem abstrações extras ([ADR 0001](adr/0001-estrutura-do-back-end.md)).
 - **Regras puras em `domain/`:** as regras de lance e a cadeia de hashes não dependem de banco nem de HTTP, então são testadas isoladamente.
@@ -33,18 +17,7 @@ flowchart LR
 
 O lance entra pela API REST, não pelo socket ([ADR 0006](adr/0006-lance-via-rest.md)). O Socket.IO só avisa depois do commit, então ninguém vê um lance que depois foi desfeito.
 
-```mermaid
-sequenceDiagram
-  participant L as Licitante
-  participant A as API
-  participant M as MongoDB
-  participant S as Sala (Socket.IO)
-  L->>A: POST /api/lots/:id/bids
-  A->>M: transação: valida regras e saldo, compromete o valor,<br/>libera o líder anterior, grava o lance com hash,<br/>atualiza o lote se o número de lances não mudou
-  M-->>A: commit
-  A-->>L: 201 lance aceito
-  A->>S: lance novo, novo fim (anti-sniping), aviso de superado
-```
+![Caminho de um lance: o licitante envia, a API confere as regras, grava tudo numa transação e só então avisa a sala](img/caminho-do-lance.svg)
 
 ## Regras de negócio
 

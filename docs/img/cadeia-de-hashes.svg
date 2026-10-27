@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="250" viewBox="0 0 880 250" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <style>
+    .box { fill: #ffffff; stroke: #d7dad3; stroke-width: 1.5; }
+    .head { fill: #f3e3e5; stroke: #7b1e2e; stroke-width: 1.5; }
+    .t { font-size: 15px; font-weight: 600; fill: #191b1a; text-anchor: middle; }
+    .s { font-size: 12.5px; fill: #5e6461; text-anchor: middle; }
+    .h { font-size: 13px; font-weight: 700; fill: #7b1e2e; text-anchor: middle; }
+    .line { stroke: #191b1a; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .dash { stroke: #7b1e2e; stroke-width: 1.5; fill: none; stroke-dasharray: 6 4; marker-end: url(#arrowBrand); }
+    .cap { font-size: 13px; fill: #191b1a; }
+    .capm { font-size: 12.5px; fill: #5e6461; }
+    .code { font-family: Consolas, Menlo, monospace; font-size: 13px; fill: #7b1e2e; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#191b1a"/>
+    </marker>
+    <marker id="arrowBrand" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7b1e2e"/>
+    </marker>
+  </defs>
+
+  <rect width="880" height="250" rx="14" fill="#f2f3ef"/>
+
+  <!-- Lances -->
+  <rect class="box" x="24" y="28" width="170" height="104" rx="10"/>
+  <text class="t" x="109" y="58">Lance #1</text>
+  <text class="s" x="109" y="80">dados do lance</text>
+  <text class="s" x="109" y="98">+ início da cadeia</text>
+  <text class="h" x="109" y="120">= hash #1</text>
+
+  <rect class="box" x="234" y="28" width="170" height="104" rx="10"/>
+  <text class="t" x="319" y="58">Lance #2</text>
+  <text class="s" x="319" y="80">dados do lance</text>
+  <text class="s" x="319" y="98">+ hash #1</text>
+  <text class="h" x="319" y="120">= hash #2</text>
+
+  <rect class="box" x="444" y="28" width="170" height="104" rx="10"/>
+  <text class="t" x="529" y="58">Lance #3</text>
+  <text class="s" x="529" y="80">dados do lance</text>
+  <text class="s" x="529" y="98">+ hash #2</text>
+  <text class="h" x="529" y="120">= hash #3</text>
+
+  <!-- Cabeça -->
+  <rect class="head" x="676" y="28" width="180" height="104" rx="10"/>
+  <text class="t" x="766" y="58">Cabeça do lote</text>
+  <text class="s" x="766" y="80">3 lances</text>
+  <text class="s" x="766" y="98">último hash = hash #3</text>
+  <text class="h" x="766" y="120">assinada</text>
+
+  <line class="line" x1="194" y1="80" x2="232" y2="80"/>
+  <line class="line" x1="404" y1="80" x2="442" y2="80"/>
+  <line class="dash" x1="614" y1="80" x2="674" y2="80"/>
+
+  <!-- Legenda -->
+  <text class="code" x="24" y="172">hash = HMAC-SHA256(dados do lance + hash anterior, AUDIT_SECRET)</text>
+  <text class="cap" x="24" y="198">Dados do lance: lote, sequência, pseudônimo, valor e horário. O segredo fica só na API, fora do banco.</text>
+  <text class="capm" x="24" y="222">Mudar, remover ou inserir um lance quebra os hashes seguintes ou a contagem da cabeça, e a auditoria acusa.</text>
+</svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="350" viewBox="0 0 880 350" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <style>
+    .box { fill: #ffffff; stroke: #d7dad3; stroke-width: 1.5; }
+    .api { fill: #f3e3e5; stroke: #7b1e2e; stroke-width: 1.5; }
+    .ext { fill: #ffffff; stroke: #5e6461; stroke-width: 1.5; stroke-dasharray: 6 4; }
+    .db { fill: #e1f0e8; stroke: #1e6b4a; stroke-width: 1.5; }
+    .t { font-size: 15px; font-weight: 600; fill: #191b1a; text-anchor: middle; }
+    .s { font-size: 12.5px; fill: #5e6461; text-anchor: middle; }
+    .g { font-size: 13px; font-weight: 700; fill: #7b1e2e; text-anchor: middle; letter-spacing: .3px; }
+    .l { font-size: 12px; fill: #5e6461; }
+    .line { stroke: #191b1a; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .dash { stroke: #5e6461; stroke-width: 1.5; fill: none; stroke-dasharray: 6 4; marker-end: url(#arrowMuted); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#191b1a"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5e6461"/>
+    </marker>
+  </defs>
+
+  <rect width="880" height="350" rx="14" fill="#f2f3ef"/>
+
+  <!-- Navegador -->
+  <rect class="box" x="24" y="84" width="160" height="140" rx="10"/>
+  <text class="t" x="104" y="148">Navegador</text>
+  <text class="s" x="104" y="168">React + Vite</text>
+
+  <!-- API -->
+  <rect class="api" x="276" y="24" width="300" height="300" rx="12"/>
+  <text class="g" x="426" y="50">API · Node.js + Express</text>
+
+  <rect class="box" x="300" y="66" width="252" height="62" rx="8"/>
+  <text class="t" x="426" y="93">REST</text>
+  <text class="s" x="426" y="113">routes → controllers → services</text>
+
+  <rect class="box" x="300" y="148" width="252" height="62" rx="8"/>
+  <text class="t" x="426" y="175">Socket.IO</text>
+  <text class="s" x="426" y="195">salas por lote e por usuário</text>
+
+  <rect class="box" x="300" y="230" width="252" height="70" rx="8"/>
+  <text class="t" x="426" y="257">Liquidação</text>
+  <text class="s" x="426" y="277">varredura a cada 2 s,</text>
+  <text class="s" x="426" y="292">uma transação por lote</text>
+
+  <!-- The Met -->
+  <rect class="ext" x="664" y="24" width="192" height="66" rx="10"/>
+  <text class="t" x="760" y="52">API do Met</text>
+  <text class="s" x="760" y="72">acervo de obras</text>
+
+  <!-- MongoDB -->
+  <path class="db" d="M664,176 v100 a96,16 0 0 0 192,0 v-100"/>
+  <ellipse class="db" cx="760" cy="176" rx="96" ry="16"/>
+  <text class="t" x="760" y="232">MongoDB</text>
+  <text class="s" x="760" y="252">replica set</text>
+
+  <!-- Setas -->
+  <line class="line" x1="184" y1="110" x2="298" y2="110"/>
+  <text class="l" x="200" y="102">HTTP</text>
+
+  <line class="line" x1="300" y1="186" x2="186" y2="186"/>
+  <text class="l" x="200" y="178">eventos</text>
+
+  <path class="dash" d="M552,84 L662,60"/>
+  <text class="l" x="580" y="56">só o painel</text>
+
+  <path class="line" d="M552,112 L662,196"/>
+  <text class="l" x="604" y="140">transação</text>
+
+  <path class="line" d="M552,264 L662,246"/>
+  <text class="l" x="590" y="246">transação</text>
+
+  <text class="l" x="24" y="290">Os eventos saem só depois do commit:</text>
+  <text class="l" x="24" y="306">ninguém vê um lance que foi desfeito.</text>
+</svg>

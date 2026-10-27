@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="390" viewBox="0 0 920 390" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <style>
+    .card { fill: #ffffff; stroke: #d7dad3; stroke-width: 1.5; }
+    .tx { fill: #f3e3e5; stroke: #7b1e2e; stroke-width: 1.5; }
+    .num { fill: #7b1e2e; }
+    .n { font-size: 14px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .t { font-size: 14.5px; font-weight: 700; fill: #191b1a; text-anchor: middle; }
+    .s { font-size: 12.5px; fill: #5e6461; text-anchor: middle; }
+    .tag { font-size: 12px; font-weight: 700; fill: #7b1e2e; text-anchor: middle; }
+    .line { stroke: #191b1a; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .no { fill: #f7eadb; stroke: #a3560f; stroke-width: 1.5; }
+    .noT { font-size: 13px; font-weight: 700; fill: #a3560f; text-anchor: middle; }
+    .noLine { stroke: #a3560f; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; marker-end: url(#arrowWarn); }
+    .info { fill: #ffffff; stroke: #5e6461; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .infoT { font-size: 13px; font-weight: 700; fill: #191b1a; text-anchor: middle; }
+    .infoLine { stroke: #5e6461; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; marker-end: url(#arrowMuted); }
+    .foot { font-size: 13px; fill: #191b1a; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#191b1a"/>
+    </marker>
+    <marker id="arrowWarn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a3560f"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5e6461"/>
+    </marker>
+  </defs>
+
+  <rect width="920" height="390" rx="14" fill="#f2f3ef"/>
+
+  <!-- 1 -->
+  <rect class="card" x="22" y="24" width="196" height="186" rx="10"/>
+  <circle class="num" cx="120" cy="54" r="15"/>
+  <text class="n" x="120" y="59">1</text>
+  <text class="t" x="120" y="96">Licitante dá o lance</text>
+  <text class="s" x="120" y="122">digita o valor na sala</text>
+  <text class="s" x="120" y="142">e envia para a API</text>
+
+  <!-- 2 -->
+  <rect class="card" x="248" y="24" width="196" height="186" rx="10"/>
+  <circle class="num" cx="346" cy="54" r="15"/>
+  <text class="n" x="346" y="59">2</text>
+  <text class="t" x="346" y="96">API confere as regras</text>
+  <text class="s" x="346" y="122">o lote está ao vivo?</text>
+  <text class="s" x="346" y="142">o valor é ≥ o mínimo?</text>
+  <text class="s" x="346" y="162">não é o líder atual?</text>
+  <text class="s" x="346" y="182">cabe no saldo?</text>
+
+  <!-- 3 -->
+  <rect class="tx" x="474" y="24" width="196" height="186" rx="10"/>
+  <circle class="num" cx="572" cy="54" r="15"/>
+  <text class="n" x="572" y="59">3</text>
+  <text class="t" x="572" y="96">Grava tudo de uma vez</text>
+  <text class="s" x="572" y="122">salva o lance e o hash</text>
+  <text class="s" x="572" y="142">reserva o saldo do líder</text>
+  <text class="s" x="572" y="162">devolve o do anterior</text>
+  <text class="s" x="572" y="182">atualiza o lote</text>
+  <text class="tag" x="572" y="202">transação: tudo ou nada</text>
+
+  <!-- 4 -->
+  <rect class="card" x="700" y="24" width="196" height="186" rx="10"/>
+  <circle class="num" cx="798" cy="54" r="15"/>
+  <text class="n" x="798" y="59">4</text>
+  <text class="t" x="798" y="96">Avisa todo mundo</text>
+  <text class="s" x="798" y="122">o lance aparece na sala</text>
+  <text class="s" x="798" y="142">quem foi superado</text>
+  <text class="s" x="798" y="162">recebe um aviso</text>
+  <text class="s" x="798" y="182">o fim pode ser estendido</text>
+  <text class="s" x="798" y="200">(anti-sniping)</text>
+
+  <line class="line" x1="218" y1="117" x2="246" y2="117"/>
+  <line class="line" x1="444" y1="117" x2="472" y2="117"/>
+  <line class="line" x1="670" y1="117" x2="698" y2="117"/>
+
+  <!-- Recusa -->
+  <line class="noLine" x1="346" y1="210" x2="346" y2="246"/>
+  <rect class="no" x="248" y="248" width="196" height="82" rx="10"/>
+  <text class="noT" x="346" y="274">Alguma regra falhou?</text>
+  <text class="s" x="346" y="296">recusa com mensagem clara</text>
+  <text class="s" x="346" y="316">e nada é gravado</text>
+
+  <!-- Simultâneos -->
+  <line class="infoLine" x1="572" y1="210" x2="572" y2="246"/>
+  <rect class="info" x="474" y="248" width="196" height="82" rx="10"/>
+  <text class="infoT" x="572" y="274">Dois lances juntos?</text>
+  <text class="s" x="572" y="296">só um é gravado; o outro</text>
+  <text class="s" x="572" y="316">é conferido de novo</text>
+
+  <text class="foot" x="22" y="364">O passo 4 só acontece depois que o passo 3 terminou: ninguém vê um lance que não foi gravado.</text>
+</svg>
