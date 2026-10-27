@@ -1,7 +1,7 @@
 import type { Express } from 'express';
 import request from 'supertest';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { LotState, LotStatus, Role } from '../src/constants.js';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LotState, LotStatus, Role, SETTLEMENT_SWEEP_INTERVAL_MS } from '../src/constants.js';
 import { Bid } from '../src/models/Bid.js';
 import { Image } from '../src/models/Image.js';
 import { Lot } from '../src/models/Lot.js';
@@ -119,6 +119,25 @@ describe('liquidação', () => {
       await expect.poll(async () => (await Lot.findById(lot.id).lean())?.state, { timeout: 5_000 }).toBe(LotState.SETTLED);
     } finally {
       clearInterval(timer);
+    }
+  });
+});
+
+describe('liquidação sob demanda (instância pausada sem varredura)', () => {
+  it('a primeira requisição depois do intervalo liquida o que venceu; outra dentro do intervalo não varre de novo', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const lot = await lotWonByBruno();
+      vi.setSystemTime(Date.now() + SETTLEMENT_SWEEP_INTERVAL_MS);
+
+      const detail = await request(app).get(`/api/lots/${lot.id}`);
+      expect(detail.body.result).toMatchObject({ sold: true, amount: 1_100 });
+
+      const other = await insertLot(auctioneer.id, { endsAt: new Date(Date.now() - 1) });
+      await request(app).get(`/api/lots/${other.id}`);
+      expect((await Lot.findById(other.id).lean())!.state).toBe(LotState.ACTIVE);
+    } finally {
+      vi.useRealTimers();
     }
   });
 });

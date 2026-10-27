@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import type { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import { env } from '../config/env.js';
 import { LotState, RECEIPT_CODE_BYTES, SETTLEMENT_SWEEP_INTERVAL_MS, SocketEvent } from '../constants.js';
@@ -69,20 +70,30 @@ export async function settleDueLots(now: Date = new Date()): Promise<number> {
   return settled;
 }
 
+let running = false;
+let lastSweepAt = 0;
+
+async function sweep(): Promise<void> {
+  if (running) return;
+  running = true;
+  lastSweepAt = Date.now();
+  try {
+    await settleDueLots();
+  } catch (err) {
+    console.error('[liquidação] falha na varredura:', err instanceof Error ? err.message : err);
+  } finally {
+    running = false;
+  }
+}
+
 /** Roda já no boot para liquidar o que venceu com a API desligada. */
 export function startSettlementSweep(): NodeJS.Timeout {
-  let running = false;
-  const sweep = async () => {
-    if (running) return;
-    running = true;
-    try {
-      await settleDueLots();
-    } catch (err) {
-      console.error('[liquidação] falha na varredura:', err instanceof Error ? err.message : err);
-    } finally {
-      running = false;
-    }
-  };
   void sweep();
   return setInterval(sweep, SETTLEMENT_SWEEP_INTERVAL_MS);
 }
+
+/** Na Vercel a instância pausa sem requisição e o `setInterval` para: quem chega liquida o que venceu (ADR 0005). */
+export const settleDueMiddleware: RequestHandler = async (_req, _res, next) => {
+  if (Date.now() - lastSweepAt >= SETTLEMENT_SWEEP_INTERVAL_MS) await sweep();
+  next();
+};

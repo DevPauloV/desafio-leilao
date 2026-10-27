@@ -23,9 +23,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DEPOSIT_PATH, ROLE_LABELS, ROUTES, Role, Theme } from '@/constants';
+import { DEPOSIT_PATH, ROLE_LABELS, ROUTES, Role, SocketEvent, Theme } from '@/constants';
 import { logout, useAuth } from '@/lib/auth';
 import { formatMoney } from '@/lib/money';
+import { socket } from '@/lib/socket';
 import { setTheme, useTheme, type ResolvedTheme } from '@/lib/theme';
 import { loadWallet, useWallet } from '@/lib/wallet';
 import type { User, Wallet } from '@/types';
@@ -66,8 +67,15 @@ export function AppHeader() {
   const isBidder = user?.role === Role.BIDDER;
   const items = navItems(user?.role);
 
+  // Também a cada (re)conexão do socket: um `wallet:update` pode ter saído com a conexão caída ou a aba oculta.
   useEffect(() => {
-    if (isBidder) void loadWallet();
+    if (!isBidder) return;
+    const reload = () => void loadWallet();
+    reload();
+    socket.on(SocketEvent.CONNECT, reload);
+    return () => {
+      socket.off(SocketEvent.CONNECT, reload);
+    };
   }, [isBidder, user?.id]);
 
   // Recarga, não navigate: a rota protegida veria "sem usuário" antes e mandaria para /entrar; e limpa a memória.

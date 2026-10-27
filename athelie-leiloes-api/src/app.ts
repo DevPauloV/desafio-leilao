@@ -3,6 +3,7 @@ import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './errors.js';
+import { settleDueMiddleware } from './jobs/settlement.js';
 import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
 import { imagesRouter } from './routes/images.js';
@@ -26,6 +27,7 @@ export function createApp(): Express {
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
+  app.use('/api', settleDueMiddleware);
   app.use('/api/auth', authRouter);
   app.use('/api/met', metRouter);
   app.use('/api/lots', lotsRouter);

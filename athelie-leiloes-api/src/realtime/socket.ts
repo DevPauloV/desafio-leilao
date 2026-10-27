@@ -1,9 +1,11 @@
 // Só transmite avisos; o lance vai pela REST (ADR 0006).
 import type { Server as HttpServer } from 'node:http';
+import { createAdapter } from '@socket.io/mongo-adapter';
+import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import { z } from 'zod';
 import { env } from '../config/env.js';
-import { ErrorCode, SocketEvent } from '../constants.js';
+import { ErrorCode, SOCKET_ADAPTER_COLLECTION, SOCKET_ADAPTER_TTL_SECONDS, SocketEvent } from '../constants.js';
 import { AppError, errorBodyOf } from '../errors.js';
 import { verifyToken } from '../middlewares/auth.js';
 import { objectId } from '../middlewares/validate.js';
@@ -17,8 +19,16 @@ const lotPayload = z.object({ lotId: objectId });
 
 let io: Server | null = null;
 
-export function attachSocket(httpServer: HttpServer): Server {
-  io = new Server(httpServer, { cors: { origin: env.CORS_ORIGIN } });
+/** Chamar depois do `mongoose.connect`: o adapter leva os avisos às outras instâncias pelo MongoDB. */
+export async function attachSocket(httpServer: HttpServer): Promise<Server> {
+  const db = mongoose.connection.db;
+  if (!db) throw new Error('attachSocket chamado antes do mongoose.connect');
+  const events = db.collection(SOCKET_ADAPTER_COLLECTION);
+  await events.createIndex({ createdAt: 1 }, { expireAfterSeconds: SOCKET_ADAPTER_TTL_SECONDS });
+  io = new Server(httpServer, {
+    cors: { origin: env.CORS_ORIGIN },
+    adapter: createAdapter(events, { addCreatedAtField: true }),
+  });
 
   io.on('connection', (socket) => {
     // Token ausente ou inválido: o cliente só assiste (sem sala pessoal).

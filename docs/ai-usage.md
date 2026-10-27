@@ -1,6 +1,6 @@
 # Uso de IA no projeto
 
-Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para ganhar velocidade no que é repetitivo ou trabalhoso de digitar. O raciocínio do projeto ficou comigo: entender o desafio, montar a arquitetura, modelar os dados, definir as regras e escolher as técnicas. A IA executava a partir do que eu especificava, e nada entrou sem eu revisar e testar. O deploy eu fiz manualmente: configurei o Atlas, o Railway e a Vercel e publiquei o repositório.
+Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para ganhar velocidade no que é repetitivo ou trabalhoso de digitar. O raciocínio do projeto ficou comigo: entender o desafio, montar a arquitetura, modelar os dados, definir as regras e escolher as técnicas. A IA executava a partir do que eu especificava, e nada entrou sem eu revisar e testar. No deploy, escolhi as plataformas, criei o cluster no Atlas e publiquei o repositório; os comandos da CLI da Vercel foram executados com a IA e conferidos por mim.
 
 ## Como dividi o trabalho
 
@@ -14,11 +14,10 @@ Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para 
   - cadeia de hashes com HMAC para a auditoria;
   - pseudônimo por lote para a privacidade.
 - Visual do front, aprovado por mim num protótipo antes de qualquer tela.
-- Deploy, feito manualmente por mim:
-  - escolha das plataformas;
+- Deploy:
+  - escolha das plataformas e a troca do Railway pela Vercel na API;
   - criação do cluster no Atlas;
-  - configuração do Railway e da Vercel;
-  - variáveis e segredos de produção;
+  - variáveis de produção;
   - publicação do repositório no GitHub.
 
 **Onde a IA ajudou**
@@ -57,13 +56,15 @@ Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para 
 - Aprovei o visual num protótipo HTML antes de implementar. Troquei a tipografia proposta pela Manrope.
 
 **Deploy**
-- Fiz o deploy manualmente, nos painéis de cada plataforma: Vercel para o front, Railway para a API e MongoDB Atlas para o banco. A API não vai para funções serverless porque mantém WebSocket aberto e roda a liquidação em segundo plano. O Atlas entrou porque as transações exigem replica set.
-- Segredos novos para produção, e conferência da lista de arquivos antes de publicar o repositório.
+- O plano era a API no Railway, que suspendeu os cadastros novos depois de um incidente de segurança. Decidi levar a API também para a Vercel, que passou a aceitar WebSocket em funções, e pesei os impactos antes: conexão que cai a cada 5 min, instância que pausa sem requisição e cota mensal do plano gratuito.
+- Para cada impacto, uma solução pequena: adapter do Socket.IO no próprio MongoDB (sem Redis), liquidação também na requisição seguinte ao fim, e socket desconectado com a aba oculta. Exigi que o mesmo código continuasse rodando no Docker e no Railway, sem `if` por plataforma no comportamento.
+- O Atlas entrou porque as transações exigem replica set.
+- Segredos novos para produção, gerados e enviados direto para a Vercel, e conferência da lista de arquivos antes de publicar o repositório.
 
 ## Como revisei
 
 - Li o código gerado antes de aceitar e pedi correções quando não seguia o contrato ou a diretriz de simplicidade.
-- Rodei os testes (124 na API) e o build a cada etapa.
+- Rodei os testes (125 na API) e o build a cada etapa.
 - Testei os fluxos no navegador com dois licitantes ao mesmo tempo, e no Docker derrubando e subindo o servidor.
 - Rodei o script de adulteração (`npm run demo:tamper`) e conferi a auditoria acusando cada tipo de alteração.
 - Quando a IA errou, eu corrigi ou mandei refazer. Exemplos: uma edição automática que corrompeu o contrato da API, e um diagnóstico errado da auditoria para uma cabeça de cadeia adulterada.

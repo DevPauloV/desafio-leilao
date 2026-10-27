@@ -22,5 +22,5 @@ Quando o lote chega ao fim, o vencedor é debitado, o leiloeiro é creditado e o
 
 ## Consequências
 - O comprovante pode demorar até cerca de 2 s depois do fim para existir. A tela mostra "Apurando resultado…" nesse intervalo.
-- Com o servidor hibernado (plano gratuito de hospedagem), a liquidação acontece quando ele volta. Isso vai no README.
-- Uma instância só. Com várias, a transação condicional continua impedindo liquidação dupla, mas haveria trabalho repetido.
+- Com a instância pausada (função na Vercel, ADR 0005), o `setInterval` para. Um middleware em `/api` roda a mesma varredura no máximo a cada 2 s, então o lote vencido é liquidado na primeira requisição seguinte.
+- Com várias instâncias, a transação condicional continua impedindo liquidação dupla; só há trabalho repetido.

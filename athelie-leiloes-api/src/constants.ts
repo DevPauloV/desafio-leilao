@@ -52,6 +52,9 @@ export type AuditProblem = ValueOf<typeof AuditProblem>;
 export const ANTI_SNIPING_WINDOW_MS = 120_000;
 export const ANTI_SNIPING_EXTENSION_MS = 120_000;
 export const SETTLEMENT_SWEEP_INTERVAL_MS = 2_000;
+/** Avisos do Socket.IO entre instâncias da API (ADR 0005); o TTL apaga os antigos. */
+export const SOCKET_ADAPTER_COLLECTION = 'socket_events';
+export const SOCKET_ADAPTER_TTL_SECONDS = 3_600;
 export const MET_TIMEOUT_MS = 5_000;
 export const MET_RETRIES = 1;
 export const MET_SEARCH_LIMIT = 20;

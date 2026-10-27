@@ -27,6 +27,8 @@ const envSchema = z.object({
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
   SEED_ON_START: z.stringbool().default(false),
   MET_API_BASE: z.url().default('https://collectionapi.metmuseum.org/public/collection/v1'),
+  // Definida pela própria Vercel ("1"); fora dela, a API abre a porta.
+  VERCEL: z.stringbool().default(false),
 });
 
 const parsed = envSchema.safeParse(process.env);

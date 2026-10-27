@@ -1,6 +1,6 @@
 # Testes automatizados
 
-A API tem 124 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
+A API tem 125 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
 
 ## Como rodar
 
@@ -16,7 +16,7 @@ O resultado esperado no fim é:
 
 ```
  Test Files  10 passed (10)
-      Tests  124 passed (124)
+      Tests  125 passed (125)
 ```
 
 Na primeira execução, o `mongodb-memory-server` baixa um binário do MongoDB (cerca de 100 MB), então demora mais. Das próximas vezes, leva uns 20 segundos.
@@ -44,7 +44,7 @@ Outros jeitos de rodar:
 |---|---|
 | `bid-rules.test.ts` | Regras puras, sem banco: estado do lote, lance mínimo, validação do lance e anti-sniping |
 | `bids.test.ts` | Carteira, lances pela API, cada mensagem de recusa, estorno no cancelamento e **concorrência** |
-| `settlement.test.ts` | Liquidação: débito do vencedor, crédito do leiloeiro, comprovante sem dados pessoais, lote sem lances e duas liquidações ao mesmo tempo |
+| `settlement.test.ts` | Liquidação: débito do vencedor, crédito do leiloeiro, comprovante sem dados pessoais, lote sem lances, duas liquidações ao mesmo tempo e liquidação na requisição seguinte ao fim |
 | `audit-chain.test.ts` | Hash de cada lance, pseudônimo e assinatura da cabeça da cadeia |
 | `audit.test.ts` | Auditoria pública detectando cada tipo de adulteração feita direto no banco, e "meus arremates" |
 | `lots.test.ts` | Criação de lote, vitrine, busca e filtro, cancelamento, imagens e **vitrine funcionando com o Met fora do ar** |

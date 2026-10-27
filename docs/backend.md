@@ -25,7 +25,7 @@ O lance entra pela API REST, não pelo socket ([ADR 0006](adr/0006-lance-via-res
 - **Lance mínimo:** o primeiro ≥ lance inicial; os seguintes ≥ lance atual + incremento. O valor exato é aceito. O líder não cobre o próprio lance.
 - **Saldo:** disponível = total − comprometido. O valor de quem lidera fica comprometido e é liberado na hora em que essa pessoa é superada. O lance só é aceito se couber no disponível.
 - **Anti-sniping:** lance nos últimos 2 minutos muda o fim para **horário do lance + 2 min**. Somar ao fim atual deixaria lances seguidos empurrarem o fim cada vez mais longe ([ADR 0003](adr/0003-interpretacoes-do-pdf.md)).
-- **Liquidação:** uma varredura a cada 2 s encerra os lotes vencidos. Numa única transação, debita o vencedor, credita o leiloeiro e gera o comprovante. Lote sem lances termina sem vencedor ([ADR 0007](adr/0007-liquidacao-por-varredura.md)).
+- **Liquidação:** uma varredura a cada 2 s (e, na Vercel, também na requisição seguinte ao fim) encerra os lotes vencidos. Numa única transação, debita o vencedor, credita o leiloeiro e gera o comprovante. Lote sem lances termina sem vencedor ([ADR 0007](adr/0007-liquidacao-por-varredura.md)).
 - **Cancelamento:** lote agendado ou ao vivo. Se houver lances, o valor comprometido do líder volta na mesma transação. Lote encerrado não pode ser cancelado.
 - **Concorrência:** cada lance é uma transação com update condicional pelo número de lances do lote, então dois lances simultâneos nunca valem sobre o mesmo estado. Dinheiro sempre em centavos inteiros.
 - **Recusas:** "abaixo do mínimo" (com o valor mínimo em R$), "saldo insuficiente", "você já está ganhando", "lote ainda não começou" e "lote encerrado".
@@ -77,13 +77,13 @@ As variáveis estão explicadas no [`.env.example`](../.env.example), e a API n�
 
 ## Testes
 
-São 124 testes automatizados na API, com o MongoDB em memória, incluindo os de concorrência. Como rodar e o que cada arquivo cobre: [Testes automatizados](testes.md).
+São 125 testes automatizados na API, com o MongoDB em memória, incluindo os de concorrência. Como rodar e o que cada arquivo cobre: [Testes automatizados](testes.md).
 
 ## Estrutura
 
 ```
 athelie-leiloes-api/src/
-├── server.ts            sobe HTTP, Socket.IO, varredura e seed
+├── server.ts            sobe HTTP, Socket.IO, varredura e seed (exporta o servidor para a Vercel)
 ├── app.ts               Express: middlewares e rotas
 ├── config/env.ts        variáveis de ambiente validadas com Zod
 ├── constants.ts         papéis, estados, erros, eventos e números das regras
@@ -94,8 +94,8 @@ athelie-leiloes-api/src/
 ├── services/            regras de negócio: lances, carteira, lotes, liquidação, auditoria, Met
 ├── domain/              funções puras: bid-rules.ts e audit-chain.ts
 ├── models/              schemas do Mongoose (User, Lot, Bid, Image)
-├── realtime/socket.ts   salas por lote e salas pessoais
-├── jobs/settlement.ts   varredura que liquida lotes vencidos
+├── realtime/socket.ts   salas por lote e salas pessoais; adapter no MongoDB entre instâncias
+├── jobs/settlement.ts   varredura que liquida lotes vencidos (timer e sob demanda)
 ├── seed/                dados de demonstração
 └── scripts/             seed manual e demonstração de adulteração
 ```
@@ -108,7 +108,7 @@ athelie-leiloes-api/src/
 | [0002](adr/0002-mongodb-transacoes.md) | MongoDB em replica set, com transações para lance, saldo e liquidação |
 | [0003](adr/0003-interpretacoes-do-pdf.md) | Interpretações do enunciado (lance mínimo, anti-sniping, cancelamento) |
 | [0004](adr/0004-independencia-do-met.md) | Obra e imagem copiadas para o banco |
-| [0005](adr/0005-deploy.md) | Deploy em Vercel + Railway + Atlas |
+| [0005](adr/0005-deploy.md) | Deploy de front e API na Vercel, banco no Atlas |
 | [0006](adr/0006-lance-via-rest.md) | Lance pela REST; o Socket.IO só avisa |
 | [0007](adr/0007-liquidacao-por-varredura.md) | Liquidação por varredura, uma transação por lote |
 | [0008](adr/0008-cadeia-de-hashes-hmac.md) | Cadeia de hashes HMAC contra adulteração |

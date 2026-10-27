@@ -31,6 +31,8 @@ Números de regra:
 | `ANTI_SNIPING_WINDOW_MS` | `120_000` | lance com menos que isso para o fim prorroga |
 | `ANTI_SNIPING_EXTENSION_MS` | `120_000` | novo fim = horário do lance + isso |
 | `SETTLEMENT_SWEEP_INTERVAL_MS` | `2_000` | intervalo da varredura de liquidação |
+| `SOCKET_ADAPTER_COLLECTION` | `'socket_events'` | coleção do adapter do Socket.IO |
+| `SOCKET_ADAPTER_TTL_SECONDS` | `3_600` | tempo até o TTL apagar um aviso |
 | `MET_TIMEOUT_MS` | `5_000` | timeout de cada chamada ao Met |
 | `MET_RETRIES` | `1` | novas tentativas após falha |
 | `MET_SEARCH_LIMIT` | `20` | obras devolvidas por busca |
@@ -106,6 +108,8 @@ Detalhe de cada campo, com explicação, na seção "Banco de dados" do plano. R
 
 **images**: `data` (Buffer, ≤ `MAX_IMAGE_BYTES`), `contentType`, `createdAt`.
 
+**socket_events**: avisos do Socket.IO entre instâncias da API (`@socket.io/mongo-adapter`), com TTL de `SOCKET_ADAPTER_TTL_SECONDS` em `createdAt`. Não guarda nada de negócio (ADR 0005).
+
 Calculado, nunca salvo: saldo disponível, `LotStatus`, lance mínimo aceito, posição do usuário, total recebido, veredito da auditoria.
 
 ## 4. Regras de lance
@@ -128,7 +132,7 @@ Os eventos Socket.IO saem depois do commit.
 
 **Cancelamento** (`POST /api/lots/:id/cancel`, só o dono): encerrado → `LOT_ENDED`. Sem lances: `state = cancelled`. Com lances: `state = cancelled` e `committed −= currentBid` do líder, na mesma transação (estorno automático).
 
-**Liquidação** (varredura a cada `SETTLEMENT_SWEEP_INTERVAL_MS` e logo ao subir a API; ver ADR 0007). Para cada lote `active` com `endsAt ≤ now`, uma única transação:
+**Liquidação** (varredura a cada `SETTLEMENT_SWEEP_INTERVAL_MS`, logo ao subir a API e, no máximo com esse intervalo, antes de uma requisição em `/api`; ver ADR 0007 e 0005). Para cada lote `active` com `endsAt ≤ now`, uma única transação:
 - relê o lote e só continua se ele ainda estiver `active` com `endsAt ≤ now`, porque um lance de última hora pode ter prorrogado o fim;
 - com vencedor: `balance −= amount` e `committed −= amount` no vencedor, `balance += amount` no leiloeiro;
 - preenche `result` e grava `state = settled`, condicionado a `state = active`.
@@ -286,10 +290,10 @@ Roda ao subir a API quando `SEED_ON_START=true` e também por `npm run seed`. É
 
 ## 9. Variáveis de ambiente
 
-`PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `AUDIT_SECRET`, `CORS_ORIGIN`, `TRUST_PROXY`, `SEED_ON_START`, `MET_API_BASE`. Validadas com Zod no boot (`src/config/env.ts`); variável inválida impede a API de subir.
+`PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `AUDIT_SECRET`, `CORS_ORIGIN`, `TRUST_PROXY`, `SEED_ON_START`, `MET_API_BASE`, e `VERCEL`, que a própria Vercel define e faz a API não abrir porta. Validadas com Zod no boot (`src/config/env.ts`); variável inválida impede a API de subir.
 
 `CORS_ORIGIN` aceita uma lista separada por vírgula (ex.: `http://localhost:8080,http://localhost:5173`), para o front em Docker e o front em desenvolvimento.
 
-`TRUST_PROXY` é o número de proxies reversos na frente da API (padrão `0`; `1` no Railway). Sem ele, atrás de proxy, todo cliente teria o mesmo IP no rate limit.
+`TRUST_PROXY` é o número de proxies reversos na frente da API (padrão `0`; `1` na Vercel). Sem ele, atrás de proxy, todo cliente teria o mesmo IP no rate limit.
 
 Front: `VITE_API_URL` (URL da API vista pelo navegador), usada no build.

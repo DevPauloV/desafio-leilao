@@ -31,7 +31,7 @@ beforeAll(async () => {
   const { attachSocket } = await import('../src/realtime/socket.js');
   ({ settleDueLots } = await import('../src/jobs/settlement.js'));
   httpServer = createServer(app);
-  const io = attachSocket(httpServer);
+  const io = await attachSocket(httpServer);
   closeSocket = () => new Promise((resolve) => void io.close(() => resolve()));
   await new Promise<void>((resolve) => httpServer.listen(0, resolve));
   url = `http://localhost:${(httpServer.address() as AddressInfo).port}`;
@@ -139,7 +139,10 @@ describe('eventos do lance', () => {
     const visitorEvents = record(visitor);
 
     const firstBid = nextEvent<Record<string, unknown>>(visitor, SocketEvent.BID_NEW);
+    // Com o adapter, cada aviso passa pelo MongoDB: espera o da própria Alice antes de ouvir o próximo.
+    const ownWallet = nextEvent(aliceSocket, SocketEvent.WALLET_UPDATE);
     await bidAs(app, alice, lot.id, 1_000);
+    expect(await ownWallet).toMatchObject({ committed: 1_000 });
     expect(await firstBid).toMatchObject({
       lotId: lot.id,
       bid: { seq: 1, amount: 1_000 },

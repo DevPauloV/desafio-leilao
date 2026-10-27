@@ -2,13 +2,11 @@
 
 Casa de leilões online com obras do acervo do Metropolitan Museum. O leiloeiro cria os lotes, os licitantes dão lances ao vivo, o vencedor recebe um comprovante, e qualquer pessoa audita o histórico de lances, sem login, com detecção de adulteração.
 
-<!-- Links: descomentar depois do deploy
 | | |
 |---|---|
-| Aplicação | **https://SEU-FRONT.vercel.app** |
-| API | https://SUA-API.up.railway.app (saúde em `/health`) |
+| Aplicação | **https://athelie-leiloes-front.vercel.app** |
+| API | https://athelie-leiloes-api.vercel.app (saúde em `/health`) |
 | Repositório | https://github.com/DevPauloV/desafio-leilao |
--->
 
 ## Funcionalidades
 
@@ -40,11 +38,10 @@ Opcionais feitos: busca e filtro, cancelamento com estorno, Docker Compose, test
 ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
 
-**Infra:** Docker Compose para rodar local; deploy na Vercel (front), no Railway (API) e no MongoDB Atlas ([por quê](docs/adr/0005-deploy.md)).
+**Infra:** Docker Compose para rodar local; deploy do front e da API na Vercel e do banco no MongoDB Atlas. A API iria para o Railway, que suspendeu os cadastros novos; o código continua pronto para ele ([por quê](docs/adr/0005-deploy.md)).
 
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![Railway](https://img.shields.io/badge/Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)
 
 **Mais documentação:**
 - [Rotas da API](docs/contract.md): rotas REST, eventos Socket.IO e códigos de erro.
@@ -63,7 +60,7 @@ docker compose up --build
 
 Front em http://localhost:8080 e API em http://localhost:3000. Para resetar o banco: `docker compose down -v`.
 
-**Testes automatizados** (124, sem precisar de Docker nem de MongoDB): `cd athelie-leiloes-api && npm ci && npm test`. Como funcionam e o que cobrem: [docs/testes.md](docs/testes.md).
+**Testes automatizados** (125, sem precisar de Docker nem de MongoDB): `cd athelie-leiloes-api && npm ci && npm test`. Como funcionam e o que cobrem: [docs/testes.md](docs/testes.md).
 
 Para rodar sem Docker, veja o [back-end](docs/backend.md#rodar-sem-docker).
 
@@ -92,7 +89,12 @@ O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerr
 - O Met cataloga cada impressão de uma gravura (ex.: Hokusai) com um id próprio. A busca mostra uma vez só cada obra com mesmo título, artista e data.
 - O resultado do lote aparece até ~2 s depois do fim ("Apurando resultado…").
 - O seed não repõe saldo: depois de muitas reinicializações, deposite pela carteira ou resete o banco.
-- Rate limit e salas do socket ficam em memória, então a API roda em uma instância.
+- No ar, a API roda como função da Vercel ([ADR 0005](docs/adr/0005-deploy.md)):
+  - a conexão em tempo real cai a cada ~5 min e volta sozinha em ~1 s;
+  - um lote que acaba sem ninguém conectado é liquidado na primeira requisição seguinte;
+  - o primeiro acesso depois de um tempo parado é mais lento;
+  - o rate limit fica em memória, por instância;
+  - o socket desconecta quando a aba fica oculta e reconecta quando ela volta.
 - No Windows, o npm 10.8.2 pode quebrar no `npm install`; use `npx npm@11 install`.
 
 ## Uso de IA
