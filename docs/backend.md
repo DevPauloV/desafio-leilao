@@ -75,7 +75,20 @@ A privacidade e a detecção de adulteração estão em [Auditoria e privacidade
 
 ## Rodar sem Docker
 
-Precisa de Node.js 20.19+ e de um MongoDB **em replica set**, porque as transações exigem isso. Por exemplo: `mongod --replSet rs0` e, uma única vez, `mongosh --eval "rs.initiate()"`. Também serve um cluster gratuito do Atlas.
+Precisa de Node.js 20.19+ e de um MongoDB **em replica set**, porque as transações exigem isso. Há duas opções.
+
+**MongoDB instalado na máquina:** rode `mongod --replSet rs0` e, uma única vez, `mongosh --eval "rs.initiate()"`. O `MONGO_URI` do `.env.example` já aponta para ele.
+
+**MongoDB Atlas (gratuito, sem instalar nada):** o Atlas já vem em replica set.
+1. Crie uma conta em [mongodb.com/atlas](https://www.mongodb.com/atlas) e um cluster **M0 (Free)**.
+2. Em **Database Access**, crie um usuário com senha.
+3. Em **Network Access**, libere o seu IP (**Add Current IP Address**).
+4. No cluster, clique em **Connect → Drivers** e copie a string de conexão.
+5. No `.env`, troque a senha e coloque o nome do banco antes do `?`:
+   ```
+   MONGO_URI=mongodb+srv://usuario:senha@cluster0.xxxxx.mongodb.net/athelie-leiloes?retryWrites=true&w=majority
+   ```
+   Se a senha tiver caracteres especiais (`@`, `:`, `/`, `#`), escreva-os codificados (por exemplo, `@` vira `%40`).
 
 ```bash
 cp .env.example .env          # ajuste MONGO_URI se precisar
