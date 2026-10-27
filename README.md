@@ -10,28 +10,64 @@ Casa de leilões online. O leiloeiro cria lotes a partir de obras do acervo do M
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![Testes](https://img.shields.io/badge/testes-123_passando-2E7D32)
 
+<!-- Links: descomentar depois do deploy
 | | |
 |---|---|
 | Aplicação | **https://SEU-FRONT.vercel.app** |
 | API | https://SUA-API.up.railway.app (saúde em `/health`) |
 | Repositório | https://github.com/DevPauloV/desafio-leilao |
+-->
 
-## Testar em 2 minutos
+## Roteiro de demonstração
 
-Senha de todos: **`athelie12345`**
+Um passo a passo de uns 5 minutos para ver as principais funcionalidades no app. Os usuários e os lotes abaixo são criados pelo seed quando a API sobe ([como rodar](#como-rodar)).
 
-| Papel | E-mail |
+**Usuários** (senha de todos: **`athelie12345`**)
+
+| Papel | E-mail | Para que serve |
+|---|---|---|
+| Leiloeiro | `leiloeiro@athelie.dev` | Criar e cancelar lotes no painel |
+| Licitante | `licitante01@athelie.dev` | Dar lances (começa com R$ 50.000 na carteira) |
+| Licitante | `licitante02@athelie.dev` | Disputar com o licitante 01 em outra janela |
+
+**Lotes prontos:** um ao vivo com lances, um agendado, um encerrado com comprovante e um cancelado com estorno (este só aparece no painel do leiloeiro). Se não houver lote ao vivo quando a API sobe, o seed cria outro, então sempre há um leilão aberto.
+
+### 1. Disputa ao vivo
+
+Entre como `licitante01` numa janela e como `licitante02` numa janela anônima. Abra o lote da aba **Ao vivo** nas duas e dê lances alternados.
+
+→ O lance aparece na hora nas duas janelas. Quem é superado recebe o aviso "Você foi superado" e vê o saldo comprometido voltar na carteira.
+
+### 2. Recusas
+
+Na mesma sala, tente:
+
+| Ação | Mensagem esperada |
 |---|---|
-| Leiloeiro | `leiloeiro@athelie.dev` |
-| Licitante | `licitante01@athelie.dev` (R$ 50.000 na carteira) |
-| Licitante | `licitante02@athelie.dev` (R$ 50.000 na carteira) |
+| Lance abaixo do mínimo mostrado no campo | abaixo do mínimo, com o valor aceito em R$ |
+| Novo lance de quem já está liderando | você já está ganhando |
+| Lance maior que o saldo disponível (ex.: R$ 100.000) | saldo insuficiente |
+| Abrir um lote da aba **Agendados** ou **Encerrados** | a sala não mostra o formulário: "Os lances abrem em …" ou o resultado. Se alguém chamar a API direto, ela recusa com "lote ainda não começou" ou "lote encerrado" |
 
-1. Entre como `licitante01` numa janela e como `licitante02` numa janela anônima, abra o lote **ao vivo** e dê lances alternados. Os dois veem o lance na hora, e quem é superado recebe um aviso.
-2. Force as recusas: abaixo do mínimo, cobrir o próprio lance, sem saldo, lote agendado ou encerrado.
-3. Abra **Auditoria** na sala: o selo mostra "íntegro" e a cadeia de hashes.
-4. Como leiloeiro, busque "monet" no painel, crie um lote curto e acompanhe a liquidação e o comprovante.
+### 3. Auditoria
 
-O seed também cria um lote agendado, um encerrado com comprovante e um cancelado com estorno. Se não houver lote ao vivo quando a API sobe, ele cria outro, então sempre há um leilão aberto para testar.
+Na sala, clique em **Auditoria** (ou abra `/auditoria/<id do lote>`, sem login).
+
+→ O selo mostra "Histórico íntegro" e a cadeia de hashes, lance a lance, só com pseudônimos.
+
+Para ver a adulteração ser detectada, copie o id do lote da URL e rode:
+
+```bash
+docker compose exec api npm run demo:tamper -- <id do lote> alter
+```
+
+→ Ao recarregar a auditoria, o selo muda para "Histórico adulterado" e marca o lance alterado.
+
+### 4. Leiloeiro, liquidação e comprovante
+
+Entre como `leiloeiro`, busque "monet" no **Painel**, escolha uma obra e crie um lote que comece agora e termine em 3 minutos. Volte como licitante e dê um lance no último minuto.
+
+→ O fim é prorrogado para 2 minutos depois do lance (anti-sniping). Ao terminar, o lote é liquidado: o vencedor vê o comprovante em **Meus arremates**, e o painel do leiloeiro mostra o resultado.
 
 ## O que tem
 
