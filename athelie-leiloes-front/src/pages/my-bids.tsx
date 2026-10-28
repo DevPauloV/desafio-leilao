@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { cn } from 'cn';
 import { ShieldCheckIcon } from 'lucide-react';
 import { Artwork } from '@/components/artwork';
 import { EmptyWall, ErrorWall } from '@/components/empty-wall';
 import { PageTitle } from '@/components/page-title';
+import { Bone } from '@/components/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LotStatus, MyBidStatus, ROLE_LABELS, ROUTES, Role, SocketEvent, auditPath, lotPath, receiptPath } from '@/constants';
-import { api, assetUrl, errorMessage } from '@/lib/api';
+import { assetUrl } from '@/lib/api';
+import { usePageData } from '@/lib/loading';
 import { formatMoney } from '@/lib/money';
 import { socket } from '@/lib/socket';
 import { formatShortDate } from '@/lib/time';
@@ -43,6 +45,62 @@ const URGENCY: MyBidStatus[] = [MyBidStatus.OUTBID, MyBidStatus.WINNING, MyBidSt
 
 const ROW_GRID =
   'grid grid-cols-[56px_minmax(0,1fr)] items-center gap-x-4 gap-y-2.5 px-5 lg:grid-cols-[56px_minmax(0,1fr)_112px_112px_136px_112px_180px]';
+
+const SKELETON_ROWS = 3;
+
+function ListHeader() {
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        ROW_GRID,
+        'hidden border-b bg-muted/50 py-2.5 text-[11.5px] font-semibold tracking-[0.08em] text-muted-foreground uppercase lg:grid',
+      )}
+    >
+      <span className="col-span-2">Obra</span>
+      <span className="text-right">Seu lance</span>
+      <span className="text-right">Atual / final</span>
+      <span>Situação</span>
+      <span>Prazo</span>
+      <span />
+    </div>
+  );
+}
+
+/** Mesmo grid das linhas reais: quando os lances chegam, nada muda de lugar. */
+function BidListSkeleton() {
+  return (
+    <div role="status" aria-label="Carregando seus lances" className="grid gap-5">
+      <Bone row={0} className="h-9.5 w-full rounded-[8px] sm:w-105" />
+      <div className="overflow-hidden rounded-[10px] border bg-card">
+        <ListHeader />
+        <ul>
+          {Array.from({ length: SKELETON_ROWS }, (_, row) => (
+            <li key={row} className={cn(ROW_GRID, 'border-t py-3.5 first:border-t-0')}>
+              <Bone row={row} className="aspect-4/5 w-14 rounded-md bg-wall" />
+              <div className="grid gap-2">
+                <Bone row={row} className="h-3.5 w-3/5" />
+                <Bone row={row} className="h-3 w-2/5" />
+              </div>
+              <div className="col-start-2 flex gap-3 lg:hidden">
+                <Bone row={row} className="h-3 w-24" />
+                <Bone row={row} className="h-5 w-20 rounded-full" />
+              </div>
+              <Bone row={row} className="hidden h-3.5 w-20 justify-self-end lg:block" />
+              <Bone row={row} className="hidden h-3.5 w-20 justify-self-end lg:block" />
+              <Bone row={row} className="hidden h-6 w-24 rounded-full lg:block" />
+              <div className="hidden gap-1.5 lg:grid">
+                <Bone row={row} className="h-3 w-16" />
+                <Bone row={row} className="h-3 w-12" />
+              </div>
+              <Bone row={row} className="hidden h-8 w-full rounded-md lg:block" />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 function deadline(item: MyBidItem): { label: string; date: string | null } {
   if (item.myStatus === MyBidStatus.CANCELLED) return { label: 'Cancelado', date: null };
@@ -108,35 +166,22 @@ function BidRow({ item }: { item: MyBidItem }) {
 }
 
 export function MyBidsPage() {
-  const [reload, setReload] = useState(0);
-  const [items, setItems] = useState<MyBidItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, reload } = usePageData<{ items: MyBidItem[] }>('/api/me/bids');
+  const items = useMemo(
+    () => data && [...data.items].sort((a, b) => URGENCY.indexOf(a.myStatus) - URGENCY.indexOf(b.myStatus)),
+    [data],
+  );
   const [filter, setFilter] = useState<Filter>(Filter.ALL);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    api<{ items: MyBidItem[] }>('/api/me/bids', { signal: controller.signal }).then(
-      (data) => {
-        setItems([...data.items].sort((a, b) => URGENCY.indexOf(a.myStatus) - URGENCY.indexOf(b.myStatus)));
-        setError(null);
-      },
-      (err: unknown) => {
-        if (!controller.signal.aborted) setError(errorMessage(err));
-      },
-    );
-    return () => controller.abort();
-  }, [reload]);
 
   // Ser superado, dar lance ou liquidar (estes dois via `wallet:update`) muda a lista: relê.
   useEffect(() => {
-    const refresh = () => setReload((n) => n + 1);
-    socket.on(SocketEvent.BID_OUTBID, refresh);
-    socket.on(SocketEvent.WALLET_UPDATE, refresh);
+    socket.on(SocketEvent.BID_OUTBID, reload);
+    socket.on(SocketEvent.WALLET_UPDATE, reload);
     return () => {
-      socket.off(SocketEvent.BID_OUTBID, refresh);
-      socket.off(SocketEvent.WALLET_UPDATE, refresh);
+      socket.off(SocketEvent.BID_OUTBID, reload);
+      socket.off(SocketEvent.WALLET_UPDATE, reload);
     };
-  }, []);
+  }, [reload]);
 
   const inFilter = (item: MyBidItem, value: Filter) => value === Filter.ALL || STATUS[item.myStatus].filter === value;
 
@@ -145,11 +190,9 @@ export function MyBidsPage() {
       <PageTitle eyebrow={ROLE_LABELS[Role.BIDDER]} title="Meus arremates" />
 
       {error && !items ? (
-        <ErrorWall title="Seus arremates não carregaram" message={error} onRetry={() => setReload((n) => n + 1)} />
+        <ErrorWall title="Seus arremates não carregaram" message={error} onRetry={reload} />
       ) : !items ? (
-        <p role="status" className="rounded-[10px] border bg-card p-6 text-muted-foreground">
-          Carregando seus lances…
-        </p>
+        <BidListSkeleton />
       ) : items.length === 0 ? (
         <EmptyWall title="Você ainda não deu nenhum lance">
           <p className="max-w-[46ch] text-sm text-muted-foreground">
@@ -179,20 +222,7 @@ export function MyBidsPage() {
             const visible = items.filter((item) => inFilter(item, f.value));
             return (
               <TabsContent key={f.value} value={f.value} className="overflow-hidden rounded-[10px] border bg-card text-[15px]">
-                <div
-                  aria-hidden
-                  className={cn(
-                    ROW_GRID,
-                    'hidden border-b bg-muted/50 py-2.5 text-[11.5px] font-semibold tracking-[0.08em] text-muted-foreground uppercase lg:grid',
-                  )}
-                >
-                  <span className="col-span-2">Obra</span>
-                  <span className="text-right">Seu lance</span>
-                  <span className="text-right">Atual / final</span>
-                  <span>Situação</span>
-                  <span>Prazo</span>
-                  <span />
-                </div>
+                <ListHeader />
                 {visible.length === 0 ? (
                   <p className="px-5 py-8 text-center text-muted-foreground">Nenhum lote nessa situação.</p>
                 ) : (

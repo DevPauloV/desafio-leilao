@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { LotStatus, MET_QUERY_MAX_LENGTH, SocketEvent } from '@/constants';
 import { ApiError, api, assetUrl, errorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { usePageData } from '@/lib/loading';
 import { socket } from '@/lib/socket';
 import { formatMoney, parseMoney } from '@/lib/money';
 import { MINUTE_MS, toDateTimeLocal } from '@/lib/time';
@@ -26,35 +27,16 @@ const sectionHeading = 'text-[13px] font-semibold tracking-[0.1em] text-muted-fo
 
 export function AuctioneerPanelPage() {
   const { user } = useAuth();
-  const [mine, setMine] = useState<MyLotsResponse | null>(null);
-  const [mineError, setMineError] = useState<string | null>(null);
+  const { data: mine, error: mineError, reload: reloadMine } = usePageData<MyLotsResponse>('/api/me/lots');
   const [selected, setSelected] = useState<MetArtwork | null>(null);
-
-  const [reload, setReload] = useState(0);
-  const reloadMine = () => setReload((n) => n + 1);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    api<MyLotsResponse>('/api/me/lots', { signal: controller.signal }).then(
-      (data) => {
-        setMine(data);
-        setMineError(null);
-      },
-      (err: unknown) => {
-        if (!controller.signal.aborted) setMineError(errorMessage(err));
-      },
-    );
-    return () => controller.abort();
-  }, [reload]);
 
   // `lot:ended` também chega na sala pessoal do leiloeiro dono: relê para mostrar resultado e total.
   useEffect(() => {
-    const onEnded = () => setReload((n) => n + 1);
-    socket.on(SocketEvent.LOT_ENDED, onEnded);
+    socket.on(SocketEvent.LOT_ENDED, reloadMine);
     return () => {
-      socket.off(SocketEvent.LOT_ENDED, onEnded);
+      socket.off(SocketEvent.LOT_ENDED, reloadMine);
     };
-  }, []);
+  }, [reloadMine]);
 
   const count = (status: LotStatus) => (mine ? String(mine.items.filter((lot) => lot.status === status).length) : '—');
 
@@ -88,10 +70,7 @@ export function AuctioneerPanelPage() {
           <ErrorWall
             title="Seus lotes não carregaram"
             message={mineError}
-            onRetry={() => {
-              setMineError(null);
-              reloadMine();
-            }}
+            onRetry={reloadMine}
           />
         ) : !mine ? (
           <p role="status" className="rounded-[10px] border bg-card p-6 text-muted-foreground">

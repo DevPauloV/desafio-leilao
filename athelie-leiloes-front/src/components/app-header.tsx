@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router';
 import { cn } from 'cn';
 import {
   AwardIcon,
@@ -55,10 +55,11 @@ const initials = (name: string) =>
     .join('')
     .toUpperCase();
 
+// O sublinhado da aba ativa é um traço só, que desliza entre os links (DesktopNav).
 const navClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    'border-b-2 py-0.5 no-underline transition-colors',
-    isActive ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
+    'border-b-2 border-transparent py-0.5 no-underline transition-colors',
+    isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
   );
 
 export function AppHeader() {
@@ -95,13 +96,7 @@ export function AppHeader() {
         </span>
       </Link>
 
-      <nav aria-label="Navegação do app" className="hidden flex-1 gap-x-4.5 text-sm md:flex">
-        {items.map((item) => (
-          <NavLink key={item.to} to={item.to} end={item.end} className={navClass}>
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
+      <DesktopNav items={items} />
 
       <div className="ml-auto flex items-center gap-2.5 text-[13px]">
         <ThemeButton className={user ? 'hidden md:flex' : undefined} />
@@ -122,6 +117,41 @@ export function AppHeader() {
         )}
       </div>
     </header>
+  );
+}
+
+function DesktopNav({ items }: { items: NavItem[] }) {
+  const navRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+  const [bar, setBar] = useState<{ left: number; width: number } | null>(null);
+
+  // Mede de novo quando a fonte carrega e quando a janela muda (abaixo de md o menu some e a largura vira 0).
+  useLayoutEffect(() => {
+    const measure = () => {
+      const active = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+      setBar(active ? { left: active.offsetLeft, width: active.offsetWidth } : null);
+    };
+    measure();
+    void document.fonts.ready.then(measure);
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [pathname, items.length]);
+
+  return (
+    <nav ref={navRef} aria-label="Navegação do app" className="relative hidden flex-1 gap-x-4.5 text-sm md:flex">
+      {items.map((item) => (
+        <NavLink key={item.to} to={item.to} end={item.end} className={navClass}>
+          {item.label}
+        </NavLink>
+      ))}
+      {bar && (
+        <span
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 h-0.5 bg-primary transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
+          style={{ width: bar.width, transform: `translateX(${bar.left}px)` }}
+        />
+      )}
+    </nav>
   );
 }
 

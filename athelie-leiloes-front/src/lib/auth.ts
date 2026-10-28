@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { ROUTE_ROLES, ROUTES, Role } from '@/constants';
 import type { AuthResponse, User } from '@/types';
 import { ApiError, api, getToken, setToken } from './api';
+import { clearPageCache } from './loading';
 import { reconnectSocket } from './socket';
 import { setWallet } from './wallet';
 
@@ -33,6 +34,7 @@ export async function loadSession(): Promise<void> {
 async function start(path: string, body: unknown): Promise<User> {
   const { token, user } = await api<AuthResponse>(path, { method: 'POST', body });
   setToken(token);
+  clearPageCache();
   set({ user, loading: false });
   reconnectSocket();
   return user;
@@ -53,6 +55,7 @@ export function homeFor(role: Role, from?: string): string {
 export function logout(): void {
   setToken(null);
   setWallet(null);
+  clearPageCache();
   reconnectSocket();
   set({ user: null, loading: false });
 }

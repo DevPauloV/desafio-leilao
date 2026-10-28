@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { cn } from 'cn';
 import { ArrowRightIcon, ListFilterIcon, XIcon } from 'lucide-react';
@@ -6,6 +6,7 @@ import { Artwork, MuseumLabel } from '@/components/artwork';
 import { EmptyWall, ErrorWall } from '@/components/empty-wall';
 import { LotStatusLabel } from '@/components/lot-status';
 import { PageTitle } from '@/components/page-title';
+import { Bone } from '@/components/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -52,6 +53,16 @@ const ALL_DEPARTMENTS = '__all__';
 
 type Filters = { q: string; department: string };
 
+/** `offset` é medido na chegada da resposta: a contagem regressiva continua certa quando ela volta do cache. */
+type ShowcaseResponse = { key: string; status: ShowcaseStatus; data?: LotPage; offset?: number; error?: string };
+
+// Voltar à vitrine abre com a última lista na tela enquanto a nova chega. Dados públicos: não depende do usuário.
+const lastVisit: {
+  response: ShowcaseResponse | null;
+  counts: Partial<Record<ShowcaseStatus, number>>;
+  departments: string[];
+} = { response: null, counts: {}, departments: [] };
+
 function lotsUrl(status: ShowcaseStatus, { q, department }: Filters, page = 1): string {
   const query = new URLSearchParams({ status, page: String(page) });
   if (q) query.set(Param.QUERY, q);
@@ -76,17 +87,20 @@ export function ShowcasePage() {
   }
 
   const [reload, setReload] = useState(0);
-  const [counts, setCounts] = useState<Partial<Record<ShowcaseStatus, number>>>({});
-  const [departments, setDepartments] = useState<string[]>([]);
+  const [counts, setCounts] = useState(lastVisit.counts);
+  const [departments, setDepartments] = useState(lastVisit.departments);
   // A resposta guarda a chave da busca que a gerou: chave diferente da atual = carregando.
   const requestKey = `${status}:${page}:${q}:${department}:${reload}`;
-  const [response, setResponse] = useState<{ key: string; status: ShowcaseStatus; data?: LotPage; error?: string } | null>(null);
+  const [response, setResponse] = useState(lastVisit.response);
 
   useEffect(() => {
     const controller = new AbortController();
     api<LotPage>(lotsUrl(status, { q, department }, page), { signal: controller.signal }).then(
       (data) => {
-        setResponse({ key: requestKey, status, data });
+        const fresh = { key: requestKey, status, data, offset: clockOffset(data.serverTime) };
+        lastVisit.response = fresh;
+        lastVisit.departments = data.departments;
+        setResponse(fresh);
         setDepartments(data.departments);
       },
       (err: unknown) => {
@@ -100,7 +114,10 @@ export function ShowcasePage() {
     const controller = new AbortController();
     for (const tab of TABS) {
       api<LotPage>(lotsUrl(tab.status, { q, department }), { signal: controller.signal })
-        .then((result) => setCounts((current) => ({ ...current, [tab.status]: result.total })))
+        .then((result) => {
+          lastVisit.counts = { ...lastVisit.counts, [tab.status]: result.total };
+          setCounts(lastVisit.counts);
+        })
         .catch(() => {}); // contador é opcional; a aba ativa mostra o próprio erro
     }
     return () => controller.abort();
@@ -112,7 +129,7 @@ export function ShowcasePage() {
   // Enquanto a busca nova carrega, a lista anterior da mesma aba continua na tela (sem piscar).
   const data = current?.data ?? (response?.status === status ? (response.data ?? null) : null);
 
-  const offset = useMemo(() => (data ? clockOffset(data.serverTime) : 0), [data]);
+  const offset = response?.offset ?? 0;
   const now = useServerNow(offset);
   const totalPages = data ? Math.max(1, Math.ceil(data.total / LOTS_PAGE_SIZE)) : 1;
 
@@ -442,14 +459,37 @@ function LotCard({ lot, now }: { lot: LotSummary; now: number }) {
 
 const SKELETON_CARDS = 3;
 
+/** Mesmas alturas do LotCard (obra, etiqueta e preço): quando os lotes chegam, nada muda de lugar. */
 function LotGridSkeleton() {
   return (
     <div role="status" aria-label="Carregando lotes" className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: SKELETON_CARDS }, (_, i) => (
-        <div key={i} className="grid gap-4">
-          <div className="aspect-4/5 animate-pulse rounded-[10px] bg-wall motion-reduce:animate-none" />
-          <div className="h-5 w-2/3 animate-pulse rounded bg-muted motion-reduce:animate-none" />
-          <div className="h-8 w-1/2 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+      {Array.from({ length: SKELETON_CARDS }, (_, row) => (
+        <div key={row} className="grid gap-4">
+          <Bone row={row} className="aspect-4/5 rounded-[10px] bg-wall" />
+          <div className="grid gap-px">
+            <div className="flex h-5 items-center">
+              <Bone row={row} className="h-3.5 w-2/5" />
+            </div>
+            <div className="flex h-5.75 items-center">
+              <Bone row={row} className="h-4.5 w-3/4" />
+            </div>
+            <div className="flex h-5 items-center">
+              <Bone row={row} className="h-3 w-1/2" />
+            </div>
+          </div>
+          <div className="flex items-end justify-between gap-3 border-t pt-3">
+            <div className="grid">
+              <div className="flex h-6.5 items-center">
+                <Bone row={row} className="h-6 w-28 rounded-md" />
+              </div>
+              <div className="flex h-4 items-center">
+                <Bone row={row} className="h-2.5 w-16" />
+              </div>
+            </div>
+            <div className="flex h-5 items-center">
+              <Bone row={row} className="h-3 w-14" />
+            </div>
+          </div>
         </div>
       ))}
     </div>

@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { AppHeader } from '@/components/app-header';
+import { Splash } from '@/components/splash';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { ROUTE_ROLES, ROUTES, Role } from '@/constants';
 import { useAuth } from '@/lib/auth';
+import { useLoaderVisible } from '@/lib/loading';
 import { usePersonalEvents } from '@/lib/socket';
 import { AuctioneerPanelPage } from '@/pages/auctioneer-panel';
 import { AuditPage } from '@/pages/audit';
@@ -17,9 +19,8 @@ import { ShowcasePage } from '@/pages/showcase';
 import { WalletPage } from '@/pages/wallet';
 
 function RequireRole({ role, children }: { role: Role; children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
-  if (loading) return <p className="pt-7 text-muted-foreground" role="status">Carregando…</p>;
   if (!user) return <Navigate to={ROUTES.LOGIN} replace state={{ from: location.pathname }} />;
   if (user.role !== role) {
     return (
@@ -65,10 +66,24 @@ function NotFound() {
 
 export default function App() {
   usePersonalEvents();
+  const { loading } = useAuth();
+  const splash = useLoaderVisible(loading);
+
+  // O app só monta com a sessão resolvida; o splash fica na mesma posição da árvore para não reiniciar ao sair.
+  return (
+    <>
+      {splash && <Splash leaving={!loading} />}
+      {!loading && <AppShell />}
+    </>
+  );
+}
+
+function AppShell() {
+  const { pathname } = useLocation();
   return (
     <div className="mx-auto max-w-300 px-4 pb-14">
       <AppHeader />
-      <main>
+      <main key={pathname} className="animate-page-in motion-reduce:animate-none">
         <Routes>
           <Route path={ROUTES.SHOWCASE} element={<ShowcasePage />} />
           <Route path={ROUTES.LOT} element={<LotRoomPage />} />

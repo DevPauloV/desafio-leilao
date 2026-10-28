@@ -53,12 +53,70 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 
   --animate-live: live-pulse 1.6s ease-in-out infinite;
+  --animate-sheen: sheen 1.6s linear infinite;
+  --animate-progress: progress 1.2s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
+  /* 300 ms = LOADER_EXIT_MS em src/lib/loading.ts */
+  --animate-splash-out: splash-out 300ms ease forwards;
+  --animate-page-in: page-in 260ms ease-out;
+  --animate-splash-rise: splash-rise 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-splash-track: splash-track 700ms ease 300ms both;
 }
 
 @keyframes live-pulse {
   50% {
     opacity: 0.25;
   }
+}
+
+@keyframes sheen {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 85%;
+  }
+}
+
+@keyframes splash-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes splash-rise {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+@keyframes splash-track {
+  from {
+    opacity: 0;
+    letter-spacing: 0;
+  }
+}
+
+/* Brilho de galeria atravessando o esqueleto; a cor de base vem da classe bg-*. */
+@utility skeleton {
+  background-image: linear-gradient(100deg, transparent 40%, var(--sheen) 50%, transparent 60%);
+  background-size: 300% 100%;
+  animation: var(--animate-sheen);
 }
 
 :root {
@@ -87,6 +145,7 @@
   --warn: #a3560f;
   --warn-soft: #f7eadb;
   --wall: #e6e8e2; /* parede onde a obra flutua */
+  --sheen: rgb(255 255 255 / 0.75);
   --radius: 6px;
 }
 
@@ -116,6 +175,7 @@
   --warn: #e5a25b;
   --warn-soft: #2d2113;
   --wall: #1a1e1c;
+  --sheen: rgb(255 255 255 / 0.07);
   color-scheme: dark;
 }
 
