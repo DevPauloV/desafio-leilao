@@ -23,10 +23,16 @@ export function formatCountdown(ms: number): string {
 
 const shortDate = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-export function formatShortDate(iso: string): string {
-  const parts = shortDate.formatToParts(new Date(iso));
+/** "12 out, 14:30": monta à mão porque o Intl põe ponto no mês abreviado e " às " entre data e hora. */
+function dayMonthTime(format: Intl.DateTimeFormat, iso: string, withSeconds = false): string {
+  const parts = format.formatToParts(new Date(iso));
   const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${get('day')} ${get('month').replace('.', '')}, ${get('hour')}:${get('minute')}`;
+  const time = `${get('hour')}:${get('minute')}${withSeconds ? `:${get('second')}` : ''}`;
+  return `${get('day')} ${get('month').replace('.', '')}, ${time}`;
+}
+
+export function formatShortDate(iso: string): string {
+  return dayMonthTime(shortDate, iso);
 }
 
 const clockTime = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' });
@@ -35,9 +41,7 @@ const longDate = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long'
 const withSeconds = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
 export function formatDateTimeSeconds(iso: string): string {
-  const parts = withSeconds.formatToParts(new Date(iso));
-  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${get('day')} ${get('month').replace('.', '')}, ${get('hour')}:${get('minute')}:${get('second')}`;
+  return dayMonthTime(withSeconds, iso, true);
 }
 
 export function formatTime(iso: string): string {

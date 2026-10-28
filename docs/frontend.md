@@ -58,7 +58,9 @@ athelie-leiloes-front/src/
 ├── constants.ts       rotas, papéis, estados e eventos (espelho da API)
 ├── types.ts           tipos das respostas da API
 ├── pages/             uma página por rota (vitrine, sala, painel, carteira, arremates, comprovante, auditoria, login, cadastro, 404)
-├── components/        peças reaproveitadas (cabeçalho, obra, status do lote, formulários, proteção por papel)
+│                      as telas grandes viram pasta: index.tsx é a página, os outros arquivos são as partes dela
+│                      (ex.: lot-room/bid-area.tsx, auctioneer-panel/new-lot-form.tsx, showcase/lot-card.tsx)
+├── components/        peças reaproveitadas (cabeçalho em app-header/, obra, status do lote, formulários, proteção por papel)
 │   └── ui/            componentes do shadcn/ui
 ├── hooks/
 │   ├── use-page-data.ts       busca com cache por página
