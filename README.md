@@ -5,6 +5,27 @@
   </picture>
 </div>
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Sobre o projeto](#sobre-o-projeto)
+   - [Funcionalidades](#funcionalidades)
+   - [Feito com](#feito-com)
+2. [Como rodar](#como-rodar)
+   - [Pré-requisitos](#pré-requisitos)
+   - [1. Clonar o repositório](#1-clonar-o-repositório)
+   - [2. Criar o arquivo de variáveis](#2-criar-o-arquivo-de-variáveis)
+   - [3. Subir os containers](#3-subir-os-containers)
+   - [4. Acessar](#4-acessar)
+   - [Parar e resetar](#parar-e-resetar)
+   - [Testes automatizados](#testes-automatizados)
+   - [Sem Docker](#sem-docker)
+3. [Roteiro de demonstração](#roteiro-de-demonstração)
+4. [Comportamentos inesperados](#comportamentos-inesperados)
+5. [Uso de IA](#uso-de-ia)
+
+</details>
+
 ## Sobre o projeto
 
 Casa de leilões online com obras do acervo do Metropolitan Museum. O leiloeiro cria os lotes, os licitantes dão lances ao vivo, o vencedor recebe um comprovante, e qualquer pessoa audita o histórico de lances, sem login, com detecção de adulteração.
