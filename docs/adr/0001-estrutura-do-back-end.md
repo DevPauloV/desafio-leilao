@@ -15,6 +15,7 @@ athelie-leiloes-api/src/
 ├── errors.ts            # AppError + handler central
 ├── middlewares/         # auth (JWT + papel), validate (Zod)
 ├── models/              # User, Lot, Bid, Image
+├── schemas/             # schemas Zod de entrada (body, query, params) e seus tipos
 ├── routes/  controllers/  services/
 ├── domain/              # bid-rules.ts, audit-chain.ts (funções puras)
 ├── realtime/socket.ts
@@ -25,6 +26,7 @@ athelie-leiloes-api/src/
 ```
 
 - Controllers só traduzem HTTP. Serviços orquestram transação, models e eventos.
+- Os schemas de entrada ficam em `schemas/`, um arquivo por recurso. Rotas os aplicam com `validate()` e controllers e serviços importam os tipos, então o serviço só tem regra de negócio. Schemas de resposta da API externa (`met.ts`), de config (`env.ts`) e de socket ficam junto de quem os usa.
 - As duas partes que mais precisam de teste isolado ficam em funções puras, que recebem `now` como parâmetro: as regras do lance e a cadeia de hashes.
 - Transações usam `session.withTransaction` do Mongoose, que já repete a operação em caso de conflito.
 

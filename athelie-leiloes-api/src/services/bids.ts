@@ -1,5 +1,4 @@
 import mongoose, { mongo, Types } from 'mongoose';
-import { z } from 'zod';
 import { env } from '../config/env.js';
 import { ErrorCode, LotState, MyBidStatus, SocketEvent } from '../constants.js';
 import { bidHash, headSignature, pseudonym } from '../domain/audit-chain.js';
@@ -11,11 +10,6 @@ import { User } from '../models/User.js';
 import { emitToLot, emitToUser, notifyAfterCommit } from '../realtime/socket.js';
 import { toLotSummary } from './lots.js';
 import { getWallet } from './wallet.js';
-
-export const placeBidSchema = z.object({
-  amount: z.int({ error: 'Informe um valor válido para o lance.' }).positive('O lance precisa ser maior que zero.'),
-});
-export type PlaceBidInput = z.infer<typeof placeBidSchema>;
 
 /** Erro transitório: o withTransaction refaz tudo com estado novo (segunda barreira, além do WriteConflict). */
 function retryWithFreshState(): mongo.MongoError {

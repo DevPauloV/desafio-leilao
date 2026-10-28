@@ -6,8 +6,8 @@ import * as lots from '../controllers/lots.js';
 import { AppError } from '../errors.js';
 import { optionalAuth, requireAuth, requireRole } from '../middlewares/auth.js';
 import { idParams, validate } from '../middlewares/validate.js';
-import { placeBidSchema } from '../services/bids.js';
-import { createLotSchema, listLotsQuery } from '../services/lots.js';
+import { placeBidSchema } from '../schemas/bids.js';
+import { createLotSchema, listLotsQuery } from '../schemas/lots.js';
 
 const auctioneerOnly = [requireAuth, requireRole(Role.AUCTIONEER)];
 

@@ -3,7 +3,7 @@ import { ErrorCode } from '../constants.js';
 import { AppError } from '../errors.js';
 import type { IdParams } from '../middlewares/validate.js';
 import * as lotsService from '../services/lots.js';
-import type { CreateLotInput, ListLotsQuery } from '../services/lots.js';
+import type { CreateLotInput, ListLotsQuery } from '../schemas/lots.js';
 
 function authUserId(req: Request<unknown, unknown, unknown, unknown>): string {
   if (!req.auth) throw new AppError(ErrorCode.UNAUTHENTICATED);

@@ -2,7 +2,8 @@ import type { Request, Response } from 'express';
 import { ErrorCode } from '../constants.js';
 import { AppError } from '../errors.js';
 import type { IdParams } from '../middlewares/validate.js';
-import { listMyBids, placeBid, type PlaceBidInput } from '../services/bids.js';
+import type { PlaceBidInput } from '../schemas/bids.js';
+import { listMyBids, placeBid } from '../services/bids.js';
 
 export async function place(req: Request<IdParams, unknown, PlaceBidInput>, res: Response): Promise<void> {
   if (!req.auth) throw new AppError(ErrorCode.UNAUTHENTICATED);

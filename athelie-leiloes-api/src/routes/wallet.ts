@@ -3,7 +3,7 @@ import { Role } from '../constants.js';
 import * as wallet from '../controllers/wallet.js';
 import { requireAuth, requireRole } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
-import { depositSchema } from '../services/wallet.js';
+import { depositSchema } from '../schemas/wallet.js';
 
 export const walletRouter = Router();
 

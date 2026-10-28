@@ -5,7 +5,7 @@ import * as auth from '../controllers/auth.js';
 import { AppError } from '../errors.js';
 import { requireAuth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
-import { loginSchema, registerSchema } from '../services/auth.js';
+import { loginSchema, registerSchema } from '../schemas/auth.js';
 
 // Por IP e em memória: vale enquanto houver uma só instância da API.
 const loginLimiter = rateLimit({
