@@ -60,18 +60,70 @@ Opcionais feitos: busca e filtro, cancelamento com estorno, Docker Compose, test
 
 ## Como rodar
 
-Pré-requisito: Docker.
+Se quiser só usar o sistema, acesse a [aplicação no ar](https://athelie-leiloes.vercel.app). Para rodar na sua máquina, o Docker sobe front, API e banco com um comando.
+
+### Pré-requisitos
+
+- [Git](https://git-scm.com/downloads)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (ou Docker Engine com Compose v2), aberto e rodando
+- [Node.js](https://nodejs.org/) 20.19+, só para os testes ou para rodar sem Docker
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/DevPauloV/desafio-leilao.git
+cd desafio-leilao
+```
+
+### 2. Criar o arquivo de variáveis
 
 ```bash
 cp .env.example .env
+```
+
+No PowerShell, use `Copy-Item .env.example .env`. Os valores padrão já funcionam localmente; cada variável está explicada no próprio [`.env.example`](.env.example).
+
+### 3. Subir os containers
+
+```bash
 docker compose up --build
 ```
 
-Front em http://localhost:8080 e API em http://localhost:3000. Para resetar o banco: `docker compose down -v`.
+A primeira vez demora mais, porque baixa as imagens e instala as dependências. O Compose sobe o MongoDB, depois a API (que cria o seed com usuários e lotes) e por último o front.
 
-**Testes automatizados** (125, sem precisar de Docker nem de MongoDB): `cd athelie-leiloes-api && npm ci && npm test`. Como funcionam e o que cobrem: [docs/testes.md](docs/testes.md).
+### 4. Acessar
 
-Para rodar sem Docker, veja o [back-end](docs/backend.md#rodar-sem-docker).
+| Serviço | Endereço |
+|---|---|
+| Aplicação | http://localhost:8080 |
+| API | http://localhost:3000 (saúde em http://localhost:3000/health) |
+
+Os usuários para entrar estão no [roteiro de demonstração](#roteiro-de-demonstração).
+
+### Parar e resetar
+
+```bash
+docker compose down      # para os containers e mantém os dados
+docker compose down -v   # para e apaga o banco; o seed recria tudo na próxima subida
+```
+
+Se a porta 3000 ou 8080 já estiver em uso, troque `API_PORT` ou `FRONT_PORT` no `.env`. Ao mudar a porta da API, ajuste também o `VITE_API_URL`; ao mudar a do front, o `CORS_ORIGIN`.
+
+### Testes automatizados
+
+São 125 testes, com o MongoDB em memória, então não precisam de Docker:
+
+```bash
+cd athelie-leiloes-api
+npm ci
+npm test
+```
+
+Como funcionam e o que cobrem: [docs/testes.md](docs/testes.md).
+
+### Sem Docker
+
+Precisa de Node.js e de um MongoDB em replica set (local ou Atlas gratuito). O passo a passo está no [back-end](docs/backend.md#rodar-sem-docker).
 
 ## Roteiro de demonstração
 
