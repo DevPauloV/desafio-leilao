@@ -62,6 +62,7 @@ export const SocketEvent = {
   BID_OUTBID: 'bid:outbid',
   WALLET_UPDATE: 'wallet:update',
 } as const;
+export type SocketEvent = ValueOf<typeof SocketEvent>;
 
 export const ANTI_SNIPING_WINDOW_MS = 120_000;
 export const ANTI_SNIPING_EXTENSION_MS = 120_000;

@@ -4,7 +4,7 @@ import { AuthCard } from '@/components/auth-card';
 import { ErrorAlert, Field } from '@/components/form';
 import { Button } from '@/components/ui/button';
 import { NAME_MAX_LENGTH, NAME_MIN_LENGTH, PASSWORD_MIN_LENGTH, ROLE_LABELS, ROUTES, Role } from '@/constants';
-import { ApiError, errorMessage } from '@/lib/api';
+import { useSubmit } from '@/hooks/use-submit';
 import { homeFor, register, useAuth } from '@/lib/auth';
 
 const ROLE_OPTIONS = [
@@ -17,19 +17,14 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const from = (useLocation().state as { from?: string } | null)?.from;
   const [role, setRole] = useState<Role>(Role.BIDDER);
-  const [error, setError] = useState<string | null>(null);
-  const [fields, setFields] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, error, fields, submit } = useSubmit();
 
   if (user && !submitting) return <Navigate to={homeFor(user.role, from)} replace />;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setSubmitting(true);
-    setError(null);
-    setFields({});
-    try {
+    await submit(async () => {
       const created = await register({
         name: String(form.get('name')),
         email: String(form.get('email')),
@@ -37,11 +32,7 @@ export function RegisterPage() {
         role,
       });
       navigate(homeFor(created.role, from), { replace: true });
-    } catch (err) {
-      setError(errorMessage(err));
-      if (err instanceof ApiError) setFields(err.fields);
-      setSubmitting(false);
-    }
+    });
   }
 
   return (

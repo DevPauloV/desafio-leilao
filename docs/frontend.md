@@ -54,18 +54,27 @@ A contagem regressiva usa a hora do servidor (`serverTime`, que vem em cada resp
 
 ```
 athelie-leiloes-front/src/
-├── App.tsx            rotas e proteção por papel
+├── App.tsx            splash e rotas
 ├── constants.ts       rotas, papéis, estados e eventos (espelho da API)
 ├── types.ts           tipos das respostas da API
-├── pages/             uma página por rota (vitrine, sala, painel, carteira, arremates, comprovante, auditoria, login, cadastro)
-├── components/        peças reaproveitadas (cabeçalho, obra, status do lote, formulários)
+├── pages/             uma página por rota (vitrine, sala, painel, carteira, arremates, comprovante, auditoria, login, cadastro, 404)
+├── components/        peças reaproveitadas (cabeçalho, obra, status do lote, formulários, proteção por papel)
 │   └── ui/            componentes do shadcn/ui
+├── hooks/
+│   ├── use-page-data.ts       busca com cache por página
+│   ├── use-lot-room.ts        estado da sala ao vivo (REST + eventos do socket)
+│   ├── use-socket-event.ts    assina um evento do socket enquanto o componente existe
+│   ├── use-personal-events.ts avisos pessoais (superado, carteira)
+│   ├── use-submit.ts          envio de formulário: carregando, erro e erros por campo
+│   ├── use-server-now.ts      relógio com a hora do servidor
+│   └── use-loader-visible.ts  splash sem piscar
 └── lib/
     ├── api.ts         cliente HTTP e mensagens de erro
     ├── auth.ts        sessão e token
-    ├── socket.ts      conexão Socket.IO e avisos pessoais
+    ├── socket.ts      conexão Socket.IO
+    ├── lot-room.ts    regras puras da sala (lance novo, resposta atrasada, aviso de prorrogação)
     ├── wallet.ts      saldo compartilhado entre cabeçalho e carteira
     ├── money.ts       centavos ↔ R$
-    ├── time.ts        contagem regressiva com a hora do servidor
+    ├── time.ts        formatação de datas e contagem regressiva
     └── theme.ts       tema claro e escuro
 ```

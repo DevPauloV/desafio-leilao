@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react';
 import { ROUTE_ROLES, ROUTES, Role } from '@/constants';
+import { clearPageCache } from '@/hooks/use-page-data';
 import type { AuthResponse, User } from '@/types';
 import { ApiError, api, getToken, setToken } from './api';
-import { clearPageCache } from './loading';
 import { reconnectSocket } from './socket';
 import { setWallet } from './wallet';
 

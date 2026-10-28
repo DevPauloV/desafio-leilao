@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { LOCALE } from '@/constants';
 
 export const SECOND_MS = 1_000;
@@ -9,15 +8,6 @@ const SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
 
 export function clockOffset(serverTime: string): number {
   return new Date(serverTime).getTime() - Date.now();
-}
-
-export function useServerNow(offset: number): number {
-  const [now, setNow] = useState(() => Date.now() + offset);
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now() + offset), SECOND_MS);
-    return () => clearInterval(timer);
-  }, [offset]);
-  return now;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');

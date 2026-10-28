@@ -9,7 +9,8 @@ import { ErrorWall } from '@/components/empty-wall';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DEPOSIT_FIELD_ID, MAX_DEPOSIT, ROLE_LABELS, Role, lotPath } from '@/constants';
-import { api, errorMessage } from '@/lib/api';
+import { useSubmit } from '@/hooks/use-submit';
+import { api } from '@/lib/api';
 import { formatMoney, formatMoneyInput, parseMoney } from '@/lib/money';
 import { formatShortDate } from '@/lib/time';
 import { loadWallet, setWallet, useWallet } from '@/lib/wallet';
@@ -159,8 +160,7 @@ function Amount({ label, value, className }: { label: string; value: number; cla
 
 function DepositForm() {
   const [value, setValue] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, error, setError, submit } = useSubmit();
   const location = useLocation();
 
   // `location.key` refoca o campo quando o atalho "Depositar" é usado com a carteira já aberta.
@@ -179,17 +179,10 @@ function DepositForm() {
       setError(`O máximo por depósito é ${formatMoney(MAX_DEPOSIT)}.`);
       return;
     }
-    setSubmitting(true);
-    setError(null);
-    try {
-      setWallet(await api<Wallet>('/api/wallet/deposit', { method: 'POST', body: { amount } }));
-      toast.success('Depósito feito', { description: `${formatMoney(amount)} entraram no seu saldo.` });
-      setValue('');
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setSubmitting(false);
-    }
+    const ok = await submit(async () => setWallet(await api<Wallet>('/api/wallet/deposit', { method: 'POST', body: { amount } })));
+    if (!ok) return;
+    toast.success('Depósito feito', { description: `${formatMoney(amount)} entraram no seu saldo.` });
+    setValue('');
   }
 
   return (

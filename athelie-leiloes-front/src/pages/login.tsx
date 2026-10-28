@@ -1,36 +1,27 @@
-import { useState, type FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { AuthCard } from '@/components/auth-card';
 import { ErrorAlert, Field } from '@/components/form';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants';
-import { ApiError, errorMessage } from '@/lib/api';
+import { useSubmit } from '@/hooks/use-submit';
 import { homeFor, login, useAuth } from '@/lib/auth';
 
 export function LoginPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const from = (useLocation().state as { from?: string } | null)?.from;
-  const [error, setError] = useState<string | null>(null);
-  const [fields, setFields] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, error, fields, submit } = useSubmit();
 
   if (user && !submitting) return <Navigate to={homeFor(user.role, from)} replace />;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setSubmitting(true);
-    setError(null);
-    setFields({});
-    try {
+    await submit(async () => {
       const logged = await login({ email: String(form.get('email')), password: String(form.get('password')) });
       navigate(homeFor(logged.role, from), { replace: true });
-    } catch (err) {
-      setError(errorMessage(err));
-      if (err instanceof ApiError) setFields(err.fields);
-      setSubmitting(false);
-    }
+    });
   }
 
   return (

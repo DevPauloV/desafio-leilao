@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { ShieldCheckIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,10 +22,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LotStatus, MET_QUERY_MAX_LENGTH, SocketEvent, auditPath, lotPath } from '@/constants';
-import { ApiError, api, assetUrl, errorMessage } from '@/lib/api';
+import { api, assetUrl, errorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { usePageData } from '@/lib/loading';
-import { socket } from '@/lib/socket';
+import { usePageData } from '@/hooks/use-page-data';
+import { useSocketEvent } from '@/hooks/use-socket-event';
+import { useSubmit } from '@/hooks/use-submit';
 import { formatMoney, parseMoney } from '@/lib/money';
 import { MINUTE_MS, toDateTimeLocal } from '@/lib/time';
 import type { CreateLotInput, MetArtwork, MyLot, MyLotsResponse } from '@/types';
@@ -42,12 +43,7 @@ export function AuctioneerPanelPage() {
   const [selected, setSelected] = useState<MetArtwork | null>(null);
 
   // `lot:ended` também chega na sala pessoal do leiloeiro dono: relê para mostrar resultado e total.
-  useEffect(() => {
-    socket.on(SocketEvent.LOT_ENDED, reloadMine);
-    return () => {
-      socket.off(SocketEvent.LOT_ENDED, reloadMine);
-    };
-  }, [reloadMine]);
+  useSocketEvent(SocketEvent.LOT_ENDED, reloadMine);
 
   const count = (status: LotStatus) => (mine ? String(mine.items.filter((lot) => lot.status === status).length) : null);
 
@@ -114,25 +110,18 @@ function Kpi({ label, value, boneClassName }: { label: string; value: string | n
 function MetSearch({ selected, onSelect }: { selected: MetArtwork | null; onSelect: (artwork: MetArtwork) => void }) {
   const [results, setResults] = useState<MetArtwork[] | null>(null);
   const [searched, setSearched] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { submitting: searching, error, submit } = useSubmit();
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const q = String(new FormData(event.currentTarget).get('q')).trim();
     if (!q) return;
-    setSearching(true);
-    setError(null);
-    try {
+    const ok = await submit(async () => {
       const { items } = await api<{ items: MetArtwork[] }>(`/api/met/search?q=${encodeURIComponent(q)}`);
       setResults(items);
       setSearched(q);
-    } catch (err) {
-      setResults(null);
-      setError(errorMessage(err));
-    } finally {
-      setSearching(false);
-    }
+    });
+    if (!ok) setResults(null);
   }
 
   return (
@@ -208,9 +197,7 @@ function NewLotForm({ artwork, onCreated }: { artwork: MetArtwork | null; onCrea
     const start = Math.ceil((Date.now() + DEFAULT_START_DELAY_MS) / MINUTE_MS) * MINUTE_MS;
     return { start: toDateTimeLocal(start), end: toDateTimeLocal(start + DAY_MS) };
   });
-  const [fields, setFields] = useState<FormFields>({});
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, error, setError, fields, setFields, submit } = useSubmit();
 
   if (!artwork) {
     return (
@@ -239,23 +226,17 @@ function NewLotForm({ artwork, onCreated }: { artwork: MetArtwork | null; onCrea
     setError(null);
     if (!startingBid || !minIncrement || !startsAt || !endsAt) return;
 
-    setSubmitting(true);
-    try {
-      const input: CreateLotInput = {
-        metObjectId: chosen.metObjectId,
-        startingBid,
-        minIncrement,
-        startsAt: new Date(startsAt).toISOString(),
-        endsAt: new Date(endsAt).toISOString(),
-      };
-      await api('/api/lots', { method: 'POST', body: input });
-      toast.success('Lote publicado', { description: chosen.title });
-      onCreated();
-    } catch (err) {
-      setError(errorMessage(err));
-      if (err instanceof ApiError) setFields(err.fields);
-      setSubmitting(false);
-    }
+    const input: CreateLotInput = {
+      metObjectId: chosen.metObjectId,
+      startingBid,
+      minIncrement,
+      startsAt: new Date(startsAt).toISOString(),
+      endsAt: new Date(endsAt).toISOString(),
+    };
+    const ok = await submit(() => api('/api/lots', { method: 'POST', body: input }));
+    if (!ok) return;
+    toast.success('Lote publicado', { description: chosen.title });
+    onCreated();
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { cn } from 'cn';
 import { ShieldCheckIcon } from 'lucide-react';
@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LotStatus, MyBidStatus, ROLE_LABELS, ROUTES, Role, SocketEvent, auditPath, lotPath, receiptPath } from '@/constants';
 import { assetUrl } from '@/lib/api';
-import { usePageData } from '@/lib/loading';
 import { formatMoney } from '@/lib/money';
-import { socket } from '@/lib/socket';
+import { usePageData } from '@/hooks/use-page-data';
+import { useSocketEvent } from '@/hooks/use-socket-event';
 import { formatShortDate } from '@/lib/time';
 import type { MyBidItem } from '@/types';
 
@@ -174,14 +174,8 @@ export function MyBidsPage() {
   const [filter, setFilter] = useState<Filter>(Filter.ALL);
 
   // Ser superado, dar lance ou liquidar (estes dois via `wallet:update`) muda a lista: relê.
-  useEffect(() => {
-    socket.on(SocketEvent.BID_OUTBID, reload);
-    socket.on(SocketEvent.WALLET_UPDATE, reload);
-    return () => {
-      socket.off(SocketEvent.BID_OUTBID, reload);
-      socket.off(SocketEvent.WALLET_UPDATE, reload);
-    };
-  }, [reload]);
+  useSocketEvent(SocketEvent.BID_OUTBID, reload);
+  useSocketEvent(SocketEvent.WALLET_UPDATE, reload);
 
   const inFilter = (item: MyBidItem, value: Filter) => value === Filter.ALL || STATUS[item.myStatus].filter === value;
 

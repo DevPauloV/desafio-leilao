@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LOTS_PAGE_SIZE, LotStatus, SEARCH_MAX_LENGTH, lotPath } from '@/constants';
 import { api, assetUrl, errorMessage } from '@/lib/api';
 import { formatMoney } from '@/lib/money';
-import { clockOffset, formatCountdown, formatShortDate, useServerNow } from '@/lib/time';
+import { clockOffset, formatCountdown, formatShortDate } from '@/lib/time';
+import { useServerNow } from '@/hooks/use-server-now';
 import type { LotPage, LotSummary } from '@/types';
 
 const TABS = [
