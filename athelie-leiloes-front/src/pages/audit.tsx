@@ -5,6 +5,7 @@ import { Artwork } from '@/components/artwork';
 import { ErrorAlert } from '@/components/form';
 import { LotStatusLabel } from '@/components/lot-status';
 import { PageTitle } from '@/components/page-title';
+import { Bone } from '@/components/skeleton';
 import { Paddle } from '@/components/paddle';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -83,13 +84,7 @@ export function AuditPage() {
       </div>
     );
   }
-  if (!current) {
-    return (
-      <p role="status" className="pt-7 text-muted-foreground">
-        Conferindo o histórico…
-      </p>
-    );
-  }
+  if (!current) return <AuditSkeleton />;
 
   const { lot, bids, verdict } = current;
   const seqInvalid = verdict.firstInvalidSeq ?? 0;
@@ -193,14 +188,80 @@ export function AuditPage() {
         </div>
       )}
 
-      <section className="grid gap-2 rounded-[10px] border bg-card p-5 text-sm">
-        <h2 className="font-semibold">Como a verificação funciona</h2>
-        <ol className="grid list-decimal gap-1 pl-[18px] text-muted-foreground">
-          <li>Cada lance carrega o hash do lance anterior, formando uma corrente.</li>
-          <li>Esse hash é assinado com uma chave secreta do servidor, que não fica no banco de dados.</li>
-          <li>Se alguém alterar, apagar ou inserir um lance direto no banco, a assinatura deixa de conferir e a corrente quebra naquele ponto.</li>
-        </ol>
+      <HowItWorks />
+    </div>
+  );
+}
+
+function HowItWorks() {
+  return (
+    <section className="grid gap-2 rounded-[10px] border bg-card p-5 text-sm">
+      <h2 className="font-semibold">Como a verificação funciona</h2>
+      <ol className="grid list-decimal gap-1 pl-[18px] text-muted-foreground">
+        <li>Cada lance carrega o hash do lance anterior, formando uma corrente.</li>
+        <li>Esse hash é assinado com uma chave secreta do servidor, que não fica no banco de dados.</li>
+        <li>Se alguém alterar, apagar ou inserir um lance direto no banco, a assinatura deixa de conferir e a corrente quebra naquele ponto.</li>
+      </ol>
+    </section>
+  );
+}
+
+const SKELETON_ROWS = 4;
+const SKELETON_CELLS = ['w-4', 'w-24', 'w-24', 'w-32', 'w-20', 'w-20', 'w-8'];
+
+/** Mesma página da auditoria: título e explicação reais, blocos no lugar do veredito e dos lances. */
+function AuditSkeleton() {
+  return (
+    <div role="status" aria-label="Conferindo o histórico" className="grid grid-cols-1 gap-7 pt-7">
+      <div className="flex flex-wrap items-end gap-5">
+        <Bone className="aspect-4/5 w-20 flex-none rounded-md bg-wall" />
+        <PageTitle eyebrow="Página pública · sem login" title="Auditoria do lote">
+          <Bone className="mt-1.5 h-3.5 w-72 max-w-full" />
+        </PageTitle>
+        <Bone className="h-3 w-36 sm:ml-auto" />
+      </div>
+
+      <section className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[18px] rounded-[10px] border bg-card p-[22px]">
+        <Bone className="size-14 rounded-full" />
+        <div className="grid gap-2.5">
+          <Bone className="h-6.5 w-64 max-w-full rounded-md" />
+          <Bone className="h-3 w-11/12" />
+        </div>
       </section>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Bone className="h-3 w-52" />
+        <Bone className="h-8 w-36 rounded-lg" />
+      </div>
+
+      <div className="rounded-[10px] border bg-card">
+        <Table className="min-w-[720px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead>#</TableHead>
+              <TableHead>Licitante</TableHead>
+              <TableHead>Valor</TableHead>
+              <TableHead>Horário</TableHead>
+              <TableHead>Hash anterior</TableHead>
+              <TableHead>Hash</TableHead>
+              <TableHead>Confere</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: SKELETON_ROWS }, (_, row) => (
+              <TableRow key={row} className="h-11">
+                {SKELETON_CELLS.map((width, cell) => (
+                  <TableCell key={cell}>
+                    <Bone row={row} className={`h-3 ${width}`} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <HowItWorks />
     </div>
   );
 }

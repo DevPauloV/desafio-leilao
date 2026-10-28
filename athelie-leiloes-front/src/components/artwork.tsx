@@ -49,7 +49,7 @@ export function MuseumLabel({
   compact = false,
 }: {
   artist?: string | null;
-  title: string;
+  title: ReactNode;
   meta?: string | null;
   titleClassName?: string;
   /** Trunca cada linha para os cards da vitrine terem a mesma altura. */
