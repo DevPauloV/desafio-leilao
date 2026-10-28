@@ -21,7 +21,7 @@ export function LotStatusLabel({ status }: { status: LotStatus }) {
       <span
         aria-hidden="true"
         className={cn(
-          'size-[7px] rounded-full',
+          'size-1.75 rounded-full',
           hollow ? 'border-[1.5px] border-current' : 'bg-current',
           live && 'motion-safe:animate-live',
         )}

@@ -109,14 +109,17 @@ export function AuditPage() {
       <section
         aria-live="polite"
         className={cn(
-          'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[18px] rounded-[10px] border p-[22px]',
+          'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2.5 gap-y-2 rounded-[10px] border p-4.5 sm:gap-x-4.5 sm:gap-y-1 sm:p-5.5',
           verdict.intact
             ? 'border-win/35 bg-win-soft text-win'
             : 'border-destructive/35 bg-destructive-soft text-destructive',
         )}
       >
-        <div className="grid size-14 place-items-center rounded-full border-2 border-current" aria-hidden="true">
-          <svg viewBox="0 0 24 24" className="size-[26px]">
+        <div
+          className="grid size-7 place-items-center rounded-full border-2 border-current sm:row-span-2 sm:size-14"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 24 24" className="size-4 sm:size-6.5">
             {verdict.intact ? (
               <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             ) : (
@@ -124,18 +127,16 @@ export function AuditPage() {
             )}
           </svg>
         </div>
-        <div className="grid gap-1">
-          <h2 className="text-[28px] leading-[1.1] font-bold tracking-[-0.025em]">
-            {verdict.intact ? 'Histórico íntegro' : 'Histórico adulterado'}
-          </h2>
-          <p className="text-sm text-foreground">
+        <h2 className="text-[22px] leading-[1.15] font-bold tracking-[-0.02em] sm:self-end sm:text-[28px] sm:leading-[1.1] sm:tracking-tight">
+          {verdict.intact ? 'Histórico íntegro' : 'Histórico adulterado'}
+        </h2>
+        <p className="col-span-2 text-sm text-foreground sm:col-span-1 sm:col-start-2 sm:self-start">
             {verdict.intact
               ? bids.length === 0
                 ? 'O lote ainda não tem lances, e o registro do lote confirma isso.'
                 : `${bids.length === 1 ? 'O lance foi conferido' : `Os ${bids.length} lances foram conferidos um a um`}, e a cadeia termina no hash guardado no lote. Nada foi alterado, removido ou inserido.`
-              : `${problem ?? 'A cadeia de lances não confere.'} Os lances marcados abaixo não conferem com a assinatura.`}
-          </p>
-        </div>
+            : `${problem ?? 'A cadeia de lances não confere.'} Os lances marcados abaixo não conferem com a assinatura.`}
+        </p>
       </section>
 
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -148,7 +149,7 @@ export function AuditPage() {
 
       {bids.length > 0 && (
         <div className="rounded-[10px] border bg-card">
-          <Table className="min-w-[720px]">
+          <Table className="min-w-180">
             <TableHeader>
               <TableRow>
                 <TableHead>#</TableHead>
@@ -197,7 +198,7 @@ function HowItWorks() {
   return (
     <section className="grid gap-2 rounded-[10px] border bg-card p-5 text-sm">
       <h2 className="font-semibold">Como a verificação funciona</h2>
-      <ol className="grid list-decimal gap-1 pl-[18px] text-muted-foreground">
+      <ol className="grid list-decimal gap-1 pl-4.5 text-muted-foreground">
         <li>Cada lance carrega o hash do lance anterior, formando uma corrente.</li>
         <li>Esse hash é assinado com uma chave secreta do servidor, que não fica no banco de dados.</li>
         <li>Se alguém alterar, apagar ou inserir um lance direto no banco, a assinatura deixa de conferir e a corrente quebra naquele ponto.</li>
@@ -221,12 +222,10 @@ function AuditSkeleton() {
         <Bone className="h-3 w-36 sm:ml-auto" />
       </div>
 
-      <section className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[18px] rounded-[10px] border bg-card p-[22px]">
-        <Bone className="size-14 rounded-full" />
-        <div className="grid gap-2.5">
-          <Bone className="h-6.5 w-64 max-w-full rounded-md" />
-          <Bone className="h-3 w-11/12" />
-        </div>
+      <section className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2.5 gap-y-2.5 rounded-[10px] border bg-card p-4.5 sm:gap-x-4.5 sm:p-5.5">
+        <Bone className="size-7 rounded-full sm:row-span-2 sm:size-14" />
+        <Bone className="h-6.5 w-64 max-w-full rounded-md sm:self-end" />
+        <Bone className="col-span-2 h-3 w-11/12 sm:col-span-1 sm:col-start-2 sm:self-start" />
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -235,7 +234,7 @@ function AuditSkeleton() {
       </div>
 
       <div className="rounded-[10px] border bg-card">
-        <Table className="min-w-[720px]">
+        <Table className="min-w-180">
           <TableHeader>
             <TableRow>
               <TableHead>#</TableHead>

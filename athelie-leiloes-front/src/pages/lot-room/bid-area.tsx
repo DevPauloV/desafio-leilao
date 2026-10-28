@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
+import { CircleAlertIcon, CircleCheckIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { toast } from 'sonner';
+import { cn } from 'cn';
 import { ErrorAlert } from '@/components/form';
-import { Paddle } from '@/components/paddle';
+import { Paddle, PaddleNumber } from '@/components/paddle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,14 +23,24 @@ const QUICK_BID_STEPS = [1, 3] as const;
 export function PositionBanner({ lot }: { lot: LotDetail }) {
   const me = lot.me;
   if (!me || me.position === null || lot.status !== LotStatus.LIVE) return null;
-  const amount = formatMoney(lot.currentBid ?? 0);
+  const leader = lot.bids[0];
   const [title, text] = me.isLeader
-    ? ['Você está ganhando', `Seu lance de ${amount} está comprometido na carteira.`]
-    : ['Você foi superado', 'O valor do seu lance já voltou para o saldo disponível.'];
+    ? ['Você está ganhando', `Seu lance de ${formatMoney(lot.currentBid ?? 0)} está comprometido na carteira.`]
+    : [
+        leader ? <>Você foi superado por <PaddleNumber pseudonym={leader.pseudonym} /></> : 'Você foi superado',
+        'O valor do seu lance já voltou para o saldo disponível.',
+      ];
+  const Icon = me.isLeader ? CircleCheckIcon : CircleAlertIcon;
   return (
-    <div role="status" className={me.isLeader ? 'grid gap-0.5 rounded-lg bg-win-soft px-3.5 py-3 text-sm text-win' : 'grid gap-0.5 rounded-lg bg-warn-soft px-3.5 py-3 text-sm text-warn'}>
-      <b className="text-[15px] font-semibold">{title}</b>
-      <span>{text}</span>
+    <div
+      role="status"
+      className={cn('flex gap-2.5 rounded-lg px-3.5 py-3 text-sm transition-colors', me.isLeader ? 'bg-win-soft text-win' : 'bg-warn-soft text-warn')}
+    >
+      <Icon aria-hidden="true" className="mt-0.5 size-4 flex-none" />
+      <span className="grid gap-0.5">
+        <b className="font-bold">{title}</b>
+        <span className="text-[13px]">{text}</span>
+      </span>
     </div>
   );
 }

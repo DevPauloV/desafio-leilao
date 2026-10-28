@@ -1,6 +1,6 @@
 import { Bone } from '@/components/skeleton';
 
-const FACT_LABELS = ['Lance inicial', 'Incremento mínimo', 'Lances', 'Início', 'Fim', 'Auditoria'];
+const FACT_LABELS = ['Lance inicial', 'Incremento mínimo', 'Início', 'Fim', 'Auditoria'];
 
 const SKELETON_BIDS = 4;
 
@@ -34,16 +34,20 @@ export function RoomSkeleton() {
       </div>
 
       <aside className="grid gap-4.5 rounded-[10px] border bg-card p-5.5">
-        <div className="grid gap-1.5">
-          <Bone className="h-3 w-40" />
-          <div className="flex h-[clamp(44px,6vw,60px)] items-center">
-            <Bone className="h-4/5 w-56 rounded-md" />
-          </div>
-          <Bone className="h-3 w-32" />
+        <div className="flex justify-between">
+          <Bone className="h-3 w-16" />
+          <Bone className="h-3 w-14" />
         </div>
-        <div className="grid gap-2 border-y py-3">
-          <Bone className="h-3 w-24" />
-          <Bone className="h-6.5 w-36 rounded-md" />
+        <div className="grid gap-2">
+          <div className="grid gap-1.5">
+            <Bone className="h-3 w-20" />
+            <Bone className="h-[clamp(34px,3.8vw,44px)] w-56 rounded-md" />
+          </div>
+          <div className="mt-2 flex justify-between">
+            <Bone className="h-3 w-16" />
+            <Bone className="h-3.5 w-14" />
+          </div>
+          <Bone className="h-1 w-full" />
           <Bone className="h-3 w-full" />
         </div>
         <div className="grid gap-2">
@@ -53,15 +57,22 @@ export function RoomSkeleton() {
             <Bone className="h-10 w-28 rounded-lg" />
           </div>
         </div>
-        <div className="grid">
-          <span className="pb-2 text-[13px] font-semibold tracking-widest text-muted-foreground uppercase">Histórico de lances</span>
+        <div className="-mx-5.5 -mb-5.5 grid border-t pb-2.5">
+          <div className="flex items-center justify-between px-5.5 pt-3.5 pb-1.5">
+            <span className="text-sm font-bold">Lances</span>
+            <Bone className="h-3 w-24" />
+          </div>
           <ol className="grid">
             {Array.from({ length: SKELETON_BIDS }, (_, row) => (
-              <li key={row} className="grid grid-cols-[36px_minmax(0,1fr)_auto_auto] items-center gap-3 border-t py-3">
-                <Bone row={row} className="h-3 w-6" />
-                <Bone row={row} className="h-3 w-24" />
-                <Bone row={row} className="h-3 w-16" />
-                <Bone row={row} className="h-3 w-12" />
+              <li key={row} className="flex items-center justify-between px-5.5 py-2">
+                <div className="grid gap-1">
+                  <Bone row={row} className="h-3 w-24" />
+                  <Bone row={row} className="h-2.5 w-14" />
+                </div>
+                <div className="grid justify-items-end gap-1">
+                  <Bone row={row} className="h-3.5 w-20" />
+                  <Bone row={row} className="h-2.5 w-16" />
+                </div>
               </li>
             ))}
           </ol>

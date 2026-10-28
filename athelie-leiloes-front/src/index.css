@@ -53,6 +53,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 
   --animate-live: live-pulse 1.6s ease-in-out infinite;
+  --animate-bump: bump 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-sheen: sheen 1.6s linear infinite;
   --animate-progress: progress 1.2s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
   /* 300 ms = LOADER_EXIT_MS em src/lib/loading.ts */
@@ -60,6 +61,17 @@
   --animate-page-in: page-in 260ms ease-out;
   --animate-splash-rise: splash-rise 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-splash-track: splash-track 700ms ease 300ms both;
+}
+
+@keyframes bump {
+  0% {
+    transform: translateY(8px);
+    opacity: 0.2;
+    color: var(--primary);
+  }
+  60% {
+    color: var(--primary);
+  }
 }
 
 @keyframes live-pulse {

@@ -24,21 +24,3 @@ export function Paddle({ pseudonym, mine = false, accent = false }: { pseudonym:
 export function PaddleNumber({ pseudonym }: { pseudonym: string }) {
   return <b className="font-mono font-semibold">{paddleNumber(pseudonym)}</b>;
 }
-
-const BIG_PADDLE_LINE_LENGTH = 5;
-
-export function BigPaddle({ pseudonym }: { pseudonym: string }) {
-  const number = paddleNumber(pseudonym);
-  return (
-    <div aria-hidden="true" className="grid flex-none justify-items-center">
-      <div className="grid h-18.5 w-16 place-items-center rounded-full bg-primary text-center font-mono text-xs leading-[1.2] font-medium tracking-[0.04em] text-primary-foreground">
-        <span>
-          {number.slice(0, BIG_PADDLE_LINE_LENGTH)}
-          <br />
-          {number.slice(BIG_PADDLE_LINE_LENGTH)}
-        </span>
-      </div>
-      <div className="-mt-0.5 h-6.5 w-3 rounded-b bg-primary" />
-    </div>
-  );
-}
