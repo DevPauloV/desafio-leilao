@@ -2,7 +2,7 @@ import type { Express } from 'express';
 import { Types } from 'mongoose';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorCode, GENESIS_HASH, LOTS_PAGE_SIZE, LotState, LotStatus, Role } from '../src/constants.js';
+import { ErrorCode, GENESIS_HASH, LOTS_PAGE_SIZE, LotPeriod, LotState, LotStatus, Role } from '../src/constants.js';
 import { Image } from '../src/models/Image.js';
 import { Lot } from '../src/models/Lot.js';
 import { User } from '../src/models/User.js';
@@ -288,21 +288,71 @@ describe('GET /api/lots: busca e filtro', () => {
     expect(page2.body).toMatchObject({ page: 2, total: 3, items: [] });
   });
 
-  it('departments traz os distintos dos lotes visíveis, em ordem alfabética, sem nulos e sem depender dos filtros', async () => {
+  it('departments e artists contam os lotes da aba, em ordem alfabética, sem nulos e sem depender dos outros filtros', async () => {
     await catalog();
 
     const all = await list({});
-    expect(all.body.departments).toEqual([ARMS, ASIAN, EUROPEAN]);
-    expect((await list({ q: 'hokusai', department: ASIAN })).body.departments).toEqual([ARMS, ASIAN, EUROPEAN]);
+    expect(all.body.departments).toEqual([
+      { name: ARMS, count: 1 },
+      { name: ASIAN, count: 1 },
+      { name: EUROPEAN, count: 3 },
+    ]);
+    expect(all.body.artists).toEqual([
+      { name: 'Edgar Degas', count: 2 },
+      { name: 'Johannes Vermeer', count: 1 },
+      { name: 'Katsushika Hokusai', count: 1 },
+    ]);
+    const filtered = await list({ q: 'hokusai', department: ASIAN });
+    expect(filtered.body.departments).toEqual(all.body.departments);
+    expect((await list({ status: LotStatus.SCHEDULED })).body.artists).toEqual([{ name: 'Edgar Degas', count: 1 }]);
   });
 
-  it('valida q e department', async () => {
+  it('artist filtra por igualdade exata', async () => {
+    const lots = await catalog();
+
+    expect(ids(await list({ artist: 'Edgar Degas', status: LotStatus.LIVE }))).toEqual([lots.degasLive.id]);
+    expect((await list({ artist: 'degas' })).body.total).toBe(0);
+  });
+
+  it('minPrice e maxPrice usam o lance atual, ou o inicial quando não há lances', async () => {
+    const cheap = await insertLot({ startingBid: 5_000 });
+    const outbid = await insertLot({ startingBid: 5_000, currentBid: 20_000, bidCount: 2 });
+    const pricey = await insertLot({ startingBid: 50_000 });
+
+    expect(ids(await list({ maxPrice: 10_000 }))).toEqual([cheap.id]);
+    expect(ids(await list({ minPrice: 10_000, maxPrice: 20_000 }))).toEqual([outbid.id]);
+    expect(ids(await list({ minPrice: 20_000 }))).toEqual([outbid.id, pricey.id].sort());
+  });
+
+  it('period olha o fim (ao vivo), o início (agendado) ou o fim passado (encerrado)', async () => {
+    const DAY = 24 * 60 * MINUTE;
+    const endsSoon = await insertLot({ endsAt: fromNow(2 * 60 * MINUTE) });
+    await insertLot({ endsAt: fromNow(3 * DAY) });
+    const startsSoon = await insertLot({ startsAt: fromNow(60 * MINUTE), endsAt: fromNow(2 * DAY) });
+    await insertLot({ startsAt: fromNow(10 * DAY), endsAt: fromNow(11 * DAY) });
+    const endedRecently = await insertLot({ startsAt: fromNow(-2 * DAY), endsAt: fromNow(-60 * MINUTE) });
+    await insertLot({ startsAt: fromNow(-12 * DAY), endsAt: fromNow(-10 * DAY) });
+
+    expect(ids(await list({ period: LotPeriod.DAY, status: LotStatus.LIVE }))).toEqual([endsSoon.id]);
+    expect(ids(await list({ period: LotPeriod.DAY, status: LotStatus.SCHEDULED }))).toEqual([startsSoon.id]);
+    expect(ids(await list({ period: LotPeriod.WEEK, status: LotStatus.ENDED }))).toEqual([endedRecently.id]);
+    expect(ids(await list({ period: LotPeriod.DAY }))).toEqual([endsSoon.id, startsSoon.id, endedRecently.id].sort());
+  });
+
+  it('valida q, department, artist, preço e período', async () => {
     const empty = await list({ q: '   ' });
     expect(empty.status).toBe(400);
     expect(empty.body.error.details.fields.q).toBe('Digite algo para buscar.');
     expect((await list({ q: 'x'.repeat(81) })).status).toBe(400);
     expect((await list({ q: 'x'.repeat(80) })).status).toBe(200);
     expect((await list({ department: 'x'.repeat(81) })).status).toBe(400);
+    expect((await list({ artist: 'x'.repeat(81) })).status).toBe(400);
+    expect((await list({ minPrice: -1 })).status).toBe(400);
+    expect((await list({ minPrice: 'abc' })).status).toBe(400);
+    expect((await list({ period: '1y' })).status).toBe(400);
+    const inverted = await list({ minPrice: 2_000, maxPrice: 1_000 });
+    expect(inverted.status).toBe(400);
+    expect(inverted.body.error.details.fields.maxPrice).toBe('O valor máximo precisa ser maior ou igual ao mínimo.');
   });
 });
 

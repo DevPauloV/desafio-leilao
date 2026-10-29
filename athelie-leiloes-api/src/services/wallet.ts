@@ -1,5 +1,5 @@
-import { ErrorCode, LotState, MAX_DEPOSIT } from '../constants.js';
-import { AppError, formatBRL } from '../errors.js';
+import { ErrorCode, LotState } from '../constants.js';
+import { AppError } from '../errors.js';
 import { Lot } from '../models/Lot.js';
 import { User } from '../models/User.js';
 

@@ -20,7 +20,17 @@ export type LotSummary = {
   department: string | null;
 };
 
-export type LotPage = { items: LotSummary[]; page: number; total: number; serverTime: string; departments: string[] };
+/** Valor de filtro da vitrine com quantos lotes da aba o têm. */
+export type Facet = { name: string; count: number };
+
+export type LotPage = {
+  items: LotSummary[];
+  page: number;
+  total: number;
+  serverTime: string;
+  departments: Facet[];
+  artists: Facet[];
+};
 
 export type MyLot = LotSummary & { result: { sold: boolean; amount: number | null } | null };
 

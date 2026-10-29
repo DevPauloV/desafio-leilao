@@ -188,7 +188,7 @@ Wallet     = { balance, committed, available,
 | POST | `/api/auth/register` | público | `{ name (2–80), email, password (≥ 8 caracteres, ≤ 72 bytes), role }` | `201 { token, user: { id, name, email, role } }` |
 | POST | `/api/auth/login` | público (rate limit) | `{ email, password }` | `{ token, user }` |
 | GET | `/api/auth/me` | logado | | `{ user }` |
-| GET | `/api/lots` | público | query `status?`, `page?` (12 por página), `q?` (1–80 caracteres), `department?` | `{ items: LotSummary[], page, total, serverTime, departments: string[] }` (nunca `cancelled`) |
+| GET | `/api/lots` | público | query `status?`, `page?` (12 por página), `q?` (1–80 caracteres), `department?`, `artist?`, `minPrice?`, `maxPrice?` (centavos), `period?` (`24h`, `7d`, `30d`) | `{ items: LotSummary[], page, total, serverTime, departments: Facet[], artists: Facet[] }` com `Facet = { name, count }` (nunca `cancelled`) |
 | GET | `/api/lots/:id` | público (token opcional) | | `LotDetail` |
 | POST | `/api/lots` | leiloeiro | `{ metObjectId, startingBid, minIncrement, startsAt, endsAt }` | `201 LotDetail` |
 | POST | `/api/lots/:id/cancel` | leiloeiro dono | | `{ id, status: 'cancelled', refunded: boolean }` |
@@ -222,8 +222,10 @@ Met: a busca usa `/v1.1/search?q=&hasImages=true&limit=` (o `/v1/search` foi apo
 
 Busca e filtro em `GET /api/lots`:
 - `q` procura trecho no título ou no artista, sem diferenciar maiúsculas. É uma regex com a entrada escapada, e não um índice de texto: o índice de texto do Mongo não acha trechos ("dega" não acha "Degas"), e o volume de lotes é pequeno;
-- `department` filtra por igualdade exata com `item.department`;
-- `departments` traz os departamentos distintos dos lotes visíveis (não cancelados), em ordem alfabética, e não depende dos filtros aplicados. É ele que preenche o seletor da vitrine.
+- `department` e `artist` filtram por igualdade exata com `item.department` e `item.artist`;
+- `minPrice` e `maxPrice` comparam com o lance atual, ou com o lance inicial quando ainda não há lances; `maxPrice` menor que `minPrice` → `VALIDATION_ERROR`;
+- `period` depende do status do lote: ao vivo termina dentro da janela, agendado começa dentro dela e encerrado terminou dentro dela;
+- `departments` e `artists` contam os lotes visíveis da aba (`status`), em ordem alfabética e sem nulos. Os outros filtros não mudam essas contagens: elas preenchem a coluna de filtros da vitrine.
 
 Ordem em `GET /api/lots`: ao vivo pelo fim mais próximo, agendados pelo início mais próximo, encerrados pelo fim mais recente. `artist`, `department` e os campos opcionais da obra podem vir `null`. `imageUrl` é um caminho relativo à API; o front prefixa com `VITE_API_URL`.
 

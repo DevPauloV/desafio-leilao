@@ -15,9 +15,9 @@ export function ThemeButton({ className }: { className?: string }) {
   return (
     <Button
       type="button"
-      variant="outline"
+      variant="ghost"
       size="icon"
-      className={cn('size-9.5 bg-card', className)}
+      className={cn('size-11 text-muted-foreground', className)}
       onClick={() => setTheme(next.value)}
       aria-label={`Tema: ${current.label.toLowerCase()}. Trocar para ${next.label.toLowerCase()}`}
       title={`Trocar para tema ${next.label.toLowerCase()}`}

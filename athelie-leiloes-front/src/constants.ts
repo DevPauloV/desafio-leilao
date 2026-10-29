@@ -70,6 +70,10 @@ export const MAX_DEPOSIT = 10_000_000;
 
 export const LOTS_PAGE_SIZE = 12;
 export const SEARCH_MAX_LENGTH = 80;
+
+/** Janelas do filtro de período da vitrine (mesmos valores da API). */
+export const LotPeriod = { DAY: '24h', WEEK: '7d', MONTH: '30d' } as const;
+export type LotPeriod = ValueOf<typeof LotPeriod>;
 export const LOT_DETAIL_BIDS_LIMIT = 50;
 export const LOCALE = 'pt-BR';
 export const CURRENCY = 'BRL';

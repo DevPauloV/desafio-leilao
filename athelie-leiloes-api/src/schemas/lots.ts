@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LOT_SEARCH_MAX_LENGTH, LOT_START_TOLERANCE_MS, LotStatus } from '../constants.js';
+import { LOT_SEARCH_MAX_LENGTH, LOT_START_TOLERANCE_MS, LotPeriod, LotStatus } from '../constants.js';
 
 /** `label` vem com artigo ("O lance inicial"). */
 const cents = (label: string) =>
@@ -28,15 +28,28 @@ export type CreateLotInput = z.infer<typeof createLotSchema>;
 
 export const SHOWCASE_ORDER = [LotStatus.LIVE, LotStatus.SCHEDULED, LotStatus.ENDED] as const;
 
-export const listLotsQuery = z.object({
-  status: z.enum(SHOWCASE_ORDER).optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  q: z
-    .string()
-    .trim()
-    .min(1, 'Digite algo para buscar.')
-    .max(LOT_SEARCH_MAX_LENGTH, `A busca pode ter no máximo ${LOT_SEARCH_MAX_LENGTH} caracteres.`)
-    .optional(),
-  department: z.string().trim().min(1).max(LOT_SEARCH_MAX_LENGTH).optional(),
-});
+const facetValue = z.string().trim().min(1).max(LOT_SEARCH_MAX_LENGTH).optional();
+const priceBound = z.coerce.number({ error: 'Informe um valor válido.' }).int('Informe um valor válido.').min(0).optional();
+
+export const listLotsQuery = z
+  .object({
+    status: z.enum(SHOWCASE_ORDER).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    q: z
+      .string()
+      .trim()
+      .min(1, 'Digite algo para buscar.')
+      .max(LOT_SEARCH_MAX_LENGTH, `A busca pode ter no máximo ${LOT_SEARCH_MAX_LENGTH} caracteres.`)
+      .optional(),
+    department: facetValue,
+    artist: facetValue,
+    minPrice: priceBound,
+    maxPrice: priceBound,
+    period: z.enum(Object.values(LotPeriod)).optional(),
+  })
+  .refine((query) => query.minPrice === undefined || query.maxPrice === undefined || query.minPrice <= query.maxPrice, {
+    path: ['maxPrice'],
+    message: 'O valor máximo precisa ser maior ou igual ao mínimo.',
+    when: ({ issues }) => issues.length === 0,
+  });
 export type ListLotsQuery = z.infer<typeof listLotsQuery>;

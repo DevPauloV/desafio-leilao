@@ -84,12 +84,12 @@ export function LotCard({ lot, now }: { lot: LotSummary; now: number }) {
   );
 }
 
-const SKELETON_CARDS = 4;
+const SKELETON_CARDS = 3;
 
 /** Mesmas alturas do LotCard (obra, status, etiqueta, preço e botão): quando os lotes chegam, nada muda de lugar. */
 export function LotGridSkeleton() {
   return (
-    <div role="status" aria-label="Carregando lotes" className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div role="status" aria-label="Carregando lotes" className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: SKELETON_CARDS }, (_, row) => (
         <div key={row} className="grid gap-3">
           <Bone row={row} className="aspect-square rounded-[10px] bg-wall" />

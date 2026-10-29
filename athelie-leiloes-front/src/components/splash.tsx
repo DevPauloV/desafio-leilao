@@ -12,7 +12,7 @@ export function Splash({ leaving = false }: { leaving?: boolean }) {
       className={cn('fixed inset-0 z-50 grid place-items-center bg-background', leaving && 'animate-splash-out')}
     >
       <div aria-hidden="true" className="grid justify-items-center gap-2">
-        <b className="flex overflow-hidden pb-1 text-5xl leading-none font-extrabold tracking-[-0.03em] text-primary">
+        <b className="flex overflow-hidden pb-1 font-display text-5xl leading-none font-medium tracking-[0.24em] text-primary uppercase">
           {[...BRAND].map((letter, i) => (
             <span
               key={i}

@@ -67,6 +67,14 @@ export const MET_CONCURRENCY = 6;
 export const LOT_START_TOLERANCE_MS = 30_000;
 export const LOTS_PAGE_SIZE = 12;
 export const LOT_SEARCH_MAX_LENGTH = 80;
+/** Janela do filtro de período da vitrine: até o fim (ao vivo), até o início (agendado) ou desde o fim (encerrado). */
+export const LotPeriod = { DAY: '24h', WEEK: '7d', MONTH: '30d' } as const;
+export type LotPeriod = ValueOf<typeof LotPeriod>;
+export const LOT_PERIOD_MS: Record<LotPeriod, number> = {
+  [LotPeriod.DAY]: 86_400_000,
+  [LotPeriod.WEEK]: 7 * 86_400_000,
+  [LotPeriod.MONTH]: 30 * 86_400_000,
+};
 /** Centavos (R$ 100.000,00). */
 export const MAX_DEPOSIT = 10_000_000;
 export const MAX_IMAGE_BYTES = 2_097_152;

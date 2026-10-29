@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { mongo } from 'mongoose';
-import { ErrorCode, Role } from '../constants.js';
+import { ErrorCode } from '../constants.js';
 import { AppError } from '../errors.js';
 import { signToken } from '../middlewares/auth.js';
 import type { LoginInput, RegisterInput } from '../schemas/auth.js';

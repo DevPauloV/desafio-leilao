@@ -1,29 +1,28 @@
-import { ArrowRightIcon, XIcon } from 'lucide-react';
+import { ArrowRightIcon } from 'lucide-react';
 import { EmptyWall } from '@/components/empty-wall';
 import { Button } from '@/components/ui/button';
-import { TABS, resultCount, type Filters, type ShowcaseStatus, type ShowcaseTab } from './tabs';
+import { FilterChip } from './filters';
+import { TABS, resultCount, type ActiveFilter, type ShowcaseStatus, type ShowcaseTab } from './tabs';
 
 export function ShowcaseEmpty({
   tab,
   counts,
-  filters: { q, department },
+  active,
   onOpenTab,
-  onRemoveQuery,
-  onRemoveDepartment,
+  onRemove,
   onClear,
 }: {
   tab: ShowcaseTab;
   counts: Partial<Record<ShowcaseStatus, number>>;
-  filters: Filters;
+  active: ActiveFilter[];
   onOpenTab: (status: ShowcaseStatus) => void;
-  onRemoveQuery: () => void;
-  onRemoveDepartment: () => void;
+  onRemove: (filter: ActiveFilter) => void;
   onClear: () => void;
 }) {
   const elsewhere = TABS.find((other) => other.status !== tab.status && (counts[other.status] ?? 0) > 0);
   const elsewhereCount = elsewhere ? (counts[elsewhere.status] ?? 0) : 0;
 
-  if (!q && !department) {
+  if (active.length === 0) {
     return (
       <EmptyWall title={tab.emptyTitle}>
         <p className="max-w-[46ch] text-sm text-muted-foreground">{tab.emptyText}</p>
@@ -40,15 +39,16 @@ export function ShowcaseEmpty({
   return (
     <EmptyWall title={tab.filteredTitle} searching>
       <div className="flex flex-wrap justify-center gap-1.5">
-        {q && <FilterChip label="Busca" value={q} onRemove={onRemoveQuery} />}
-        {department && <FilterChip label="Departamento" value={department} onRemove={onRemoveDepartment} />}
+        {active.map((filter) => (
+          <FilterChip key={filter.label} filter={filter} onRemove={() => onRemove(filter)} />
+        ))}
       </div>
       {elsewhere ? (
         <p className="rounded-full bg-primary-soft px-3 py-0.5 text-[13px] font-semibold text-primary">
           {resultCount(elsewhereCount)} em {elsewhere.label}
         </p>
       ) : (
-        <p className="max-w-[46ch] text-sm text-muted-foreground">Confira a grafia, busque pelo nome do artista ou tente outro departamento.</p>
+        <p className="max-w-[46ch] text-sm text-muted-foreground">Confira a grafia, busque pelo nome do artista ou afrouxe algum filtro.</p>
       )}
       <div className="mt-1.5 flex flex-wrap justify-center gap-2">
         {elsewhere && (
@@ -62,22 +62,5 @@ export function ShowcaseEmpty({
         </Button>
       </div>
     </EmptyWall>
-  );
-}
-
-function FilterChip({ label, value, onRemove }: { label: string; value: string; onRemove: () => void }) {
-  return (
-    <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border bg-card py-0.5 pr-1 pl-2.5 text-[12.5px]">
-      <span className="text-[11px] text-muted-foreground">{label}</span>
-      <span className="truncate">{value}</span>
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={`Remover ${label.toLowerCase()}: ${value}`}
-        className="grid size-5 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-primary-soft hover:text-primary"
-      >
-        <XIcon className="size-3" aria-hidden="true" />
-      </button>
-    </span>
   );
 }

@@ -1,4 +1,4 @@
-import { ErrorCode, RECEIPT_CODE_BYTES } from '../constants.js';
+import { ErrorCode } from '../constants.js';
 import { AppError } from '../errors.js';
 import { Lot } from '../models/Lot.js';
 import { imageUrl } from './lots.js';

@@ -1,20 +1,23 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
+import { cn } from 'cn';
 import { Button } from '@/components/ui/button';
-import { ROUTES, Role, SocketEvent } from '@/constants';
+import { DEPOSIT_PATH, ROUTES, Role, SocketEvent } from '@/constants';
 import { logout, useAuth } from '@/lib/auth';
 import { socket } from '@/lib/socket';
 import { loadWallet, useWallet } from '@/lib/wallet';
-import { AccountMenu, WalletPill } from './account-menu';
-import { DesktopNav, MobileNav } from './nav';
+import { AccountMenu, WalletBalance } from './account-menu';
+import { DesktopNav, MobileNav, ctaClass, navLinkClass } from './nav';
 import { navItems } from './nav-items';
 import { ThemeButton } from './theme-menu';
+import { Wordmark } from './wordmark';
 
 export function AppHeader() {
   const { user, loading } = useAuth();
   const { wallet } = useWallet();
   const isBidder = user?.role === Role.BIDDER;
   const items = navItems(user?.role);
+  const bidderWallet = isBidder ? wallet : null;
 
   // Também a cada (re)conexão do socket: um `wallet:update` pode ter saído com a conexão caída ou a aba oculta.
   useEffect(() => {
@@ -34,35 +37,35 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex items-center gap-2.5 border-b bg-background/95 py-2.5 backdrop-blur md:gap-7 md:pt-5.5 md:pb-4.5">
-      <MobileNav items={items} />
-
-      <Link to={ROUTES.SHOWCASE} className="flex items-baseline gap-1.5 text-foreground no-underline md:gap-2">
-        <b className="text-2xl leading-none font-extrabold tracking-[-0.03em] text-primary md:text-[28px]">Athelie</b>
-        <span className="text-[10px] font-semibold tracking-[0.26em] text-muted-foreground uppercase md:text-[11px] md:tracking-[0.28em]">
-          Leilões
-        </span>
-      </Link>
-
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b bg-background/95 backdrop-blur md:h-22 md:gap-16">
+      <Wordmark />
       <DesktopNav items={items} />
 
-      <div className="ml-auto flex items-center gap-2.5 text-[13px]">
-        <ThemeButton className={user ? 'hidden md:flex' : undefined} />
+      <div className="ml-auto flex items-center gap-1 md:gap-7">
         {loading ? null : user ? (
           <>
-            {isBidder && wallet && <WalletPill wallet={wallet} />}
-            <AccountMenu user={user} wallet={isBidder ? wallet : null} onLogout={handleLogout} />
+            {bidderWallet && (
+              <>
+                <WalletBalance wallet={bidderWallet} />
+                <Button asChild className={cn(ctaClass, 'hidden md:inline-flex')}>
+                  <Link to={DEPOSIT_PATH}>Depositar</Link>
+                </Button>
+              </>
+            )}
+            <AccountMenu user={user} wallet={bidderWallet} onLogout={handleLogout} />
           </>
         ) : (
           <>
-            <Button asChild variant="ghost" size="sm" className="h-9.5 px-4 text-[13.5px]">
-              <Link to={ROUTES.LOGIN}>Entrar</Link>
-            </Button>
-            <Button asChild size="sm" className="hidden h-9.5 px-4.5 text-[13.5px] sm:inline-flex">
+            <ThemeButton className="hidden md:flex" />
+            <Link to={ROUTES.LOGIN} className={cn(navLinkClass, 'px-2 py-3.5 md:px-0')}>
+              Entrar
+            </Link>
+            <Button asChild className={cn(ctaClass, 'hidden md:inline-flex')}>
               <Link to={ROUTES.REGISTER}>Criar conta</Link>
             </Button>
           </>
         )}
+        <MobileNav items={items} user={user} wallet={bidderWallet} onLogout={handleLogout} />
       </div>
     </header>
   );

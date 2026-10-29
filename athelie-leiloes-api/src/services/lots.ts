@@ -5,6 +5,7 @@ import {
   GENESIS_HASH,
   LOCALE,
   LOT_DETAIL_BIDS_LIMIT,
+  LOT_PERIOD_MS,
   LOTS_PAGE_SIZE,
   LotState,
   LotStatus,
@@ -140,16 +141,37 @@ export async function saveLot(auctioneerId: string, artwork: ArtworkCopy, image:
 /** O status é recalculado no banco para ordenar e paginar; espelha `lotStatus` (o teste confere). */
 export async function listLots(query: ListLotsQuery) {
   const now = new Date();
-  const visible = { state: { $ne: LotState.CANCELLED } };
   const search = query.q ? new RegExp(escapeRegex(query.q), 'i') : null;
-  const pipeline: PipelineStage[] = [
+  const window = query.period && LOT_PERIOD_MS[query.period];
+  const price = { ...(query.minPrice !== undefined && { $gte: query.minPrice }), ...(query.maxPrice !== undefined && { $lte: query.maxPrice }) };
+  // Contagens de departamento e artista são da aba inteira: os outros filtros não as mudam.
+  const facet = (field: string): PipelineStage.FacetPipelineStage[] => [
+    { $match: { [field]: { $type: 'string' } } },
+    { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+  ];
+  const filtered: PipelineStage.FacetPipelineStage[] = [
     {
       $match: {
-        ...visible,
         ...(search && { $or: [{ 'item.title': search }, { 'item.artist': search }] }),
         ...(query.department && { 'item.department': query.department }),
+        ...(query.artist && { 'item.artist': query.artist }),
+        ...(Object.keys(price).length > 0 && { _price: price }),
+        ...(window && {
+          $and: [
+            {
+              $or: [
+                { _status: LotStatus.LIVE, endsAt: { $lte: new Date(now.getTime() + window) } },
+                { _status: LotStatus.SCHEDULED, startsAt: { $lte: new Date(now.getTime() + window) } },
+                { _status: LotStatus.ENDED, endsAt: { $gte: new Date(now.getTime() - window) } },
+              ],
+            },
+          ],
+        }),
       },
     },
+  ];
+  const pipeline: PipelineStage[] = [
+    { $match: { state: { $ne: LotState.CANCELLED } } },
     {
       $addFields: {
         _status: {
@@ -167,6 +189,7 @@ export async function listLots(query: ListLotsQuery) {
     ...(query.status ? [{ $match: { _status: query.status } }] : []),
     {
       $addFields: {
+        _price: { $ifNull: ['$currentBid', '$startingBid'] },
         _rank: { $indexOfArray: [SHOWCASE_ORDER, '$_status'] },
         _sortKey: {
           $switch: {
@@ -182,22 +205,29 @@ export async function listLots(query: ListLotsQuery) {
     { $sort: { _rank: 1, _sortKey: 1, _id: 1 } },
     {
       $facet: {
-        items: [{ $skip: (query.page - 1) * LOTS_PAGE_SIZE }, { $limit: LOTS_PAGE_SIZE }],
-        total: [{ $count: 'count' }],
+        items: [...filtered, { $skip: (query.page - 1) * LOTS_PAGE_SIZE }, { $limit: LOTS_PAGE_SIZE }],
+        total: [...filtered, { $count: 'count' }],
+        departments: facet('item.department'),
+        artists: facet('item.artist'),
       },
     },
   ];
-  const [result] = await Lot.aggregate<{ items: LotDoc[]; total: { count: number }[] }>(pipeline);
-  // Departamentos de toda a vitrine, independentes dos filtros.
-  const departments = (await Lot.distinct('item.department', visible)).filter(
-    (department): department is string => typeof department === 'string',
-  );
+  type FacetCount = { _id: string; count: number };
+  const [result] = await Lot.aggregate<{
+    items: LotDoc[];
+    total: { count: number }[];
+    departments: FacetCount[];
+    artists: FacetCount[];
+  }>(pipeline);
+  const byName = (counts: FacetCount[] = []) =>
+    counts.map(({ _id, count }) => ({ name: _id, count })).sort((a, b) => a.name.localeCompare(b.name, LOCALE));
   return {
     items: (result?.items ?? []).map((lot) => toLotSummary(lot, now)),
     page: query.page,
     total: result?.total[0]?.count ?? 0,
     serverTime: now,
-    departments: departments.sort((a, b) => a.localeCompare(b, LOCALE)),
+    departments: byName(result?.departments),
+    artists: byName(result?.artists),
   };
 }
 
