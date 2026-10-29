@@ -26,13 +26,29 @@ A auditoria pública (`GET /api/audit/lots/:id`, tela `/auditoria/:id`) recalcul
 
 ## Ver funcionando
 
-O script adultera um lote direto no Mongo e mostra o veredito antes e depois:
+O seed só cria lotes com histórico íntegro. Para ver a detecção, o script `demo:tamper` adultera um lote direto no Mongo (sem passar pela API) e mostra o veredito antes e depois.
 
-```bash
-docker compose exec api npm run demo:tamper -- <lotId> alter      # ou: remove, remove --last, insert
-```
+1. Escolha um lote com lances (os lotes ao vivo e encerrados do seed têm) e copie o id da URL `/auditoria/<lotId>`. Confirme que o selo está como íntegro.
+2. Rode o script, trocando `<lotId>` pelo id copiado:
 
-Depois, abra `/auditoria/<lotId>` no front: o selo muda para "Histórico adulterado" e os lances com problema ficam marcados.
+   ```bash
+   docker compose exec api npm run demo:tamper -- <lotId> alter
+   ```
+
+   A demonstração foi testada apenas com Docker Compose.
+3. O terminal imprime o veredito `Antes` (íntegro), a adulteração aplicada e o veredito `Depois` (com o código do problema).
+4. Recarregue `/auditoria/<lotId>` no front: o selo muda para "Histórico adulterado" e os lances com problema ficam marcados.
+
+Modos de adulteração (segundo argumento):
+
+| Modo | O que faz | Código esperado |
+|---|---|---|
+| `alter` | soma R$ 10,00 ao valor de um lance do meio | `altered` |
+| `remove` | apaga um lance do meio | `missing` |
+| `remove --last` | apaga o último lance | `head_mismatch` |
+| `insert` | insere um lance falso no fim, com hash inventado | `inserted` |
+
+A adulteração fica gravada no banco e não há comando para desfazê-la. Para voltar ao estado íntegro, resete o banco (`docker compose down -v`) ou use outro lote.
 
 ## Limites conhecidos
 

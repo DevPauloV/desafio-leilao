@@ -164,6 +164,7 @@ O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerr
 2. Tente um lance abaixo do mínimo, sem saldo ou cobrindo o próprio lance.
 3. Abra a **Auditoria** do lote.
 4. Como leiloeiro, crie um lote no painel e acompanhe até o comprovante.
+5. Para ver a auditoria acusar adulteração, rode o script de demonstração ([passo a passo](docs/auditoria.md#ver-funcionando)).
 
 [Roteiro completo, com o que esperar em cada passo](docs/roteiro.md)
 

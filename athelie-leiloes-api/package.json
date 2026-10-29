@@ -13,7 +13,8 @@
     "test": "vitest run",
     "lint": "tsc && eslint .",
     "demo:tamper": "node dist/scripts/demo-tamper.js",
-    "seed": "node dist/scripts/seed.js"
+    "seed": "node dist/scripts/seed.js",
+    "reset": "tsx src/scripts/reset.ts"
   },
   "dependencies": {
     "@socket.io/mongo-adapter": "^0.4.0",
