@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0009. Pseudônimo por lote
 
 <details>
@@ -30,3 +32,5 @@ Na sala, na auditoria e no comprovante, todos precisam distinguir os licitantes 
 ## Consequências
 - Com 6 caracteres hexadecimais (16,7 milhões de combinações), dois licitantes do mesmo lote terem o mesmo código é improvável no volume do teste, mas possível. Isso vai no README. A regra de lance usa o `leaderId`, nunca o pseudônimo, então uma colisão só confunde a exibição.
 - O leiloeiro também não vê quem venceu. A entrega do item fica fora de escopo (PDF).
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

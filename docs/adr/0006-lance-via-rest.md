@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0006. Lance pela API REST; Socket.IO só para avisos
 
 <details>
@@ -30,3 +32,5 @@ A sala ao vivo precisa de duas coisas diferentes:
 - As regras de lance são testadas com supertest, sem cliente de socket.
 - Se o socket cair, o lance continua funcionando. Ao reconectar, o front recebe o estado completo (`lot:state`).
 - Quem deu o lance recebe a resposta HTTP e também o `bid:new`. O front trata isso sem duplicar a linha no histórico.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

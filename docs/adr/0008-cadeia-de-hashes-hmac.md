@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0008. Histórico de lances em cadeia de hashes com HMAC
 
 <details>
@@ -41,3 +43,5 @@ O PDF pede que qualquer alteração, remoção ou inserção posterior no histó
 - Trocar o `AUDIT_SECRET` invalida a verificação de todos os lances antigos. O segredo é fixo por ambiente.
 - Apagar o lote inteiro (com os lances) não é detectado pela auditoria daquele lote, porque não sobra nada para verificar. O comprovante do vencedor deixa de abrir.
 - O custo da verificação é linear no número de lances do lote, o que é aceitável no volume do teste.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

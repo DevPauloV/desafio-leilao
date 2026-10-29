@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # Roteiro de demonstração
 
 <details>
@@ -58,3 +60,5 @@ docker compose exec api npm run demo:tamper -- <id do lote> alter    # ou: remov
 Entre como `leiloeiro`, busque "monet" no **Painel**, escolha uma obra e crie um lote que comece agora e termine em 3 minutos. Volte como licitante e dê um lance no último minuto.
 
 → O fim é prorrogado para 2 minutos depois do lance (anti-sniping). Ao terminar, o lote é liquidado: o vencedor vê o comprovante em **Meus arremates**, e o painel do leiloeiro mostra o resultado.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

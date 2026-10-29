@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0002. MongoDB em replica set com transações
 
 <details>
@@ -31,3 +33,5 @@ Um lance mexe em três documentos ao mesmo tempo: o lote (lance atual, líder, f
 - O `docker-compose.yml` sobe o Mongo com `--replSet rs0` e inicia o replica set no healthcheck.
 - Quem rodar sem Docker precisa de um Mongo em replica set ou do Atlas; o README explica.
 - Os testes de integração usam `mongodb-memory-server` em modo replica set.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

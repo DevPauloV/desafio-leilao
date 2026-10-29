@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # Uso de IA no projeto
 
 <details>
@@ -77,3 +79,5 @@ Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para 
 - Testei os fluxos no navegador com dois licitantes ao mesmo tempo, e no Docker derrubando e subindo o servidor.
 - Rodei o script de adulteração (`npm run demo:tamper`) e conferi a auditoria acusando cada tipo de alteração.
 - Quando a IA errou, eu corrigi ou mandei refazer. Exemplos: uma edição automática que corrompeu o contrato da API, e um diagnóstico errado da auditoria para uma cabeça de cadeia adulterada.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

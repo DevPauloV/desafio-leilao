@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # Contrato da API — Athelie Leilões
 
 <details>
@@ -314,3 +316,5 @@ Roda ao subir a API quando `SEED_ON_START=true` e também por `npm run seed`. É
 `TRUST_PROXY` é o número de proxies reversos na frente da API (padrão `0`; `1` na Vercel). Sem ele, atrás de proxy, todo cliente teria o mesmo IP no rate limit.
 
 Front: `VITE_API_URL` (URL da API vista pelo navegador), usada no build.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

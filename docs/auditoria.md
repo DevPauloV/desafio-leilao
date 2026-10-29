@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # Auditoria e privacidade
 
 <details>
@@ -75,3 +77,5 @@ Mais detalhes e alternativas descartadas no [ADR 0008](adr/0008-cadeia-de-hashes
 - Sala, auditoria e comprovante mostram só um **pseudônimo por lote** (`Licitante #A1B2C3`), derivado por HMAC do usuário e do lote. A mesma pessoa tem códigos diferentes em cada lote, então não dá para segui-la entre leilões ([ADR 0009](adr/0009-pseudonimo-por-lote.md)).
 - Rotas públicas nunca devolvem id, nome ou e-mail. O próprio usuário vê "Você" no lugar do pseudônimo.
 - O pseudônimo tem 6 caracteres hexadecimais. Uma colisão entre dois licitantes do mesmo lote é possível, mas muito improvável (1 em ~16 milhões por par).
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

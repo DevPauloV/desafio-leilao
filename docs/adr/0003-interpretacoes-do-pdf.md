@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0003. Interpretações do PDF
 
 <details>
@@ -36,3 +38,5 @@ Alguns trechos do PDF admitem mais de uma leitura. A escolha precisa ser única,
 ## Consequências
 - Cada decisão tem teste próprio: valor exato aceito, borda dos 2 minutos, cancelamento nos dois casos.
 - O README tem uma seção "Regras e interpretações" com este conteúdo.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

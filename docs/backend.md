@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # Back-end
 
 <details>
@@ -128,3 +130,5 @@ athelie-leiloes-api/src/
 | [0007](adr/0007-liquidacao-por-varredura.md) | Liquidação por varredura, uma transação por lote |
 | [0008](adr/0008-cadeia-de-hashes-hmac.md) | Cadeia de hashes HMAC contra adulteração |
 | [0009](adr/0009-pseudonimo-por-lote.md) | Pseudônimo por lote nas telas públicas |
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

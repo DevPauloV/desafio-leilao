@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # Testes automatizados
 
 <details>
@@ -76,3 +78,5 @@ São os que mais importam num leilão. Ficam em `bids.test.ts` e `settlement.tes
 ## E o front-end?
 
 O front não tem testes automatizados. Ele é verificado pelo build (`npm run build`, que inclui a checagem de tipos do TypeScript) e pelo lint (`npm run lint`). Como todas as regras de negócio estão na API, é lá que os testes se concentram.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

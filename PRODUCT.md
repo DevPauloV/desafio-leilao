@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # Product
 
 <details>
@@ -67,3 +69,5 @@ Lances auditáveis publicamente. O histórico é uma cadeia de hashes com HMAC, 
 ## Accessibility & Inclusion
 
 Contraste AA nos dois temas, foco visível, e contagem regressiva e mudanças de lance anunciadas sem depender só de cor.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

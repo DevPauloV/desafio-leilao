@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0004. Independência da API do Met
 
 <details>
@@ -35,3 +37,5 @@ O PDF exige que vitrine, salas, auditoria e comprovante continuem funcionando se
 - Cada lote ocupa algumas centenas de KB no banco, o que cabe com folga no Atlas gratuito.
 - O seed traz as próprias imagens no repositório, para subir sem depender do Met.
 - Teste automatizado: com o `fetch` do Met falhando, vitrine e imagem continuam respondendo.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

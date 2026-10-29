@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0005. Deploy: front e API na Vercel, banco no MongoDB Atlas
 
 <details>
@@ -55,3 +57,5 @@ Na Vercel, a API vira uma função, e isso traz três limitações:
 - **Domínios e variáveis:** mudar o domínio do front exige atualizar o `CORS_ORIGIN` da API. Mudar o da API exige atualizar o `VITE_API_URL` do front e fazer um novo build.
 - **Trocar o `AUDIT_SECRET`** depois que houver lances faz a auditoria acusar adulteração em todos os lotes (ADR 0008). O segredo é fixo por ambiente.
 - **O Atlas gratuito (512 MB)** comporta o volume do teste, incluindo as imagens das obras guardadas no banco (ADR 0004).
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

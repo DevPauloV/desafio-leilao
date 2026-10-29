@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0001. Estrutura do back-end
 
 <details>
@@ -48,3 +50,5 @@ athelie-leiloes-api/src/
 ## Consequências
 - Poucos arquivos, cada um com um papel claro.
 - O front mantém uma cópia das constantes que usa. O `docs/contract.md` é a referência, e qualquer mudança é feita nos dois lados.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

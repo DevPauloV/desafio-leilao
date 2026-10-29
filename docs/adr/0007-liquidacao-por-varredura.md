@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 # 0007. Liquidação por varredura periódica, em uma transação
 
 <details>
@@ -34,3 +36,5 @@ Quando o lote chega ao fim, o vencedor é debitado, o leiloeiro é creditado e o
 - O comprovante pode demorar até cerca de 2 s depois do fim para existir. A tela mostra "Apurando resultado…" nesse intervalo.
 - Com a instância pausada (função na Vercel, ADR 0005), o `setInterval` para. Um middleware em `/api` roda a mesma varredura no máximo a cada 2 s, então o lote vencido é liquidado na primeira requisição seguinte.
 - Com várias instâncias, a transação condicional continua impedindo liquidação dupla; só há trabalho repetido.
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>
