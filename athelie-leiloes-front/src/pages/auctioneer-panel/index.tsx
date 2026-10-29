@@ -50,6 +50,8 @@ export function AuctioneerPanelPage() {
 
   // `lot:ended` também chega na sala pessoal do leiloeiro dono: relê para mostrar resultado e total.
   useSocketEvent(SocketEvent.LOT_ENDED, reloadMine);
+  // Lance novo (e o fim prorrogado que ele traz) chega na sala pessoal: relê para atualizar lance atual e contagem.
+  useSocketEvent(SocketEvent.BID_NEW, reloadMine);
 
   const lots = mine?.items ?? [];
   const live = lots.filter((lot) => lot.status === LotStatus.LIVE);

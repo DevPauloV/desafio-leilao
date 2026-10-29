@@ -19,7 +19,7 @@ function retryWithFreshState(): mongo.MongoError {
 }
 
 export async function placeBid(userId: string, lotId: string, amount: number) {
-  const { response, title, bidCount, previousLeaderId } = await mongoose.connection.transaction(async (session) => {
+  const { response, title, auctioneerId, bidCount, previousLeaderId } = await mongoose.connection.transaction(async (session) => {
     const now = new Date();
     const lot = await Lot.findById(lotId).session(session).lean();
     if (!lot) throw new AppError(ErrorCode.NOT_FOUND);
@@ -79,6 +79,7 @@ export async function placeBid(userId: string, lotId: string, amount: number) {
         extended,
       },
       title: lot.item.title,
+      auctioneerId: lot.auctioneerId.toString(),
       bidCount: seq,
       previousLeaderId: lot.leaderId?.toString() ?? null,
     };
@@ -87,7 +88,9 @@ export async function placeBid(userId: string, lotId: string, amount: number) {
   await notifyAfterCommit('lance', async () => {
     const serverTime = new Date();
     const { bid, currentBid, minimumNextBid: nextMinimum, endsAt, extended } = response;
-    emitToLot(lotId, SocketEvent.BID_NEW, { lotId, bid, currentBid, minimumNextBid: nextMinimum, endsAt, bidCount, serverTime });
+    const bidNew = { lotId, bid, currentBid, minimumNextBid: nextMinimum, endsAt, bidCount, serverTime };
+    emitToLot(lotId, SocketEvent.BID_NEW, bidNew);
+    emitToUser(auctioneerId, SocketEvent.BID_NEW, bidNew); // o painel do leiloeiro não entra na sala do lote
     if (extended) emitToLot(lotId, SocketEvent.LOT_EXTENDED, { lotId, endsAt, serverTime });
     if (previousLeaderId) {
       emitToUser(previousLeaderId, SocketEvent.BID_OUTBID, { lotId, title, currentBid });
