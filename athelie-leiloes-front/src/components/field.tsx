@@ -18,7 +18,7 @@ export function Field({
   const errorId = error ? `${id}-error` : undefined;
   const isPassword = type === 'password';
   return (
-    <div className="grid gap-1">
+    <div className="grid content-start gap-1">
       <Label htmlFor={id} className="text-[13px] font-semibold">
         {label}
       </Label>

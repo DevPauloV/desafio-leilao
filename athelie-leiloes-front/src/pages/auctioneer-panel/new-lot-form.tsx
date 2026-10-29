@@ -9,7 +9,7 @@ import { ANTI_SNIPING_WINDOW_MS } from '@/constants';
 import { api } from '@/lib/api';
 import { useServerNow } from '@/hooks/use-server-now';
 import { useSubmit } from '@/hooks/use-submit';
-import { parseMoney } from '@/lib/money';
+import { moneyError, parseMoney } from '@/lib/money';
 import { MINUTE_MS, formatShortDate, toDateTimeLocal } from '@/lib/time';
 import type { CreateLotInput, MetArtwork } from '@/types';
 import { Choice } from './choice';
@@ -45,7 +45,9 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
   const { submitting, error, setError, fields, setFields, submit } = useSubmit();
   const bidCents = parseMoney(startingBid);
   const incrementCents = parseMoney(minIncrement);
-  const incrementTooHigh = !!bidCents && !!incrementCents && incrementCents > bidCents;
+  const bidError = moneyError(startingBid, '20.000,00');
+  const incrementError =
+    moneyError(minIncrement, '1.000,00') ?? (bidCents && incrementCents && incrementCents > bidCents ? INCREMENT_TOO_HIGH : null);
   const update = (next: Partial<Schedule>) => setSchedule((current) => ({ ...current, ...next }));
 
   const now = useServerNow(serverOffset);
@@ -54,25 +56,22 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const bid = bidCents;
-    const increment = incrementCents;
     const times = lotWindow(schedule, Date.now() + serverOffset);
 
     const local: FormFields = {};
-    if (!bid) local.startingBid = 'Informe um valor maior que zero, ex.: 20.000,00.';
-    if (!increment) local.minIncrement = 'Informe um valor maior que zero, ex.: 1.000,00.';
-    else if (incrementTooHigh) local.minIncrement = INCREMENT_TOO_HIGH;
+    if (bidError) local.startingBid = bidError;
+    if (incrementError) local.minIncrement = incrementError;
     if (!Number.isFinite(times.start)) local.startsAt = 'Informe a data e a hora do início.';
     if (!Number.isFinite(times.end)) local.endsAt = 'Informe a data e a hora do fim.';
     else if (times.end <= times.start) local.endsAt = 'O fim precisa ser depois do início.';
     setFields(local);
     setError(null);
-    if (!bid || !increment || Object.keys(local).length > 0) return;
+    if (!bidCents || !incrementCents || Object.keys(local).length > 0) return;
 
     const input: CreateLotInput = {
       metObjectId: artwork.metObjectId,
-      startingBid: bid,
-      minIncrement: increment,
+      startingBid: bidCents,
+      minIncrement: incrementCents,
       startsAt: new Date(times.start).toISOString(),
       endsAt: new Date(times.end).toISOString(),
     };
@@ -107,7 +106,7 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
             value={startingBid}
             onChange={(event) => setStartingBid(event.target.value)}
             className="font-mono text-base"
-            error={fields.startingBid}
+            error={startingBid.trim() ? (bidError ?? undefined) : fields.startingBid}
           />
           <Field
             id="f-inc"
@@ -118,7 +117,7 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
             value={minIncrement}
             onChange={(event) => setMinIncrement(event.target.value)}
             className="font-mono text-base"
-            error={incrementTooHigh ? INCREMENT_TOO_HIGH : fields.minIncrement}
+            error={minIncrement.trim() ? (incrementError ?? undefined) : fields.minIncrement}
           />
         </div>
 

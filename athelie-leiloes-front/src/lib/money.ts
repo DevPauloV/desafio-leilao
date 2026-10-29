@@ -18,12 +18,23 @@ export function formatMoneyInput(cents: number): string {
 const MONEY_PATTERN = /^(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?$/;
 const MAX_DIGITS = 13;
 
+const matchMoney = (text: string) => MONEY_PATTERN.exec(text.replace(/R\$/i, '').replace(/\s/g, ''));
+const reaisOf = (match: RegExpExecArray) => match[1].replace(/\./g, '');
+
 export function parseMoney(text: string): number | null {
-  const clean = text.replace(/R\$/i, '').replace(/\s/g, '');
-  const match = MONEY_PATTERN.exec(clean);
+  const match = matchMoney(text);
   if (!match) return null;
-  const reais = match[1].replace(/\./g, '');
+  const reais = reaisOf(match);
   if (reais.length > MAX_DIGITS) return null;
   const cents = (match[2] ?? '').padEnd(2, '0');
   return Number(reais) * 100 + Number(cents);
+}
+
+/** Motivo de o texto não ser um valor positivo, ou `null` se for válido. */
+export function moneyError(text: string, example: string): string | null {
+  const match = matchMoney(text);
+  if (!match) return text.trim() ? `Use só números e vírgula nos centavos, ex.: ${example}.` : `Informe um valor maior que zero, ex.: ${example}.`;
+  if (reaisOf(match).length > MAX_DIGITS) return `O valor pode ter no máximo ${MAX_DIGITS} dígitos antes da vírgula.`;
+  if (!parseMoney(text)) return `Informe um valor maior que zero, ex.: ${example}.`;
+  return null;
 }
