@@ -8,30 +8,12 @@ import { ErrorWall } from '@/components/empty-wall';
 import { Button } from '@/components/ui/button';
 import { ErrorCode, ROUTES, auditPath, receiptPath } from '@/constants';
 import { ApiError, api, assetUrl, errorMessage } from '@/lib/api';
+import { copyText } from '@/lib/clipboard';
 import { formatMoney } from '@/lib/money';
 import { formatLongDate } from '@/lib/time';
 import type { ReceiptView } from '@/types';
 
 const eyebrow = 'text-[11.5px] font-semibold tracking-[0.14em] uppercase';
-
-/** Sem a Clipboard API (http, permissão negada), cai no execCommand. */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const field = document.createElement('textarea');
-    field.value = text;
-    field.setAttribute('readonly', '');
-    field.style.position = 'fixed';
-    field.style.opacity = '0';
-    document.body.appendChild(field);
-    field.select();
-    const copied = document.execCommand('copy');
-    field.remove();
-    return copied;
-  }
-}
 
 const RECEIPT_FIELDS = [
   { label: 'Vencedor', bone: 'w-28' },
@@ -44,7 +26,7 @@ const RECEIPT_FIELDS = [
 function ReceiptSkeleton() {
   return (
     <div role="status" aria-label="Carregando o comprovante" className="pt-7">
-      <div className="grid max-w-230 items-start gap-9 rounded-[10px] border bg-card p-5.5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:p-8">
+      <div className="grid max-w-230 items-start gap-6 rounded-[10px] border bg-card p-4 sm:p-5.5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:gap-9 md:p-8">
         <Bone className="aspect-4/5 rounded-[10px] bg-wall" />
         <div className="grid min-w-0 gap-5.5">
           <div className="flex flex-wrap items-baseline justify-between gap-3 border-b pb-3">
@@ -141,24 +123,23 @@ export function ReceiptPage() {
 
   return (
     <div className="pt-7">
-      <article className="grid max-w-230 items-start gap-9 rounded-[10px] border bg-card p-5.5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:p-8">
+      <article className="grid max-w-230 items-start gap-6 rounded-[10px] border bg-card p-4 sm:p-5.5 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:gap-9 md:p-8">
         <Artwork src={assetUrl(lot.imageUrl)} alt={lot.title} />
         <div className="grid min-w-0 gap-5.5">
-          <div className="flex flex-wrap items-baseline justify-between gap-3 border-b pb-3">
+          <div className="border-b pb-3">
             <h1 className={`${eyebrow} text-primary`}>Comprovante de arremate</h1>
-            <span className="font-mono text-[12.5px] text-muted-foreground">{receipt.code}</span>
           </div>
           <MuseumLabel
             artist={lot.artist}
             title={lot.title}
             meta={[lot.date, lot.medium, lot.department].filter(Boolean).join(' · ')}
-            titleClassName="text-[30px]"
+            titleClassName="text-[clamp(24px,7vw,30px)]"
           />
           <div>
             <div className={`${eyebrow} text-muted-foreground`}>Arrematado por</div>
-            <div className="text-[46px] leading-none font-bold tracking-tight tabular-nums">{formatMoney(receipt.amount)}</div>
+            <div className="text-[clamp(32px,10vw,46px)] leading-none font-bold tracking-tight tabular-nums">{formatMoney(receipt.amount)}</div>
           </div>
-          <dl className="m-0 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-5 gap-y-2.5 text-sm">
+          <dl className="m-0 grid grid-cols-1 gap-x-5 gap-y-0.5 text-sm sm:grid-cols-[max-content_minmax(0,1fr)] sm:gap-y-2.5 [&>dd:not(:last-child)]:mb-2.5 sm:[&>dd:not(:last-child)]:mb-0">
             <dt className="text-muted-foreground">Vencedor</dt>
             <dd className="m-0 min-w-0">
               <Paddle pseudonym={receipt.winnerPseudonym} accent />
@@ -170,17 +151,14 @@ export function ReceiptPage() {
             <dt className="text-muted-foreground">Hash final</dt>
             <dd className="m-0 font-mono text-xs break-all text-muted-foreground">{receipt.chainHash}</dd>
           </dl>
-          <div className="flex flex-wrap gap-2.5">
-            <Button type="button" onClick={() => void handleCopy()}>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+            <Button type="button" className="w-full sm:w-auto" onClick={() => void handleCopy()}>
               Copiar link do comprovante
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link to={auditPath(lot.id)}>Ver auditoria do lote</Link>
             </Button>
           </div>
-          <p className="text-[13px] text-muted-foreground">
-            Página pública. O vencedor aparece só pelo número da raquete, sem nome nem e-mail.
-          </p>
         </div>
       </article>
     </div>
