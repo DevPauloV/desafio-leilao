@@ -2,12 +2,12 @@ import { randomBytes } from 'node:crypto';
 import type { RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import { env } from '../config/env.js';
-import { LotState, RECEIPT_CODE_BYTES, SETTLEMENT_SWEEP_INTERVAL_MS, SocketEvent } from '../constants.js';
+import { LotState, RECEIPT_CODE_BYTES, SETTLEMENT_SWEEP_INTERVAL_MS, SocketEvent, WalletEntryType } from '../constants.js';
 import { pseudonym } from '../domain/audit-chain.js';
 import { Lot } from '../models/Lot.js';
 import { User } from '../models/User.js';
 import { emitToLot, emitToUser, notifyAfterCommit } from '../realtime/socket.js';
-import { getWallet } from '../services/wallet.js';
+import { getWallet, recordEntry } from '../services/wallet.js';
 
 /** `false` se outra varredura chegou antes ou um lance de última hora prorrogou o fim (update condicional). */
 async function settleLot(lotId: string, now: Date): Promise<boolean> {
@@ -34,11 +34,20 @@ async function settleLot(lotId: string, now: Date): Promise<boolean> {
     if (settled.modifiedCount !== 1) return null;
 
     if (winnerId && amount != null) {
-      await User.updateOne(
+      const winner = await User.findOneAndUpdate(
         { _id: winnerId },
         { $inc: { 'wallet.balance': -amount, 'wallet.committed': -amount } },
-        { session },
-      );
+        { returnDocument: 'after', session },
+      ).lean();
+      if (winner) {
+        await recordEntry(session, {
+          userId: winnerId,
+          type: WalletEntryType.WIN,
+          amount,
+          wallet: winner.wallet,
+          lot: { id: lot._id, title: lot.item.title },
+        });
+      }
       await User.updateOne({ _id: lot.auctioneerId }, { $inc: { 'wallet.balance': amount } }, { session });
     }
     return { winnerId, winnerPseudonym: result.winnerPseudonym, amount, auctioneerId: lot.auctioneerId.toString() };

@@ -1,6 +1,6 @@
 import mongoose, { mongo, Types } from 'mongoose';
 import { env } from '../config/env.js';
-import { ErrorCode, LotState, MyBidStatus, SocketEvent } from '../constants.js';
+import { ErrorCode, LotState, MyBidStatus, SocketEvent, WalletEntryType } from '../constants.js';
 import { bidHash, headSignature, pseudonym } from '../domain/audit-chain.js';
 import { antiSniping, minimumNextBid, validateBid } from '../domain/bid-rules.js';
 import { AppError } from '../errors.js';
@@ -9,7 +9,7 @@ import { Lot, type LotDoc } from '../models/Lot.js';
 import { User } from '../models/User.js';
 import { emitToLot, emitToUser, notifyAfterCommit } from '../realtime/socket.js';
 import { toLotSummary } from './lots.js';
-import { getWallet } from './wallet.js';
+import { getWallet, recordEntry } from './wallet.js';
 
 /** Erro transitório: o withTransaction refaz tudo com estado novo (segunda barreira, além do WriteConflict). */
 function retryWithFreshState(): mongo.MongoError {
@@ -57,15 +57,30 @@ export async function placeBid(userId: string, lotId: string, amount: number) {
     if (lotUpdate.modifiedCount !== 1) throw retryWithFreshState();
 
     // Compromete só se ainda couber no disponível.
-    const walletUpdate = await User.updateOne(
+    const bidder = await User.findOneAndUpdate(
       { _id: userId, $expr: { $gte: [{ $subtract: ['$wallet.balance', '$wallet.committed'] }, amount] } },
       { $inc: { 'wallet.committed': amount } },
-      { session },
-    );
-    if (walletUpdate.modifiedCount !== 1) throw retryWithFreshState();
+      { returnDocument: 'after', session },
+    ).lean();
+    if (!bidder) throw retryWithFreshState();
+    const entryLot = { id: lot._id, title: lot.item.title };
+    await recordEntry(session, { userId, type: WalletEntryType.HOLD, amount, wallet: bidder.wallet, lot: entryLot });
 
     if (lot.leaderId && lot.currentBid != null) {
-      await User.updateOne({ _id: lot.leaderId }, { $inc: { 'wallet.committed': -lot.currentBid } }, { session });
+      const previous = await User.findOneAndUpdate(
+        { _id: lot.leaderId },
+        { $inc: { 'wallet.committed': -lot.currentBid } },
+        { returnDocument: 'after', session },
+      ).lean();
+      if (previous) {
+        await recordEntry(session, {
+          userId: lot.leaderId,
+          type: WalletEntryType.RELEASE,
+          amount: lot.currentBid,
+          wallet: previous.wallet,
+          lot: entryLot,
+        });
+      }
     }
 
     await Bid.create([{ ...bid, lotId: lot._id, bidderId: userId, hash }], { session });

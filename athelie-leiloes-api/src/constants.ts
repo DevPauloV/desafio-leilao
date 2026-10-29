@@ -28,6 +28,36 @@ export const MyBidStatus = {
 } as const;
 export type MyBidStatus = ValueOf<typeof MyBidStatus>;
 
+/** O que mexeu na carteira do licitante: a lista do extrato. */
+export const WalletEntryType = {
+  DEPOSIT: 'deposit',
+  HOLD: 'hold',
+  RELEASE: 'release',
+  WIN: 'win',
+  REFUND: 'refund',
+} as const;
+export type WalletEntryType = ValueOf<typeof WalletEntryType>;
+
+/** Filtro do extrato por tipo; `ALL` não filtra. */
+export const EntryFilter = {
+  ALL: 'all',
+  DEPOSITS: 'deposits',
+  BIDS: 'bids',
+  WINS: 'wins',
+  CANCELLATIONS: 'cancellations',
+} as const;
+export type EntryFilter = ValueOf<typeof EntryFilter>;
+export const ENTRY_FILTER_TYPES: Record<Exclude<EntryFilter, typeof EntryFilter.ALL>, WalletEntryType[]> = {
+  [EntryFilter.DEPOSITS]: [WalletEntryType.DEPOSIT],
+  [EntryFilter.BIDS]: [WalletEntryType.HOLD, WalletEntryType.RELEASE],
+  [EntryFilter.WINS]: [WalletEntryType.WIN],
+  [EntryFilter.CANCELLATIONS]: [WalletEntryType.REFUND],
+};
+export const EntryPeriod = { WEEK: '7d', ALL: 'all' } as const;
+export type EntryPeriod = ValueOf<typeof EntryPeriod>;
+export const WALLET_ENTRIES_PAGE_SIZE = 20;
+export const WALLET_ENTRIES_MAX_PAGE = 1000;
+
 export const SocketEvent = {
   LOT_JOIN: 'lot:join',
   LOT_LEAVE: 'lot:leave',

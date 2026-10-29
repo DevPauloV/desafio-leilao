@@ -66,3 +66,16 @@ export function formatRelative(iso: string, now: number): string {
   if (seconds < SECONDS_PER_DAY) return `há ${Math.floor(seconds / SECONDS_PER_HOUR)} h`;
   return formatShortDate(iso);
 }
+
+const weekday = new Intl.DateTimeFormat(LOCALE, { weekday: 'long' });
+const dayKeyOf = (ms: number) => toDateTimeLocal(ms).slice(0, 10);
+
+/** Chave do dia no fuso do navegador: agrupa movimentos do mesmo dia. */
+export const dayKey = (iso: string) => dayKeyOf(new Date(iso).getTime());
+
+/** "Hoje, 29 out" ou "quarta-feira, 28 out". */
+export function formatDayHeader(iso: string): string {
+  const date = new Date(iso);
+  const dayMonth = dayMonthTime(shortDate, iso).split(',')[0]!;
+  return dayKeyOf(date.getTime()) === dayKeyOf(Date.now()) ? `Hoje, ${dayMonth}` : `${weekday.format(date)}, ${dayMonth}`;
+}

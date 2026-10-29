@@ -136,7 +136,7 @@ Se a porta 3000 ou 8080 já estiver em uso, troque `API_PORT` ou `FRONT_PORT` no
 
 ### Testes automatizados
 
-São 128 testes, com o MongoDB em memória, então não precisam de Docker:
+São 132 testes, com o MongoDB em memória, então não precisam de Docker:
 
 ```bash
 cd athelie-leiloes-api

@@ -49,6 +49,16 @@ export const ErrorCode = {
 } as const;
 export type ErrorCode = ValueOf<typeof ErrorCode>;
 
+/** O que mexeu na carteira (mesmos valores da API). */
+export const EntryType = { DEPOSIT: 'deposit', HOLD: 'hold', RELEASE: 'release', WIN: 'win', REFUND: 'refund' } as const;
+export type EntryType = ValueOf<typeof EntryType>;
+
+export const EntryFilter = { ALL: 'all', DEPOSITS: 'deposits', BIDS: 'bids', WINS: 'wins', CANCELLATIONS: 'cancellations' } as const;
+export type EntryFilter = ValueOf<typeof EntryFilter>;
+
+export const EntryPeriod = { WEEK: '7d', ALL: 'all' } as const;
+export type EntryPeriod = ValueOf<typeof EntryPeriod>;
+
 export const SocketEvent = {
   /** Nativo do Socket.IO (não é do contrato): dispara também a cada reconexão. */
   CONNECT: 'connect',
@@ -89,6 +99,7 @@ export const ROUTES = {
   AUCTIONEER_PANEL: '/painel',
   LOT: '/lotes/:id',
   WALLET: '/carteira',
+  EXTRACT: '/carteira/extrato',
   MY_BIDS: '/arremates',
   RECEIPT: '/r/:code',
   AUDIT: '/auditoria/:id',
@@ -99,12 +110,14 @@ export const PAGE_LABELS = {
   [ROUTES.SHOWCASE]: 'Vitrine',
   [ROUTES.MY_BIDS]: 'Meus arremates',
   [ROUTES.WALLET]: 'Carteira',
+  [ROUTES.EXTRACT]: 'Extrato',
   [ROUTES.AUCTIONEER_PANEL]: 'Painel do leiloeiro',
 } as const;
 
 export const ROUTE_ROLES = {
   [ROUTES.AUCTIONEER_PANEL]: Role.AUCTIONEER,
   [ROUTES.WALLET]: Role.BIDDER,
+  [ROUTES.EXTRACT]: Role.BIDDER,
   [ROUTES.MY_BIDS]: Role.BIDDER,
 } as const satisfies Record<string, Role>;
 

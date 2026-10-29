@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { EmptyWall } from '@/components/empty-wall';
 import { ErrorWall } from '@/components/error-wall';
 import { PageTitle } from '@/components/page-title';
+import { TAB_LIST_CLASS, TAB_TRIGGER_CLASS } from '@/components/tab-styles';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LotStatus, SocketEvent } from '@/constants';
@@ -26,9 +27,6 @@ import { useCancelLot } from './use-cancel-lot';
 
 /** Mesmo ponto do `lg:` do Tailwind, onde busca e formulário ficam lado a lado. */
 const WIDE_LAYOUT = '(min-width: 64rem)';
-
-const TAB_TRIGGER =
-  'h-auto flex-none px-4 py-2 text-[14px] text-muted-foreground data-active:bg-card data-active:font-semibold data-active:text-foreground dark:data-active:border-transparent dark:data-active:bg-card';
 
 export function AuctioneerPanelPage() {
   const { user } = useAuth();
@@ -68,12 +66,12 @@ export function AuctioneerPanelPage() {
       </div>
 
       <Tabs value={tab} onValueChange={(value) => isPanelTab(value) && setTab(value)} className="min-w-0 gap-6">
-        <TabsList aria-label="Painel" className="h-auto! w-full rounded-[8px] bg-muted p-0.75 sm:w-fit *:flex-1 sm:*:flex-none">
-          <TabsTrigger value={PanelTab.LOTS} className={TAB_TRIGGER}>
+        <TabsList aria-label="Painel" className={`${TAB_LIST_CLASS} w-full sm:w-fit *:flex-1 sm:*:flex-none`}>
+          <TabsTrigger value={PanelTab.LOTS} className={TAB_TRIGGER_CLASS}>
             Meus lotes
             {mine && <span className="ml-1 font-mono text-[11.5px]">{lots.length}</span>}
           </TabsTrigger>
-          <TabsTrigger value={PanelTab.NEW} className={TAB_TRIGGER}>
+          <TabsTrigger value={PanelTab.NEW} className={TAB_TRIGGER_CLASS}>
             Criar lote
           </TabsTrigger>
         </TabsList>

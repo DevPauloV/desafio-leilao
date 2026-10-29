@@ -14,6 +14,7 @@ import { NotFoundPage } from '@/pages/not-found';
 import { ReceiptPage } from '@/pages/receipt';
 import { RegisterPage } from '@/pages/register';
 import { ShowcasePage } from '@/pages/showcase';
+import { ExtractPage } from '@/pages/extract';
 import { WalletPage } from '@/pages/wallet';
 
 export function AppShell() {
@@ -31,6 +32,14 @@ export function AppShell() {
             element={
               <RequireRole role={ROUTE_ROLES[ROUTES.WALLET]}>
                 <WalletPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path={ROUTES.EXTRACT}
+            element={
+              <RequireRole role={ROUTE_ROLES[ROUTES.EXTRACT]}>
+                <ExtractPage />
               </RequireRole>
             }
           />

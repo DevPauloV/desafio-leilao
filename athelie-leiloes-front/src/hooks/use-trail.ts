@@ -10,12 +10,15 @@ const RECEIPT_LABEL = 'Comprovante';
 
 const HOME: Crumb = { label: PAGE_LABELS[ROUTES.SHOWCASE], to: ROUTES.SHOWCASE };
 
+const WALLET_CRUMB: Crumb = { label: PAGE_LABELS[ROUTES.WALLET], to: ROUTES.WALLET };
+
 const SINGLE_LEVEL_ROUTES = [ROUTES.WALLET, ROUTES.MY_BIDS, ROUTES.AUCTIONEER_PANEL] as const;
 
 export function useTrail(): Crumb[] | null {
   const { pathname } = useLocation();
   const lot = useCrumbLotValue();
 
+  if (matchPath(ROUTES.EXTRACT, pathname)) return [HOME, WALLET_CRUMB, { label: PAGE_LABELS[ROUTES.EXTRACT] }];
   for (const route of SINGLE_LEVEL_ROUTES) {
     if (matchPath(route, pathname)) return [HOME, { label: PAGE_LABELS[route] }];
   }

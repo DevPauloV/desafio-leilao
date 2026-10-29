@@ -11,6 +11,7 @@ import {
   LotStatus,
   Role,
   SocketEvent,
+  WalletEntryType,
 } from '../constants.js';
 import { headSignature, pseudonym } from '../domain/audit-chain.js';
 import { lotStatus, minimumNextBid } from '../domain/bid-rules.js';
@@ -23,7 +24,7 @@ import { User } from '../models/User.js';
 import { emitToLot, emitToUser, notifyAfterCommit } from '../realtime/socket.js';
 import { SHOWCASE_ORDER, type CreateLotInput, type ListLotsQuery } from '../schemas/lots.js';
 import * as met from './met.js';
-import { getWallet } from './wallet.js';
+import { getWallet, recordEntry } from './wallet.js';
 
 function escapeRegex(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -270,7 +271,20 @@ export async function cancelLot(auctioneerId: string, id: string) {
     await Lot.updateOne({ _id: lot._id }, { $set: { state: LotState.CANCELLED } }, { session });
     const refunded = lot.leaderId != null && lot.currentBid != null;
     if (refunded) {
-      await User.updateOne({ _id: lot.leaderId }, { $inc: { 'wallet.committed': -lot.currentBid! } }, { session });
+      const leader = await User.findOneAndUpdate(
+        { _id: lot.leaderId },
+        { $inc: { 'wallet.committed': -lot.currentBid! } },
+        { returnDocument: 'after', session },
+      ).lean();
+      if (leader) {
+        await recordEntry(session, {
+          userId: lot.leaderId!,
+          type: WalletEntryType.REFUND,
+          amount: lot.currentBid!,
+          wallet: leader.wallet,
+          lot: { id: lot._id, title: lot.item.title },
+        });
+      }
     }
     return {
       response: { id: lot._id.toString(), status: LotStatus.CANCELLED, refunded },

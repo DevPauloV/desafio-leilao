@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { DEPOSIT_FIELD_ID, MAX_DEPOSIT } from '@/constants';
 import { useSubmit } from '@/hooks/use-submit';
 import { api } from '@/lib/api';
-import { formatMoney, formatMoneyInput, parseMoney } from '@/lib/money';
+import { formatMoney, formatMoneyInput, moneyError, parseMoney } from '@/lib/money';
 import { setWallet } from '@/lib/wallet';
 import type { Wallet } from '@/types';
 
@@ -22,17 +22,16 @@ export function DepositForm() {
     if (location.hash === `#${DEPOSIT_FIELD_ID}`) document.getElementById(DEPOSIT_FIELD_ID)?.focus();
   }, [location.hash, location.key]);
 
+  const amount = parseMoney(value);
+  const valueError = moneyError(value, '5.000,00') ?? (amount && amount > MAX_DEPOSIT ? `O máximo por depósito é ${formatMoney(MAX_DEPOSIT)}.` : null);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const amount = parseMoney(value);
-    if (!amount) {
-      setError('Digite um valor maior que zero, ex.: 5.000,00.');
+    if (valueError || !amount) {
+      setError(valueError);
       return;
     }
-    if (amount > MAX_DEPOSIT) {
-      setError(`O máximo por depósito é ${formatMoney(MAX_DEPOSIT)}.`);
-      return;
-    }
+    setError(null);
     const ok = await submit(async () => setWallet(await api<Wallet>('/api/wallet/deposit', { method: 'POST', body: { amount } })));
     if (!ok) return;
     toast.success('Depósito feito', { description: `${formatMoney(amount)} entraram no seu saldo.` });
@@ -52,7 +51,7 @@ export function DepositForm() {
         value={value}
         onChange={(event) => setValue(event.target.value)}
         hint={`Até ${formatMoney(MAX_DEPOSIT)} por depósito.`}
-        error={error ?? undefined}
+        error={value.trim() ? (valueError ?? error ?? undefined) : (error ?? undefined)}
         className="font-mono text-base"
       />
       <div className="flex flex-wrap gap-1.5" role="group" aria-label="Valores rápidos">

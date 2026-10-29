@@ -13,7 +13,7 @@
 
 </details>
 
-A API tem 128 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
+A API tem 132 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
 
 ## Como rodar
 
@@ -28,8 +28,8 @@ npm test      # roda todos os testes
 O resultado esperado no fim é:
 
 ```
- Test Files  10 passed (10)
-      Tests  128 passed (128)
+ Test Files  11 passed (11)
+      Tests  132 passed (132)
 ```
 
 Na primeira execução, o `mongodb-memory-server` baixa um binário do MongoDB (cerca de 100 MB), então demora mais. Das próximas vezes, leva uns 20 segundos.
@@ -64,6 +64,7 @@ Outros jeitos de rodar:
 | `met.test.ts` | Busca no Met: descarte de obras sem imagem ou fora do domínio público, impressões repetidas da mesma obra, nova tentativa e erro claro quando o Met cai |
 | `realtime.test.ts` | Entrada na sala e eventos de lance, prorrogação, cancelamento e liquidação pelo Socket.IO |
 | `auth.test.ts` | Cadastro, login, papéis, rate limit do login, CORS e rota inexistente |
+| `wallet-entries.test.ts` | Extrato da carteira: depósito, lance, lance superado, arremate e estorno gravados com o saldo depois de cada um, filtros por tipo e período, paginação e isolamento entre usuários |
 | `seed.test.ts` | Seed com 20 lotes de obras diferentes, sem duplicar ao rodar de novo, auditoria íntegra e carteiras fechando |
 
 ## Testes de concorrência

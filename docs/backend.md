@@ -94,7 +94,7 @@ As variáveis estão explicadas no [`.env.example`](../.env.example), e a API n�
 
 ## Testes
 
-São 128 testes automatizados na API, com o MongoDB em memória, incluindo os de concorrência. Como rodar e o que cada arquivo cobre: [Testes automatizados](testes.md).
+São 132 testes automatizados na API, com o MongoDB em memória, incluindo os de concorrência. Como rodar e o que cada arquivo cobre: [Testes automatizados](testes.md).
 
 ## Estrutura
 
@@ -130,5 +130,6 @@ athelie-leiloes-api/src/
 | [0007](adr/0007-liquidacao-por-varredura.md) | Liquidação por varredura, uma transação por lote |
 | [0008](adr/0008-cadeia-de-hashes-hmac.md) | Cadeia de hashes HMAC contra adulteração |
 | [0009](adr/0009-pseudonimo-por-lote.md) | Pseudônimo por lote nas telas públicas |
+| [0010](adr/0010-extrato-da-carteira.md) | Extrato da carteira em coleção própria |
 
 <p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

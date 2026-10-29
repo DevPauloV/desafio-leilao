@@ -111,6 +111,8 @@ Detalhe de cada campo, com explicação, na seção "Banco de dados" do plano. R
 
 **users**: `name`, `email` (único, minúsculas), `passwordHash` (bcrypt, nunca devolvido), `role`, `wallet.balance`, `wallet.committed`, timestamps.
 
+**wallet_entries** (extrato do licitante): `userId`, `type` (`deposit` | `hold` | `release` | `win` | `refund`), `amount` (centavos), `lotId?`, `lotTitle?` (copiado do lote), `balanceAfter`, `committedAfter`, `createdAt`. Gravado na mesma transação que mexe no saldo; índice `{ userId, createdAt }`.
+
 **lots**:
 - `auctioneerId`
 - `item { metObjectId, title, artist?, date?, medium?, department?, metUrl?, imageId }`
@@ -214,6 +216,7 @@ Wallet     = { balance, committed, available,
 | GET | `/api/me/lots` | leiloeiro | | `{ items: (LotSummary & { result: { sold, amount } \| null })[], totalReceived, serverTime }` (inclui os cancelados do próprio leiloeiro) |
 | GET | `/api/me/bids` | licitante | | `{ items: [{ lot: LotSummary, myHighestBid, myStatus: MyBidStatus, receiptCode? }] }` |
 | GET | `/api/wallet` | licitante | | `Wallet` |
+| GET | `/api/wallet/entries` | licitante | query `type` (`all`, `deposits`, `bids`, `wins` ou `cancellations`, padrão `all`), `period` (`7d` ou `all`, padrão `7d`), `page` (padrão 1) | `{ items: WalletEntry[], total, pageSize }`, do mais recente ao mais antigo; `WalletEntry` = `{ id, type, amount, lotId, lotTitle, balance, available, createdAt }` (saldos depois do movimento) |
 | POST | `/api/wallet/deposit` | licitante | `{ amount (1..MAX_DEPOSIT) }` | `Wallet` |
 | GET | `/api/audit/lots/:id` | público | | `AuditView` |
 | GET | `/api/receipts/:code` | público | | `ReceiptView`; código inexistente ou fora do formato (22 caracteres base64url) → `NOT_FOUND` |

@@ -1,4 +1,4 @@
-import type { AuditProblem, LotStatus, MyBidStatus, Role } from '@/constants';
+import type { AuditProblem, EntryType, LotStatus, MyBidStatus, Role } from '@/constants';
 
 export type User = { id: string; name: string; email: string; role: Role };
 
@@ -124,3 +124,17 @@ export type AuditView = {
 };
 
 export type MyBidItem = { lot: LotSummary; myHighestBid: number; myStatus: MyBidStatus; receiptCode?: string };
+
+export type WalletEntry = {
+  id: string;
+  type: EntryType;
+  amount: number;
+  lotId: string | null;
+  lotTitle: string | null;
+  /** Saldo total e disponível logo depois deste movimento. */
+  balance: number;
+  available: number;
+  createdAt: string;
+};
+
+export type EntriesResponse = { items: WalletEntry[]; total: number; pageSize: number };
