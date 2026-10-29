@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { cn } from 'cn';
 import { EmptyWall, ErrorWall } from '@/components/empty-wall';
 import { PageTitle } from '@/components/page-title';
@@ -43,7 +43,9 @@ export function AuctioneerPanelPage() {
   const [status, setStatus] = useState<StatusFilter>(ALL_STATUSES);
   const [query, setQuery] = useState('');
   const formRef = useRef<HTMLElement>(null);
-  const offset = mine ? clockOffset(mine.serverTime) : 0;
+  // Memoizado: `clockOffset` lê Date.now(), e recalculado a cada render o relógio ficaria preso na hora do servidor.
+  const serverTime = mine?.serverTime;
+  const offset = useMemo(() => (serverTime ? clockOffset(serverTime) : 0), [serverTime]);
   const now = useServerNow(offset);
 
   // `lot:ended` também chega na sala pessoal do leiloeiro dono: relê para mostrar resultado e total.
