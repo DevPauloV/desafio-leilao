@@ -25,6 +25,8 @@
 3. [Roteiro de demonstração](#roteiro-de-demonstração)
 4. [Comportamentos inesperados](#comportamentos-inesperados)
 5. [Uso de IA](#uso-de-ia)
+6. [Licença](#licença)
+7. [Contato](#contato)
 
 </details>
 
@@ -187,5 +189,24 @@ O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerr
 ## Uso de IA
 
 Usei o Claude Code para agilizar código, testes e documentação; as decisões e a revisão foram minhas. Detalhes em [docs/ai-usage.md](docs/ai-usage.md).
+
+## Licença
+
+Distribuído sob a licença MIT. Consulte [`LICENSE`](LICENSE) para obter mais informações.
+
+<p align="center">
+  <a href="https://athelie-leiloes.vercel.app">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/img/logo-dark.svg">
+      <img src="docs/img/logo.svg" alt="Athelie Leilões" width="240">
+    </picture>
+  </a>
+</p>
+
+## Contato
+
+Paulo Victor - [LinkedIn](https://www.linkedin.com/in/paulo-victor-434492236)
+
+Link do projeto: [https://github.com/DevPauloV/desafio-leilao](https://github.com/DevPauloV/desafio-leilao)
 
 <p align="right"><a href="#topo">↑ Voltar ao topo</a></p>
