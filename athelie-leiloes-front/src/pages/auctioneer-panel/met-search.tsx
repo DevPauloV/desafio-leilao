@@ -29,7 +29,7 @@ export function MetSearch({ selected, onSelect }: { selected: MetArtwork | null;
   }
 
   return (
-    <div className="grid content-start gap-3.5 border-b p-5 lg:border-r lg:border-b-0">
+    <div className="grid content-start gap-3.5 rounded-[10px] border bg-card p-5">
       <form onSubmit={handleSearch} role="search" className="grid gap-1">
         <Label htmlFor="met-q" className="text-[13px] font-semibold">
           Buscar obra no The Met

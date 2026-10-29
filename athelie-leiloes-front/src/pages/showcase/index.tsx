@@ -9,9 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LOTS_PAGE_SIZE, LotPeriod, LotStatus, SEARCH_MAX_LENGTH } from '@/constants';
 import { api, errorMessage } from '@/lib/api';
 import { clockOffset } from '@/lib/time';
+import { FiltersScreen } from '@/components/filters-screen';
 import { useServerNow } from '@/hooks/use-server-now';
 import type { Facet, LotPage } from '@/types';
-import { FilterChip, FiltersScreen, ShowcaseFilters } from './filters';
+import { FilterChip, ShowcaseFilters } from './filters';
 import { LotCard, LotGridSkeleton } from './lot-card';
 import { ShowcaseEmpty } from './showcase-empty';
 import { NO_FILTERS, TABS, activeFilters, type ActiveFilter, type Filters, type ShowcaseStatus } from './tabs';
@@ -247,7 +248,12 @@ export function ShowcasePage() {
                 className="h-9 min-w-0 flex-1 sm:max-w-90"
               />
               <div className="lg:hidden">
-                <FiltersScreen activeCount={panelFilters.length} total={data?.total ?? null} onClear={clearPanel}>
+                <FiltersScreen
+                  activeCount={panelFilters.length}
+                  backLabel="Voltar para a vitrine"
+                  resultLabel={data ? `Ver ${data.total} ${data.total === 1 ? 'obra' : 'obras'}` : 'Ver obras'}
+                  onClear={clearPanel}
+                >
                   {panel}
                 </FiltersScreen>
               </div>

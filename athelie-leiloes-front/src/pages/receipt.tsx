@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ErrorCode, ROUTES, auditPath, receiptPath } from '@/constants';
 import { ApiError, api, assetUrl, errorMessage } from '@/lib/api';
 import { copyText } from '@/lib/clipboard';
+import { useCrumbLot } from '@/lib/crumb-lot';
 import { formatMoney } from '@/lib/money';
 import { formatLongDate } from '@/lib/time';
 import type { ReceiptView } from '@/types';
@@ -90,6 +91,7 @@ export function ReceiptPage() {
   }, [code, requestKey]);
 
   const current = response?.key === requestKey ? response : null;
+  useCrumbLot(current?.receipt?.lot.id, current?.receipt?.lot.title);
   if (!current) return <ReceiptSkeleton />;
   if (current.error && !current.notFound) {
     return (

@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AuditProblem, ROUTES, Role, lotPath } from '@/constants';
 import { api, assetUrl, errorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useCrumbLot } from '@/lib/crumb-lot';
 import { formatMoney } from '@/lib/money';
 import { formatDateTimeSeconds } from '@/lib/time';
 import type { AuditView, LotDetail } from '@/types';
@@ -72,11 +73,12 @@ export function AuditPage() {
   const checking = response?.key !== requestKey;
   const error = response?.key === requestKey ? response.error : undefined;
   const current = audit?.lot.id === id ? audit : null;
+  useCrumbLot(current?.lot.id, current?.lot.title);
 
   if (error && !current) {
     return (
       <div className="grid justify-items-start gap-3 pt-7">
-        <PageTitle eyebrow="Página pública · sem login" title="Auditoria do lote" />
+        <PageTitle title="Auditoria do lote" />
         <ErrorAlert>{error}</ErrorAlert>
         <Link to={ROUTES.SHOWCASE} className="text-primary underline-offset-4 hover:underline">
           Voltar para a vitrine
@@ -94,7 +96,7 @@ export function AuditPage() {
     <div className="grid grid-cols-1 gap-7 pt-7">
       <div className="flex flex-wrap items-end gap-5">
         <Artwork src={assetUrl(lot.imageUrl)} alt={lot.title} thin className="w-20 flex-none" />
-        <PageTitle eyebrow="Página pública · sem login" title="Auditoria do lote">
+        <PageTitle title="Auditoria do lote">
           <b className="font-semibold text-foreground">{lot.title}</b>
           {lot.artist && ` · ${lot.artist}`}
         </PageTitle>
@@ -216,7 +218,7 @@ function AuditSkeleton() {
     <div role="status" aria-label="Conferindo o histórico" className="grid grid-cols-1 gap-7 pt-7">
       <div className="flex flex-wrap items-end gap-5">
         <Bone className="aspect-4/5 w-20 flex-none rounded-md bg-wall" />
-        <PageTitle eyebrow="Página pública · sem login" title="Auditoria do lote">
+        <PageTitle title="Auditoria do lote">
           <Bone className="mt-1.5 h-3.5 w-72 max-w-full" />
         </PageTitle>
         <Bone className="h-3 w-36 sm:ml-auto" />

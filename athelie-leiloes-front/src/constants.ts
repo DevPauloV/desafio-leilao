@@ -94,6 +94,14 @@ export const ROUTES = {
   AUDIT: '/auditoria/:id',
 } as const;
 
+/** Nome de cada página no menu e no breadcrumb. */
+export const PAGE_LABELS = {
+  [ROUTES.SHOWCASE]: 'Vitrine',
+  [ROUTES.MY_BIDS]: 'Meus arremates',
+  [ROUTES.WALLET]: 'Carteira',
+  [ROUTES.AUCTIONEER_PANEL]: 'Painel do leiloeiro',
+} as const;
+
 export const ROUTE_ROLES = {
   [ROUTES.AUCTIONEER_PANEL]: Role.AUCTIONEER,
   [ROUTES.WALLET]: Role.BIDDER,

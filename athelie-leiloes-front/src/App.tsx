@@ -1,5 +1,6 @@
 import { Route, Routes, useLocation } from 'react-router';
 import { AppHeader } from '@/components/app-header';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { RequireRole } from '@/components/require-role';
 import { Splash } from '@/components/splash';
 import { Toaster } from '@/components/ui/sonner';
@@ -7,6 +8,7 @@ import { ROUTE_ROLES, ROUTES } from '@/constants';
 import { useLoaderVisible } from '@/hooks/use-loader-visible';
 import { usePersonalEvents } from '@/hooks/use-personal-events';
 import { useAuth } from '@/lib/auth';
+import { CrumbLotProvider } from '@/lib/crumb-lot';
 import { AuctioneerPanelPage } from '@/pages/auctioneer-panel';
 import { AuditPage } from '@/pages/audit';
 import { LoginPage } from '@/pages/login';
@@ -27,7 +29,11 @@ export default function App() {
   return (
     <>
       {splash && <Splash leaving={!loading} />}
-      {!loading && <AppShell />}
+      {!loading && (
+        <CrumbLotProvider>
+          <AppShell />
+        </CrumbLotProvider>
+      )}
     </>
   );
 }
@@ -37,6 +43,7 @@ function AppShell() {
   return (
     <div className="mx-auto max-w-300 px-4 pb-14">
       <AppHeader />
+      <Breadcrumbs />
       <main key={pathname} className="animate-page-in motion-reduce:animate-none">
         <Routes>
           <Route path={ROUTES.SHOWCASE} element={<ShowcasePage />} />

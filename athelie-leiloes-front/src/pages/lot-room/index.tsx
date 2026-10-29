@@ -10,6 +10,7 @@ import { ANTI_SNIPING_WINDOW_MS, LotStatus, ROUTES, auditPath } from '@/constant
 import { useLotRoom } from '@/hooks/use-lot-room';
 import { useServerNow } from '@/hooks/use-server-now';
 import { assetUrl } from '@/lib/api';
+import { useCrumbLot } from '@/lib/crumb-lot';
 import { ANTI_SNIPING_TEXT } from '@/lib/lot-room';
 import { formatMoney } from '@/lib/money';
 import { clockOffset, formatCountdown, formatRelative, formatShortDate, SECOND_MS } from '@/lib/time';
@@ -25,6 +26,7 @@ const priceLabel = 'text-[12.5px] font-semibold text-muted-foreground';
 export function LotRoomPage() {
   const { id = '' } = useParams();
   const { lot, error, refresh, applyOwnBid } = useLotRoom(id);
+  useCrumbLot(lot?.id, lot?.title);
 
   if (error && !error.notFound) {
     return (
@@ -162,7 +164,7 @@ export function Room({ lot, onChanged, onOwnBid }: { lot: LotDetail; onChanged: 
         <section aria-labelledby="history-heading" className="-mx-5.5 -mb-5.5 grid border-t pb-2.5">
           <div className="flex items-center justify-between gap-3 px-5.5 pt-3.5 pb-1.5">
             <h2 id="history-heading" className="inline-flex items-center gap-2 text-sm font-bold">
-              {lot.status === LotStatus.LIVE && <span aria-hidden="true" className="size-[7px] rounded-full bg-primary motion-safe:animate-live" />}
+              {lot.status === LotStatus.LIVE && <span aria-hidden="true" className="size-1.75 rounded-full bg-primary motion-safe:animate-live" />}
               Lances
             </h2>
             <Link to={auditPath(lot.id)} className="text-[13px] font-semibold text-primary underline-offset-4 hover:underline">
