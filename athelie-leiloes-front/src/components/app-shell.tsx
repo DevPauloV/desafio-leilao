@@ -1,4 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router';
+import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { RequireRole } from '@/components/require-role';
@@ -18,10 +19,10 @@ import { WalletPage } from '@/pages/wallet';
 export function AppShell() {
   const { pathname } = useLocation();
   return (
-    <div className="mx-auto max-w-300 px-4 pb-14">
+    <div className="mx-auto flex min-h-dvh max-w-300 flex-col px-4 pb-6">
       <AppHeader />
       <Breadcrumbs />
-      <main key={pathname} className="animate-page-in motion-reduce:animate-none">
+      <main key={pathname} className="flex-1 animate-page-in motion-reduce:animate-none">
         <Routes>
           <Route path={ROUTES.SHOWCASE} element={<ShowcasePage />} />
           <Route path={ROUTES.LOT} element={<LotRoomPage />} />
@@ -56,6 +57,7 @@ export function AppShell() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+      <AppFooter />
       <Toaster position="top-center" />
     </div>
   );

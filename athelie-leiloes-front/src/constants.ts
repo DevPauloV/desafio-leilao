@@ -117,6 +117,11 @@ export const DEPOSIT_PATH = `${ROUTES.WALLET}#${DEPOSIT_FIELD_ID}`;
 
 export const STORAGE_KEYS = { TOKEN: 'athelie:token', THEME: 'athelie:theme' } as const;
 
+export const SOCIAL_LINKS = {
+  GITHUB: 'https://github.com/DevPauloV',
+  LINKEDIN: 'https://www.linkedin.com/in/paulo-victor-434492236',
+} as const;
+
 export const Theme = { SYSTEM: 'system', LIGHT: 'light', DARK: 'dark' } as const;
 export type Theme = ValueOf<typeof Theme>;
 
