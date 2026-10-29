@@ -1,15 +1,14 @@
 import { Link } from 'react-router';
 import { cn } from 'cn';
-import { ShieldCheckIcon } from 'lucide-react';
 import { Artwork } from '@/components/artwork';
-import { Button } from '@/components/ui/button';
-import { ANTI_SNIPING_WINDOW_MS, auditPath, lotPath } from '@/constants';
+import { ANTI_SNIPING_WINDOW_MS, lotPath } from '@/constants';
 import { assetUrl } from '@/lib/api';
 import { formatMoney } from '@/lib/money';
 import { formatCountdown, formatShortDate, formatTime } from '@/lib/time';
 import type { MyLot } from '@/types';
+import { LotActions } from './lot-actions';
 
-export function LiveLot({ lot, now }: { lot: MyLot; now: number }) {
+export function LiveLot({ lot, now, onCancel }: { lot: MyLot; now: number; onCancel: (lot: MyLot) => void }) {
   const start = new Date(lot.startsAt).getTime();
   const end = new Date(lot.endsAt).getTime();
   const left = end - now;
@@ -53,16 +52,7 @@ export function LiveLot({ lot, now }: { lot: MyLot; now: number }) {
           </dd>
         </div>
       </dl>
-      <div className="flex gap-2 max-sm:w-full">
-        <Button asChild size="sm" className="max-sm:flex-1">
-          <Link to={lotPath(lot.id)}>Abrir sala</Link>
-        </Button>
-        <Button asChild size="icon" variant="outline" className="text-muted-foreground hover:text-primary">
-          <Link to={auditPath(lot.id)} aria-label={`Auditoria do lote ${lot.title}`} title="Auditoria do lote">
-            <ShieldCheckIcon />
-          </Link>
-        </Button>
-      </div>
+      <LotActions lot={lot} onCancel={onCancel} />
     </li>
   );
 }

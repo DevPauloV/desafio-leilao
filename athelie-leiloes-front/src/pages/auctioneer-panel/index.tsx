@@ -12,6 +12,7 @@ import { useSocketEvent } from '@/hooks/use-socket-event';
 import { formatMoney } from '@/lib/money';
 import { clockOffset } from '@/lib/time';
 import type { MetArtwork, MyLotsResponse } from '@/types';
+import { CancelLotDialog } from './cancel-lot-dialog';
 import { Kpi } from './kpi';
 import { LiveNow } from './live-now';
 import { ALL_STATUSES, matchesFilter, type StatusFilter } from './lot-filter';
@@ -21,6 +22,7 @@ import { MyLotsSkeleton } from './my-lots-skeleton';
 import { MyLotsTable } from './my-lots-table';
 import { NewLotForm } from './new-lot-form';
 import { PanelTab, isPanelTab } from './panel-tab';
+import { useCancelLot } from './use-cancel-lot';
 
 /** Mesmo ponto do `lg:` do Tailwind, onde busca e formulário ficam lado a lado. */
 const WIDE_LAYOUT = '(min-width: 64rem)';
@@ -35,6 +37,7 @@ export function AuctioneerPanelPage() {
   const [selected, setSelected] = useState<MetArtwork | null>(null);
   const [status, setStatus] = useState<StatusFilter>(ALL_STATUSES);
   const [query, setQuery] = useState('');
+  const cancel = useCancelLot(reloadMine);
   const formRef = useRef<HTMLElement>(null);
   // Memoizado: `clockOffset` lê Date.now(), e recalculado a cada render o relógio ficaria preso na hora do servidor.
   const serverTime = mine?.serverTime;
@@ -91,13 +94,13 @@ export function AuctioneerPanelPage() {
             </EmptyWall>
           ) : (
             <>
-              {live.length > 0 && <LiveNow lots={live} now={now} />}
+              {live.length > 0 && <LiveNow lots={live} now={now} onCancel={cancel.ask} />}
               <section aria-labelledby="all-lots-heading" className="grid grid-cols-1 gap-3">
                 <LotsFilter lots={lots} shown={visible.length} status={status} query={query} onStatus={setStatus} onQuery={setQuery} />
                 {visible.length === 0 ? (
                   <p className="rounded-[10px] border bg-card px-5 py-8 text-center text-muted-foreground">Nenhum lote com esse filtro.</p>
                 ) : (
-                  <MyLotsTable lots={visible} now={now} onChanged={reloadMine} />
+                  <MyLotsTable lots={visible} now={now} onCancel={cancel.ask} />
                 )}
                 <p aria-live="polite" className="text-[13px] text-muted-foreground">
                   {visible.length} de {lots.length} {lots.length === 1 ? 'lote' : 'lotes'}, mais recentes primeiro
@@ -142,6 +145,7 @@ export function AuctioneerPanelPage() {
           </aside>
         </TabsContent>
       </Tabs>
+      <CancelLotDialog lot={cancel.confirming} cancelling={cancel.cancelling} onConfirm={cancel.confirm} onClose={cancel.close} />
     </div>
   );
 }

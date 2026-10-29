@@ -1,11 +1,7 @@
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { cn } from 'cn';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { LotStatus } from '@/constants';
-import { api, errorMessage } from '@/lib/api';
 import type { MyLot } from '@/types';
-import { CancelLotDialog } from './cancel-lot-dialog';
 import { LotActions } from './lot-actions';
 import { LotTitle } from './lot-title';
 import { describe } from './my-lot-view';
@@ -13,25 +9,7 @@ import { MyLotsHeader } from './my-lots-header';
 import { StatusBadge } from './status-badge';
 
 /** Tabela no desktop e lista compacta no celular, com os mesmos dados e ações. */
-export function MyLotsTable({ lots, now, onChanged }: { lots: MyLot[]; now: number; onChanged: () => void }) {
-  const [confirming, setConfirming] = useState<MyLot | null>(null);
-  const [cancelling, setCancelling] = useState(false);
-
-  // Fecha o modal também no erro (ex.: o lote encerrou enquanto ele estava aberto); o toast explica e a lista é relida.
-  async function cancel(lot: MyLot) {
-    setCancelling(true);
-    try {
-      const { refunded } = await api<{ refunded: boolean }>(`/api/lots/${lot.id}/cancel`, { method: 'POST' });
-      toast.success(refunded ? 'Lote cancelado e lance estornado' : 'Lote cancelado', { description: lot.title });
-    } catch (err) {
-      toast.error(errorMessage(err));
-    } finally {
-      setCancelling(false);
-      setConfirming(null);
-      onChanged();
-    }
-  }
-
+export function MyLotsTable({ lots, now, onCancel }: { lots: MyLot[]; now: number; onCancel: (lot: MyLot) => void }) {
   return (
     <>
       <div className="hidden rounded-[10px] border bg-card md:block">
@@ -55,7 +33,7 @@ export function MyLotsTable({ lots, now, onChanged }: { lots: MyLot[]; now: numb
                     <div className="text-[11.5px] text-muted-foreground">{view.caption}</div>
                   </TableCell>
                   <TableCell>
-                    <LotActions lot={lot} onCancel={setConfirming} />
+                    <LotActions lot={lot} onCancel={onCancel} />
                   </TableCell>
                 </TableRow>
               );
@@ -80,13 +58,12 @@ export function MyLotsTable({ lots, now, onChanged }: { lots: MyLot[]; now: numb
                 <span className={cn('flex-1 text-[12.5px] whitespace-nowrap text-muted-foreground', view.clock && 'font-mono tabular-nums')}>
                   {view.when} · {lot.bidCount} {lot.bidCount === 1 ? 'lance' : 'lances'}
                 </span>
-                <LotActions lot={lot} onCancel={setConfirming} />
+                <LotActions lot={lot} onCancel={onCancel} />
               </div>
             </li>
           );
         })}
       </ul>
-      <CancelLotDialog lot={confirming} cancelling={cancelling} onConfirm={cancel} onClose={() => setConfirming(null)} />
     </>
   );
 }

@@ -2,7 +2,7 @@ import type { MyLot } from '@/types';
 import { LiveLot } from './live-lot';
 
 /** Lotes ao vivo em destaque, o que termina antes primeiro. */
-export function LiveNow({ lots, now }: { lots: MyLot[]; now: number }) {
+export function LiveNow({ lots, now, onCancel }: { lots: MyLot[]; now: number; onCancel: (lot: MyLot) => void }) {
   const sorted = [...lots].sort((a, b) => new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime());
   return (
     <section aria-labelledby="live-now-heading" className="grid grid-cols-1 gap-3">
@@ -12,7 +12,7 @@ export function LiveNow({ lots, now }: { lots: MyLot[]; now: number }) {
       </h2>
       <ul className="grid gap-3">
         {sorted.map((lot) => (
-          <LiveLot key={lot.id} lot={lot} now={now} />
+          <LiveLot key={lot.id} lot={lot} now={now} onCancel={onCancel} />
         ))}
       </ul>
     </section>
