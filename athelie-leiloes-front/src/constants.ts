@@ -111,3 +111,11 @@ export const STORAGE_KEYS = { TOKEN: 'athelie:token', THEME: 'athelie:theme' } a
 
 export const Theme = { SYSTEM: 'system', LIGHT: 'light', DARK: 'dark' } as const;
 export type Theme = ValueOf<typeof Theme>;
+
+/** Contas criadas pelo seed da API (athelie-leiloes-api/src/seed/seed.ts), oferecidas na tela de entrar. */
+export const DEMO_PASSWORD = 'athelie12345';
+export const DEMO_ACCOUNTS = [
+  { initials: 'LE', label: 'Leiloeiro', email: 'leiloeiro@athelie.dev', role: Role.AUCTIONEER },
+  { initials: 'L1', label: 'Licitante 01', email: 'licitante01@athelie.dev', role: Role.BIDDER },
+  { initials: 'L2', label: 'Licitante 02', email: 'licitante02@athelie.dev', role: Role.BIDDER },
+] as const;

@@ -156,6 +156,8 @@ Senha de todos: **`athelie12345`**
 | Licitante | `licitante01@athelie.dev` |
 | Licitante | `licitante02@athelie.dev` |
 
+Na tela **Entrar**, o painel *Acesso de avaliação* preenche qualquer uma dessas contas com um toque.
+
 O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerrados e um cancelado.
 
 1. Abra o mesmo lote ao vivo (ex.: *Sunflowers*) com os dois licitantes, em janelas diferentes, e dispute.
