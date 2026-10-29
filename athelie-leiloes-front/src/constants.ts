@@ -85,6 +85,9 @@ export const SEARCH_MAX_LENGTH = 80;
 export const LotPeriod = { DAY: '24h', WEEK: '7d', MONTH: '30d' } as const;
 export type LotPeriod = ValueOf<typeof LotPeriod>;
 export const LOT_DETAIL_BIDS_LIMIT = 50;
+/** Lances à mostra na sala ao abrir, e quantos mais cada "Ver mais" revela. */
+export const BID_HISTORY_INITIAL = 5;
+export const BID_HISTORY_STEP = 10;
 export const LOCALE = 'pt-BR';
 export const CURRENCY = 'BRL';
 export const MET_QUERY_MAX_LENGTH = 100;

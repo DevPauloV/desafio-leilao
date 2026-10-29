@@ -1,6 +1,4 @@
 import { useEffect, useMemo } from 'react';
-import { CheckIcon } from 'lucide-react';
-import { cn } from 'cn';
 import { Link } from 'react-router';
 import { Artwork } from '@/components/artwork';
 import { LotStatusLabel } from '@/components/lot-status';
@@ -11,9 +9,10 @@ import { useServerNow } from '@/hooks/use-server-now';
 import { assetUrl } from '@/lib/api';
 import { ANTI_SNIPING_TEXT } from '@/lib/lot-room';
 import { formatMoney } from '@/lib/money';
-import { clockOffset, formatRelative, formatShortDate, SECOND_MS } from '@/lib/time';
+import { clockOffset, formatShortDate, SECOND_MS } from '@/lib/time';
 import type { BidResponse, LotDetail } from '@/types';
 import { BidArea } from './bid-area';
+import { BidHistory } from './bid-history';
 import { Clock } from './clock';
 import { PositionBanner } from './position-banner';
 import { priceLabel } from './price-label';
@@ -134,45 +133,7 @@ export function Room({ lot, onChanged, onOwnBid }: { lot: LotDetail; onChanged: 
 
         <BidArea lot={lot} onChanged={onChanged} onOwnBid={onOwnBid} />
 
-        <section aria-labelledby="history-heading" className="-mx-5.5 -mb-5.5 grid border-t pb-2.5">
-          <div className="flex items-center justify-between gap-3 px-5.5 pt-3.5 pb-1.5">
-            <h2 id="history-heading" className="inline-flex items-center gap-2 text-sm font-bold">
-              {lot.status === LotStatus.LIVE && <span aria-hidden="true" className="size-1.75 rounded-full bg-primary motion-safe:animate-live" />}
-              Lances
-            </h2>
-            <Link to={auditPath(lot.id)} className="text-[13px] font-semibold text-primary underline-offset-4 hover:underline">
-              Auditar histórico
-            </Link>
-          </div>
-          <ol aria-live="polite" className="grid">
-            {lot.bids.map((bid, index) => (
-              <li
-                key={bid.seq}
-                className={cn('grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5.5 py-1.5', index === 0 && 'bg-primary/7')}
-              >
-                <div className="grid min-w-0">
-                  <Paddle pseudonym={bid.pseudonym} mine={isMine(bid.pseudonym)} />
-                  <time dateTime={bid.createdAt} className="pl-4.5 text-[11.5px] leading-4 text-muted-foreground">
-                    {formatRelative(bid.createdAt, now)}
-                  </time>
-                </div>
-                <div className="grid justify-items-end">
-                  <span className="text-sm font-bold tabular-nums">{formatMoney(bid.amount)}</span>
-                  <span className="inline-flex items-center gap-1 text-[11px] leading-4 font-semibold text-win">
-                    <CheckIcon aria-hidden="true" className="size-3" />
-                    registrado
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
-          {lot.bids.length === 0 && <p className="px-5.5 py-3 text-sm text-muted-foreground">Nenhum lance ainda.</p>}
-          {lot.bidCount > lot.bids.length && (
-            <p className="mx-5.5 border-t pt-3 text-[12.5px] text-muted-foreground">
-              Mostrando os {lot.bids.length} lances mais recentes de {lot.bidCount}. A auditoria mostra todos.
-            </p>
-          )}
-        </section>
+        <BidHistory lot={lot} now={now} isMine={isMine} />
       </aside>
     </div>
   );
