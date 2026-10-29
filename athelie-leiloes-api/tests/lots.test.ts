@@ -149,6 +149,9 @@ describe('POST /api/lots', () => {
     const money = await createLot(lotInput({ startingBid: 10.5, minIncrement: 0 }));
     expect(Object.keys(money.body.error.details.fields).sort()).toEqual(['minIncrement', 'startingBid']);
 
+    const hugeIncrement = await createLot(lotInput({ startingBid: 10_000, minIncrement: 10_001 }));
+    expect(Object.keys(hugeIncrement.body.error.details.fields)).toEqual(['minIncrement']);
+
     const notIso = await createLot(lotInput({ startsAt: 'amanhã' }));
     expect(notIso.body.error.details.fields).toHaveProperty('startsAt');
   });

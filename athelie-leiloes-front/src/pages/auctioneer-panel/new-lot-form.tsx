@@ -31,6 +31,8 @@ const DEFAULT_START_DELAY_MS = 2 * MINUTE_MS;
 
 const ANTI_SNIPING_MINUTES = ANTI_SNIPING_WINDOW_MS / MINUTE_MS;
 
+const INCREMENT_TOO_HIGH = 'O incremento mínimo não pode ser maior que o lance inicial.';
+
 type FormFields = Partial<Record<keyof CreateLotInput, string>>;
 
 export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetArtwork; serverOffset: number; onCreated: () => void }) {
@@ -39,7 +41,11 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
     return { startNow: false, startsAt: toDateTimeLocal(start), durationMs: DAY_MS, endsAt: toDateTimeLocal(start + DAY_MS) };
   });
   const [startingBid, setStartingBid] = useState('');
+  const [minIncrement, setMinIncrement] = useState('');
   const { submitting, error, setError, fields, setFields, submit } = useSubmit();
+  const bidCents = parseMoney(startingBid);
+  const incrementCents = parseMoney(minIncrement);
+  const incrementTooHigh = !!bidCents && !!incrementCents && incrementCents > bidCents;
   const update = (next: Partial<Schedule>) => setSchedule((current) => ({ ...current, ...next }));
 
   const now = useServerNow(serverOffset);
@@ -48,25 +54,25 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const bid = parseMoney(startingBid);
-    const minIncrement = parseMoney(String(form.get('minIncrement')));
+    const bid = bidCents;
+    const increment = incrementCents;
     const times = lotWindow(schedule, Date.now() + serverOffset);
 
     const local: FormFields = {};
     if (!bid) local.startingBid = 'Informe um valor maior que zero, ex.: 20.000,00.';
-    if (!minIncrement) local.minIncrement = 'Informe um valor maior que zero, ex.: 1.000,00.';
+    if (!increment) local.minIncrement = 'Informe um valor maior que zero, ex.: 1.000,00.';
+    else if (incrementTooHigh) local.minIncrement = INCREMENT_TOO_HIGH;
     if (!Number.isFinite(times.start)) local.startsAt = 'Informe a data e a hora do início.';
     if (!Number.isFinite(times.end)) local.endsAt = 'Informe a data e a hora do fim.';
     else if (times.end <= times.start) local.endsAt = 'O fim precisa ser depois do início.';
     setFields(local);
     setError(null);
-    if (!bid || !minIncrement || Object.keys(local).length > 0) return;
+    if (!bid || !increment || Object.keys(local).length > 0) return;
 
     const input: CreateLotInput = {
       metObjectId: artwork.metObjectId,
       startingBid: bid,
-      minIncrement,
+      minIncrement: increment,
       startsAt: new Date(times.start).toISOString(),
       endsAt: new Date(times.end).toISOString(),
     };
@@ -81,7 +87,7 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
       {/* A prévia só no desktop; no celular a obra aparece pequena no topo do formulário. */}
       <section aria-label="Prévia na vitrine" className="hidden gap-3 rounded-[10px] border bg-card p-5 lg:grid">
         <span className="text-[11.5px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">Como vai aparecer na vitrine</span>
-        <Preview artwork={artwork} startingBid={parseMoney(startingBid) ?? 0} schedule={schedule} now={now} />
+        <Preview artwork={artwork} startingBid={bidCents ?? 0} schedule={schedule} now={now} />
       </section>
 
       <form onSubmit={handleSubmit} noValidate className="grid gap-4 rounded-[10px] border bg-card p-5">
@@ -103,7 +109,17 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
             className="font-mono text-base"
             error={fields.startingBid}
           />
-          <Field id="f-inc" name="minIncrement" label="Incremento mínimo" inputMode="decimal" placeholder="1.000,00" className="font-mono text-base" error={fields.minIncrement} />
+          <Field
+            id="f-inc"
+            name="minIncrement"
+            label="Incremento mínimo"
+            inputMode="decimal"
+            placeholder="1.000,00"
+            value={minIncrement}
+            onChange={(event) => setMinIncrement(event.target.value)}
+            className="font-mono text-base"
+            error={incrementTooHigh ? INCREMENT_TOO_HIGH : fields.minIncrement}
+          />
         </div>
 
         <Choices label="Início">

@@ -27,7 +27,7 @@ Um lance mexe em três documentos ao mesmo tempo: o lote (lance atual, líder, f
 ## Alternativas descartadas
 - **Sem transação, com operações atômicas isoladas**: cada `$inc` sozinho é atômico, mas não há como garantir que lote e duas carteiras mudem juntos.
 - **PostgreSQL**: também resolveria, mas a stack já está definida com MongoDB e o replica set de 1 nó atende.
-- **Coleção separada de carteira ou extrato (ledger)**: o PDF pede total, comprometido e disponível; o "total recebido" sai da soma dos lotes liquidados.
+- **Coleção separada de carteira ou extrato (ledger)**: o enunciado pede total, comprometido e disponível; o "total recebido" sai da soma dos lotes liquidados.
 
 ## Consequências
 - O `docker-compose.yml` sobe o Mongo com `--replSet rs0` e inicia o replica set no healthcheck.

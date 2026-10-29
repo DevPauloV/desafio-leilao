@@ -15,7 +15,7 @@
 Status: aceito
 
 ## Contexto
-O PDF pede que qualquer alteração, remoção ou inserção posterior no histórico de lances seja detectada pela auditoria, inclusive quando feita direto no banco. A auditoria é pública e não pode expor dados pessoais.
+O enunciado pede que qualquer alteração, remoção ou inserção posterior no histórico de lances seja detectada pela auditoria, inclusive quando feita direto no banco. A auditoria é pública e não pode expor dados pessoais.
 
 ## Decisão
 - Cada lance guarda `prevHash` e `hash = HMAC_SHA256(AUDIT_SECRET, [lotId, seq, pseudônimo, valor, horário, prevHash])`. O primeiro lance aponta para `GENESIS_HASH` (64 zeros).
@@ -32,7 +32,7 @@ O PDF pede que qualquer alteração, remoção ou inserção posterior no histó
 
 ## Alternativas descartadas
 - **SHA-256 sem segredo:** quem tem acesso ao banco recalcularia a cadeia inteira depois de adulterar. Com HMAC, recalcular exige o `AUDIT_SECRET`, que fica só no ambiente da API.
-- **Assinatura assimétrica (Ed25519) com chave pública publicada:** deixaria terceiros verificarem sem confiar na API, mas pede gestão de chaves. O PDF pede detecção pela auditoria do próprio sistema, e o HMAC atende.
+- **Assinatura assimétrica (Ed25519) com chave pública publicada:** deixaria terceiros verificarem sem confiar na API, mas pede gestão de chaves. O enunciado pede detecção pela auditoria do próprio sistema, e o HMAC atende.
 - **Ancoragem externa (blockchain, carimbo de tempo):** custo e dependência desproporcionais para o teste.
 - **Coleção só de inserção, protegida por permissão do Mongo:** impede a aplicação de alterar, mas não detecta quem tem acesso de administrador ao banco.
 

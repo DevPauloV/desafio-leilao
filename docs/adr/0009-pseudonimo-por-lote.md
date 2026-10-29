@@ -15,7 +15,7 @@
 Status: aceito
 
 ## Contexto
-Na sala, na auditoria e no comprovante, todos precisam distinguir os licitantes ("quem está ganhando", "quantos disputam"), mas o PDF proíbe expor dados pessoais nessas telas públicas.
+Na sala, na auditoria e no comprovante, todos precisam distinguir os licitantes ("quem está ganhando", "quantos disputam"), mas o enunciado proíbe expor dados pessoais nessas telas públicas.
 
 ## Decisão
 - Pseudônimo = `"Licitante #" + HMAC_SHA256(AUDIT_SECRET, userId + ":" + lotId)`, nos 6 primeiros caracteres hexadecimais, em maiúsculas.
@@ -31,6 +31,6 @@ Na sala, na auditoria e no comprovante, todos precisam distinguir os licitantes 
 
 ## Consequências
 - Com 6 caracteres hexadecimais (16,7 milhões de combinações), dois licitantes do mesmo lote terem o mesmo código é improvável no volume do teste, mas possível. Isso vai no README. A regra de lance usa o `leaderId`, nunca o pseudônimo, então uma colisão só confunde a exibição.
-- O leiloeiro também não vê quem venceu. A entrega do item fica fora de escopo (PDF).
+- O leiloeiro também não vê quem venceu. A entrega do item fica fora do escopo do projeto.
 
 <p align="right"><a href="#topo">↑ Voltar ao topo</a></p>

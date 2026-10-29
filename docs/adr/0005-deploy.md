@@ -15,7 +15,7 @@
 Status: aceito
 
 ## Contexto
-O PDF exige um link público. A API não é stateless:
+O enunciado exige um link público. A API não é stateless:
 - mantém conexões Socket.IO abertas;
 - roda a varredura de liquidação a cada 2 s (ADR 0007);
 - usa transações do MongoDB, que só existem em replica set (ADR 0002).

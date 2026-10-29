@@ -16,7 +16,7 @@ Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para 
 ## Como dividi o trabalho
 
 **O que ficou comigo**
-- Leitura do PDF e interpretação dos pontos ambíguos: lance mínimo com "maior ou igual", anti-sniping contado a partir do horário do lance, os dois tipos de cancelamento.
+- Leitura do enunciado e interpretação dos pontos ambíguos: lance mínimo com "maior ou igual", anti-sniping contado a partir do horário do lance, os dois tipos de cancelamento.
 - Stack, arquitetura em camadas e a regra de manter o back-end pequeno, sem camadas nem abstrações sem motivo.
 - Modelagem do banco, contrato da API e eventos em tempo real.
 - Técnicas centrais:

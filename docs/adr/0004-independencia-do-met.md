@@ -15,7 +15,7 @@
 Status: aceito
 
 ## Contexto
-O PDF exige que vitrine, salas, auditoria e comprovante continuem funcionando se a API externa cair ou limitar as chamadas. Guardar só a URL da imagem do Met não basta: com o Met fora, a vitrine abriria sem imagens.
+O enunciado exige que vitrine, salas, auditoria e comprovante continuem funcionando se a API externa cair ou limitar as chamadas. Guardar só a URL da imagem do Met não basta: com o Met fora, a vitrine abriria sem imagens.
 
 ## Decisão
 - O Met é chamado **só** pelo painel do leiloeiro: na busca e na criação do lote.
@@ -30,7 +30,7 @@ O PDF exige que vitrine, salas, auditoria e comprovante continuem funcionando se
 
 ## Alternativas descartadas
 - **Guardar só a URL da imagem:** a vitrine perderia as imagens com o Met fora.
-- **Catálogo local de obras e disjuntor (circuit breaker):** o PDF não exige que a busca funcione com o Met fora; seria complexidade para um problema que não temos.
+- **Catálogo local de obras e disjuntor (circuit breaker):** o enunciado não exige que a busca funcione com o Met fora; seria complexidade para um problema que não temos.
 - **GridFS ou armazenamento de arquivos externo:** a versão web da imagem tem poucas centenas de KB e cabe num documento comum.
 
 ## Consequências

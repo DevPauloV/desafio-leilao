@@ -23,6 +23,11 @@ export const createLotSchema = z
     message: 'O fim precisa ser depois do início.',
     // No Zod 4 a regra do objeto roda mesmo com campo inválido; só compara com as duas datas válidas.
     when: ({ issues }) => issues.length === 0,
+  })
+  .refine((lot) => lot.minIncrement <= lot.startingBid, {
+    path: ['minIncrement'],
+    message: 'O incremento mínimo não pode ser maior que o lance inicial.',
+    when: ({ issues }) => issues.length === 0,
   });
 export type CreateLotInput = z.infer<typeof createLotSchema>;
 

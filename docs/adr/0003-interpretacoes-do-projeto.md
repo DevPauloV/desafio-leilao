@@ -1,6 +1,6 @@
 <a id="topo"></a>
 
-# 0003. Interpretações do PDF
+# 0003. Interpretações do projeto
 
 <details>
   <summary>Sumário</summary>
@@ -14,7 +14,7 @@
 Status: aceito
 
 ## Contexto
-Alguns trechos do PDF admitem mais de uma leitura. A escolha precisa ser única, testada e explicada no README.
+Algumas regras do projeto admitem mais de uma leitura, e outras não foram definidas no enunciado. A escolha precisa ser única, testada e explicada no README.
 
 ## Decisões
 
@@ -22,11 +22,13 @@ Alguns trechos do PDF admitem mais de uma leitura. A escolha precisa ser única,
 
 **"Valor mínimo" e "lance inicial".** São o mesmo campo, `startingBid`. Não existe preço de reserva.
 
+**Incremento mínimo.** O enunciado não limita o valor. Exigimos **incremento ≤ lance inicial**: um lote de R$ 2.000,00 com incremento de R$ 10.000.000,00 tornaria impossível o segundo lance na prática. A API recusa (`VALIDATION_ERROR` no campo `minIncrement`) e o formulário avisa enquanto o leiloeiro digita.
+
 **Anti-sniping.** "Lance aceito nos últimos 2 minutos estende o fim do lote para +2 minutos." Se o lance for aceito quando faltam menos de 2 minutos, o novo fim é **o horário do lance + 2 minutos**.
 - Alternativa descartada: somar 2 minutos ao fim atual. Lances seguidos empurrariam o fim muito além de 2 minutos após o último lance.
 - Com a nossa leitura, depois de qualquer lance tardio todos têm exatamente 2 minutos para responder.
 
-**Cancelamento.** O PDF traz duas exigências diferentes:
+**Cancelamento.** O enunciado traz duas exigências diferentes:
 - Obrigatória ("cancelar um lote que ainda não recebeu lances"): o leiloeiro dono cancela um lote agendado ou ao vivo sem lances.
 - Opcional ("cancelamento de lote com estorno automático"): um lote ao vivo com lances também pode ser cancelado, e o valor comprometido do líder volta ao disponível na mesma transação.
 - Lote encerrado nunca é cancelado (`LOT_ENDED`).
