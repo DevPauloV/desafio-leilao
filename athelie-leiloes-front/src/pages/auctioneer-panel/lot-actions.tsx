@@ -1,15 +1,16 @@
 import { Link } from 'react-router';
+import { cn } from 'cn';
 import { ShieldCheckIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LotStatus, auditPath, lotPath } from '@/constants';
 import type { MyLot } from '@/types';
 import { canCancel } from './my-lot-view';
 
-export function LotActions({ lot, onCancel }: { lot: MyLot; onCancel: (lot: MyLot) => void }) {
+export function LotActions({ lot, onCancel, className }: { lot: MyLot; onCancel: (lot: MyLot) => void; className?: string }) {
   return (
-    <div className="flex items-center justify-end gap-2">
+    <div className={cn('flex items-center justify-end gap-2', className)}>
       {lot.status === LotStatus.LIVE && (
-        <Button asChild size="sm">
+        <Button asChild size="sm" className="max-sm:flex-1">
           <Link to={lotPath(lot.id)}>Abrir sala</Link>
         </Button>
       )}
