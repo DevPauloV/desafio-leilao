@@ -3,11 +3,12 @@ import { Link, useParams } from 'react-router';
 import { cn } from 'cn';
 import { Artwork } from '@/components/artwork';
 import { ErrorAlert } from '@/components/form';
+import { HowItWorks } from '@/components/how-it-works';
 import { LotStatusLabel } from '@/components/lot-status';
 import { PageTitle } from '@/components/page-title';
 import { Bone } from '@/components/skeleton';
 import { Paddle } from '@/components/paddle';
-import { Button } from '@/components/ui/button';
+import { ShortHash } from '@/components/short-hash';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AuditProblem, ROUTES, Role, lotPath } from '@/constants';
 import { api, assetUrl, errorMessage } from '@/lib/api';
@@ -23,16 +24,6 @@ const PROBLEM_TEXT: Record<AuditProblem, (seq: number) => string> = {
   [AuditProblem.INSERTED]: (seq) => `Lance #${seq} foi inserido depois.`,
   [AuditProblem.HEAD_MISMATCH]: () => 'O fim do histórico não confere com o registro do lote.',
 };
-
-const HASH_PREVIEW_LENGTH = 4;
-
-function ShortHash({ hash }: { hash: string }) {
-  return (
-    <span title={hash} className="font-mono text-xs text-muted-foreground">
-      {hash.slice(0, HASH_PREVIEW_LENGTH)}…{hash.slice(-HASH_PREVIEW_LENGTH)}
-    </span>
-  );
-}
 
 export function AuditPage() {
   const { id = '' } = useParams();
@@ -94,8 +85,8 @@ export function AuditPage() {
 
   return (
     <div className="grid grid-cols-1 gap-7 pt-7">
-      <div className="flex flex-wrap items-end gap-5">
-        <Artwork src={assetUrl(lot.imageUrl)} alt={lot.title} thin className="w-20 flex-none" />
+      <div className="grid gap-5 sm:flex sm:flex-wrap sm:items-end">
+        <Artwork src={assetUrl(lot.imageUrl)} alt={lot.title} thin className="w-20 flex-none justify-self-center sm:justify-self-auto" />
         <PageTitle title="Auditoria do lote">
           <b className="font-semibold text-foreground">{lot.title}</b>
           {lot.artist && ` · ${lot.artist}`}
@@ -108,46 +99,32 @@ export function AuditPage() {
         </div>
       </div>
 
-      <section
-        aria-live="polite"
-        className={cn(
-          'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2.5 gap-y-2 rounded-[10px] border p-4.5 sm:gap-x-4.5 sm:gap-y-1 sm:p-5.5',
-          verdict.intact
-            ? 'border-win/35 bg-win-soft text-win'
-            : 'border-destructive/35 bg-destructive-soft text-destructive',
-        )}
-      >
-        <div
-          className="grid size-7 place-items-center rounded-full border-2 border-current sm:row-span-2 sm:size-14"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 24 24" className="size-4 sm:size-6.5">
-            {verdict.intact ? (
-              <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            ) : (
-              <path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            )}
-          </svg>
+      <section aria-live="polite" className="grid gap-2 border-y py-3.5">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[13px]">
+          <span className={cn('size-2.5 rounded-full', verdict.intact ? 'bg-win' : 'bg-destructive')} aria-hidden="true" />
+          <b className={cn('font-medium', verdict.intact ? 'text-win' : 'text-destructive')}>
+            {verdict.intact ? 'conferida' : 'adulterada'}
+          </b>
+          <span className="text-muted-foreground">
+            {bids.length} {bids.length === 1 ? 'elo' : 'elos'}
+          </span>
+          <span className="text-muted-foreground">verificado em {formatDateTimeSeconds(current.checkedAt)}</span>
+          <button
+            type="button"
+            disabled={checking}
+            onClick={() => setReload((n) => n + 1)}
+            className="text-primary underline underline-offset-4 disabled:opacity-60 sm:ml-auto"
+          >
+            {checking ? 'verificando…' : 'verificar de novo'}
+          </button>
         </div>
-        <h2 className="text-[22px] leading-[1.15] font-bold tracking-[-0.02em] sm:self-end sm:text-[28px] sm:leading-[1.1] sm:tracking-tight">
-          {verdict.intact ? 'Histórico íntegro' : 'Histórico adulterado'}
-        </h2>
-        <p className="col-span-2 text-sm text-foreground sm:col-span-1 sm:col-start-2 sm:self-start">
-            {verdict.intact
-              ? bids.length === 0
-                ? 'O lote ainda não tem lances, e o registro do lote confirma isso.'
-                : `${bids.length === 1 ? 'O lance foi conferido' : `Os ${bids.length} lances foram conferidos um a um`}, e a cadeia termina no hash guardado no lote. Nada foi alterado, removido ou inserido.`
-            : `${problem ?? 'A cadeia de lances não confere.'} Os lances marcados abaixo não conferem com a assinatura.`}
-        </p>
+        {!verdict.intact && (
+          <p className="text-sm text-destructive">
+            {problem ?? 'A cadeia de lances não confere.'} Os lances marcados abaixo não conferem com a assinatura.
+          </p>
+        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
       </section>
-
-      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-        <span>Verificado em {formatDateTimeSeconds(current.checkedAt)}</span>
-        <Button type="button" variant="outline" size="sm" disabled={checking} onClick={() => setReload((n) => n + 1)}>
-          {checking ? 'Verificando…' : 'Verificar de novo'}
-        </Button>
-        {error && <span className="text-destructive">{error}</span>}
-      </div>
 
       {bids.length > 0 && (
         <div className="rounded-[10px] border bg-card">
@@ -196,19 +173,6 @@ export function AuditPage() {
   );
 }
 
-function HowItWorks() {
-  return (
-    <section className="grid gap-2 rounded-[10px] border bg-card p-5 text-sm">
-      <h2 className="font-semibold">Como a verificação funciona</h2>
-      <ol className="grid list-decimal gap-1 pl-4.5 text-muted-foreground">
-        <li>Cada lance carrega o hash do lance anterior, formando uma corrente.</li>
-        <li>Esse hash é assinado com uma chave secreta do servidor, que não fica no banco de dados.</li>
-        <li>Se alguém alterar, apagar ou inserir um lance direto no banco, a assinatura deixa de conferir e a corrente quebra naquele ponto.</li>
-      </ol>
-    </section>
-  );
-}
-
 const SKELETON_ROWS = 4;
 const SKELETON_CELLS = ['w-4', 'w-24', 'w-24', 'w-32', 'w-20', 'w-20', 'w-8'];
 
@@ -216,24 +180,20 @@ const SKELETON_CELLS = ['w-4', 'w-24', 'w-24', 'w-32', 'w-20', 'w-20', 'w-8'];
 function AuditSkeleton() {
   return (
     <div role="status" aria-label="Conferindo o histórico" className="grid grid-cols-1 gap-7 pt-7">
-      <div className="flex flex-wrap items-end gap-5">
-        <Bone className="aspect-4/5 w-20 flex-none rounded-md bg-wall" />
+      <div className="grid gap-5 sm:flex sm:flex-wrap sm:items-end">
+        <Bone className="aspect-4/5 w-20 flex-none justify-self-center rounded-md bg-wall sm:justify-self-auto" />
         <PageTitle title="Auditoria do lote">
           <Bone className="mt-1.5 h-3.5 w-72 max-w-full" />
         </PageTitle>
         <Bone className="h-3 w-36 sm:ml-auto" />
       </div>
 
-      <section className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2.5 gap-y-2.5 rounded-[10px] border bg-card p-4.5 sm:gap-x-4.5 sm:p-5.5">
-        <Bone className="size-7 rounded-full sm:row-span-2 sm:size-14" />
-        <Bone className="h-6.5 w-64 max-w-full rounded-md sm:self-end" />
-        <Bone className="col-span-2 h-3 w-11/12 sm:col-span-1 sm:col-start-2 sm:self-start" />
-      </section>
-
-      <div className="flex flex-wrap items-center gap-3">
+      <section className="flex flex-wrap items-center gap-x-5 gap-y-2 border-y py-3.5">
+        <Bone className="size-2.5 rounded-full" />
+        <Bone className="h-3 w-20" />
+        <Bone className="h-3 w-14" />
         <Bone className="h-3 w-52" />
-        <Bone className="h-8 w-36 rounded-lg" />
-      </div>
+      </section>
 
       <div className="rounded-[10px] border bg-card">
         <Table className="min-w-180">
