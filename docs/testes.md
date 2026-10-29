@@ -13,7 +13,7 @@
 
 </details>
 
-A API tem 125 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
+A API tem 128 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
 
 ## Como rodar
 
@@ -29,7 +29,7 @@ O resultado esperado no fim é:
 
 ```
  Test Files  10 passed (10)
-      Tests  125 passed (125)
+      Tests  128 passed (128)
 ```
 
 Na primeira execução, o `mongodb-memory-server` baixa um binário do MongoDB (cerca de 100 MB), então demora mais. Das próximas vezes, leva uns 20 segundos.

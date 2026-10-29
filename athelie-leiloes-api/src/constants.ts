@@ -66,6 +66,7 @@ export const MET_CONCURRENCY = 6;
 /** Tolerância para `startsAt` "agora" que chega alguns segundos no passado. */
 export const LOT_START_TOLERANCE_MS = 30_000;
 export const LOTS_PAGE_SIZE = 12;
+export const LOTS_MAX_PAGE = 1000;
 export const LOT_SEARCH_MAX_LENGTH = 80;
 /** Janela do filtro de período da vitrine: até o fim (ao vivo), até o início (agendado) ou desde o fim (encerrado). */
 export const LotPeriod = { DAY: '24h', WEEK: '7d', MONTH: '30d' } as const;

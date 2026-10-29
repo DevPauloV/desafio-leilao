@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LOT_SEARCH_MAX_LENGTH, LOT_START_TOLERANCE_MS, LotPeriod, LotStatus } from '../constants.js';
+import { LOT_SEARCH_MAX_LENGTH, LOTS_MAX_PAGE, LOT_START_TOLERANCE_MS, LotPeriod, LotStatus } from '../constants.js';
 
 /** `label` vem com artigo ("O lance inicial"). */
 const cents = (label: string) =>
@@ -34,7 +34,7 @@ const priceBound = z.coerce.number({ error: 'Informe um valor válido.' }).int('
 export const listLotsQuery = z
   .object({
     status: z.enum(SHOWCASE_ORDER).optional(),
-    page: z.coerce.number().int().min(1).default(1),
+    page: z.coerce.number().int().min(1).max(LOTS_MAX_PAGE).default(1),
     q: z
       .string()
       .trim()

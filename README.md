@@ -136,7 +136,7 @@ Se a porta 3000 ou 8080 já estiver em uso, troque `API_PORT` ou `FRONT_PORT` no
 
 ### Testes automatizados
 
-São 125 testes, com o MongoDB em memória, então não precisam de Docker:
+São 128 testes, com o MongoDB em memória, então não precisam de Docker:
 
 ```bash
 cd athelie-leiloes-api
@@ -185,6 +185,10 @@ O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerr
   - o rate limit fica em memória, por instância;
   - o socket desconecta quando a aba fica oculta e reconecta quando ela volta.
 - No Windows, o npm 10.8.2 pode quebrar no `npm install`; use `npx npm@11 install`.
+- As contas do seed são públicas: qualquer visitante pode dar lances ou cancelar lotes de demonstração. O seed repõe um lote ao vivo e um agendado quando a API reinicia.
+- O cadastro avisa quando o e-mail já existe, porque não há confirmação por e-mail.
+- O token do Socket.IO é conferido só na conexão; ao expirar, a conexão aberta segue recebendo eventos até cair.
+- A cadeia de hashes não tem âncora externa: quem tiver o banco e uma cópia antiga da cabeça assinada consegue voltar o lote a esse estado sem ser detectado ([ADR 0008](docs/adr/0008-cadeia-de-hashes-hmac.md)).
 
 ## Uso de IA
 
