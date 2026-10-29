@@ -1,19 +1,25 @@
 import { useState } from 'react';
 import { cn } from 'cn';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import type { MyLot } from '@/types';
 import { LiveLot } from './live-lot';
 import { LIVE_SORT_OPTIONS, LiveSort, sortLive } from './live-sort';
 
-/** Quantos lotes ao vivo aparecem antes do "ver os outros". */
+/** Quantos lotes ao vivo aparecem antes do "ver os outros": uma coluna só no celular, então menos. */
 const VISIBLE_LIVE = 4;
+const VISIBLE_LIVE_MOBILE = 3;
+/** Mesmo ponto do `md:` do Tailwind, onde a grade passa a ter 2 colunas. */
+const GRID_LAYOUT = '(min-width: 48rem)';
 
 /** Lotes ao vivo em destaque, em grade; por padrão o que termina antes vem primeiro. */
 export function LiveNow({ lots, now, onCancel }: { lots: MyLot[]; now: number; onCancel: (lot: MyLot) => void }) {
   const [sort, setSort] = useState<LiveSort>(LiveSort.ENDING);
   const [expanded, setExpanded] = useState(false);
+  const wide = useMediaQuery(GRID_LAYOUT);
+  const visible = wide ? VISIBLE_LIVE : VISIBLE_LIVE_MOBILE;
   const sorted = sortLive(lots, sort);
-  const shown = expanded ? sorted : sorted.slice(0, VISIBLE_LIVE);
-  const hidden = sorted.length - VISIBLE_LIVE;
+  const shown = expanded ? sorted : sorted.slice(0, visible);
+  const hidden = sorted.length - visible;
 
   return (
     <section aria-labelledby="live-now-heading" className="grid grid-cols-1 gap-3">
@@ -52,7 +58,7 @@ export function LiveNow({ lots, now, onCancel }: { lots: MyLot[]; now: number; o
           onClick={() => setExpanded((open) => !open)}
           className="h-9.5 rounded-[9px] border border-dashed bg-card text-[13px] font-bold text-primary hover:border-primary"
         >
-          {expanded ? `Mostrar só os primeiros ${VISIBLE_LIVE}` : `Ver os outros ${hidden} ${hidden === 1 ? 'lote ao vivo' : 'lotes ao vivo'}`}
+          {expanded ? `Mostrar só os primeiros ${visible}` : `Ver os outros ${hidden} ${hidden === 1 ? 'lote ao vivo' : 'lotes ao vivo'}`}
         </button>
       )}
     </section>
