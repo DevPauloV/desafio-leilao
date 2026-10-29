@@ -1,3 +1,5 @@
+<a id="topo"></a>
+
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/img/logo-dark.svg">
@@ -185,3 +187,5 @@ O seed cria 20 lotes, cada um com uma obra diferente: ao vivo, agendados, encerr
 ## Uso de IA
 
 Usei o Claude Code para agilizar código, testes e documentação; as decisões e a revisão foram minhas. Detalhes em [docs/ai-usage.md](docs/ai-usage.md).
+
+<p align="right"><a href="#topo">↑ Voltar ao topo</a></p>
