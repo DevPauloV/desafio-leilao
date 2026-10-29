@@ -1,5 +1,15 @@
 # 0005. Deploy: front e API na Vercel, banco no MongoDB Atlas
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Contexto](#contexto)
+2. [Decisão](#decisão)
+3. [Alternativas descartadas](#alternativas-descartadas)
+4. [Consequências](#consequências)
+
+</details>
+
 Status: aceito
 
 ## Contexto

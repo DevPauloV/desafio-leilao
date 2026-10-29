@@ -1,5 +1,14 @@
 # Uso de IA no projeto
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Como dividi o trabalho](#como-dividi-o-trabalho)
+2. [Decisões por tema](#decisões-por-tema)
+3. [Como revisei](#como-revisei)
+
+</details>
+
 Usei IA (Claude Code, dentro do VS Code) como ferramenta de produtividade, para ganhar velocidade no que é repetitivo ou trabalhoso de digitar. O raciocínio do projeto ficou comigo: entender o desafio, montar a arquitetura, modelar os dados, definir as regras e escolher as técnicas. A IA executava a partir do que eu especificava, e nada entrou sem eu revisar e testar. No deploy, escolhi as plataformas, criei o cluster no Atlas e publiquei o repositório; os comandos da CLI da Vercel foram executados com a IA e conferidos por mim.
 
 ## Como dividi o trabalho

@@ -1,5 +1,14 @@
 # 0003. Interpretações do PDF
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Contexto](#contexto)
+2. [Decisões](#decisões)
+3. [Consequências](#consequências)
+
+</details>
+
 Status: aceito
 
 ## Contexto

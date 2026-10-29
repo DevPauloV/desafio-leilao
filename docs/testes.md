@@ -1,5 +1,16 @@
 # Testes automatizados
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Como rodar](#como-rodar)
+2. [Como funcionam](#como-funcionam)
+3. [O que cada arquivo cobre](#o-que-cada-arquivo-cobre)
+4. [Testes de concorrência](#testes-de-concorrência)
+5. [E o front-end?](#e-o-front-end)
+
+</details>
+
 A API tem 125 testes automatizados que conferem as regras do leilão sem abrir o navegador. Eles criam usuários, lotes e lances sozinhos, chamam a API como o front chamaria e verificam o resultado. [Voltar ao README](../README.md)
 
 ## Como rodar

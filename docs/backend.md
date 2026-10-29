@@ -1,5 +1,20 @@
 # Back-end
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Arquitetura](#arquitetura)
+2. [Caminho de um lance](#caminho-de-um-lance)
+3. [Regras de negócio](#regras-de-negócio)
+4. [Independência da API do Met](#independência-da-api-do-met)
+5. [Segurança](#segurança)
+6. [Rodar sem Docker](#rodar-sem-docker)
+7. [Testes](#testes)
+8. [Estrutura](#estrutura)
+9. [Decisões (ADRs)](#decisões-adrs)
+
+</details>
+
 Node.js + Express 5 + TypeScript, MongoDB com Mongoose, Socket.IO no mesmo servidor HTTP e Zod em toda entrada. [Voltar ao README](../README.md)
 
 As rotas, os eventos e os códigos de erro estão no [contrato da API](contract.md).

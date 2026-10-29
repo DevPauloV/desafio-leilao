@@ -1,5 +1,20 @@
 # Product
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Platform](#platform)
+2. [Users](#users)
+3. [Product Purpose](#product-purpose)
+4. [Positioning](#positioning)
+5. [Operating Context](#operating-context)
+6. [Capabilities and Constraints](#capabilities-and-constraints)
+7. [Brand](#brand)
+8. [Product Principles](#product-principles)
+9. [Accessibility & Inclusion](#accessibility--inclusion)
+
+</details>
+
 <!-- impeccable:product-schema 1 -->
 
 ## Platform

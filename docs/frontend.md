@@ -1,5 +1,15 @@
 # Front-end
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Telas](#telas)
+2. [Fluxo de cada papel](#fluxo-de-cada-papel)
+3. [Tempo real](#tempo-real)
+4. [Estrutura](#estrutura)
+
+</details>
+
 React + Vite + TypeScript, com shadcn/ui + Tailwind. Tema claro e escuro: segue o sistema até a pessoa escolher, e a escolha fica guardada no navegador. [Voltar ao README](../README.md)
 
 ## Telas

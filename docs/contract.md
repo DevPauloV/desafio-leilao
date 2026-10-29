@@ -1,5 +1,20 @@
 # Contrato da API — Athelie Leilões
 
+<details>
+  <summary>Sumário</summary>
+
+1. [1. Constantes (`src/constants.ts` na API; espelho em `src/constants.ts` no front)](#1-constantes-srcconstantsts-na-api-espelho-em-srcconstantsts-no-front)
+2. [2. Erros](#2-erros)
+3. [3. Coleções (MongoDB)](#3-coleções-mongodb)
+4. [4. Regras de lance](#4-regras-de-lance)
+5. [5. Auditoria e privacidade](#5-auditoria-e-privacidade)
+6. [6. REST](#6-rest)
+7. [7. Socket.IO](#7-socketio)
+8. [8. Seed](#8-seed)
+9. [9. Variáveis de ambiente](#9-variáveis-de-ambiente)
+
+</details>
+
 Fonte única para API e front. Mudou aqui, muda nos dois lados. Dinheiro é sempre **inteiro em centavos** (R$ 12,50 = `1250`). Datas em ISO 8601 (UTC).
 
 ## 1. Constantes (`src/constants.ts` na API; espelho em `src/constants.ts` no front)

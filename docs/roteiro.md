@@ -1,5 +1,15 @@
 # Roteiro de demonstração
 
+<details>
+  <summary>Sumário</summary>
+
+1. [1. Disputa ao vivo](#1-disputa-ao-vivo)
+2. [2. Recusas](#2-recusas)
+3. [3. Auditoria](#3-auditoria)
+4. [4. Leiloeiro, liquidação e comprovante](#4-leiloeiro-liquidação-e-comprovante)
+
+</details>
+
 Um passo a passo de uns 5 minutos para ver as principais funcionalidades no app, com o que deve acontecer em cada passo. [Voltar ao README](../README.md)
 
 Os usuários e os lotes são criados pelo seed quando a API sobe. A senha de todos é **`athelie12345`**.

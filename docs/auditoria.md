@@ -1,5 +1,16 @@
 # Auditoria e privacidade
 
+<details>
+  <summary>Sumário</summary>
+
+1. [Cadeia de hashes com HMAC](#cadeia-de-hashes-com-hmac)
+2. [O que a auditoria detecta](#o-que-a-auditoria-detecta)
+3. [Ver funcionando](#ver-funcionando)
+4. [Limites conhecidos](#limites-conhecidos)
+5. [Privacidade](#privacidade)
+
+</details>
+
 Como o histórico de lances fica à prova de adulteração e como as telas públicas evitam expor quem deu cada lance. [Voltar ao README](../README.md)
 
 ## Cadeia de hashes com HMAC
