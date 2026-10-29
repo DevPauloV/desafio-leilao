@@ -6,10 +6,13 @@ import { DEPOSIT_PATH, ROUTES, Role, SocketEvent } from '@/constants';
 import { logout, useAuth } from '@/lib/auth';
 import { socket } from '@/lib/socket';
 import { loadWallet, useWallet } from '@/lib/wallet';
-import { AccountMenu, WalletBalance } from './account-menu';
-import { DesktopNav, MobileNav, ctaClass, navLinkClass } from './nav';
+import { AccountMenu } from './account-menu';
+import { DesktopNav } from './desktop-nav';
+import { MobileNav } from './mobile-nav';
+import { ctaClass, navLinkClass } from './nav-classes';
 import { navItems } from './nav-items';
-import { ThemeButton } from './theme-menu';
+import { ThemeButton } from './theme-button';
+import { WalletBalance } from './wallet-balance';
 import { Wordmark } from './wordmark';
 
 export function AppHeader() {

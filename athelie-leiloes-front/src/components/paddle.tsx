@@ -1,9 +1,5 @@
 import { cn } from 'cn';
-
-const paddleNumber = (pseudonym: string) => {
-  const hash = pseudonym.indexOf('#');
-  return hash >= 0 ? pseudonym.slice(hash) : pseudonym;
-};
+import { paddleNumber } from '@/lib/paddle';
 
 /** `accent`: bordô sem "Você" (vencedor no comprovante público). */
 export function Paddle({ pseudonym, mine = false, accent = false }: { pseudonym: string; mine?: boolean; accent?: boolean }) {
@@ -19,8 +15,4 @@ export function Paddle({ pseudonym, mine = false, accent = false }: { pseudonym:
       {mine ? `Você · ${paddleNumber(pseudonym)}` : paddleNumber(pseudonym)}
     </span>
   );
-}
-
-export function PaddleNumber({ pseudonym }: { pseudonym: string }) {
-  return <b className="font-mono font-semibold">{paddleNumber(pseudonym)}</b>;
 }

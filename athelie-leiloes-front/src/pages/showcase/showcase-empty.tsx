@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from 'lucide-react';
 import { EmptyWall } from '@/components/empty-wall';
 import { Button } from '@/components/ui/button';
-import { FilterChip } from './filters';
+import { FilterChip } from './filter-chip';
 import { TABS, resultCount, type ActiveFilter, type ShowcaseStatus, type ShowcaseTab } from './tabs';
 
 export function ShowcaseEmpty({

@@ -34,3 +34,5 @@ export const extendedToast = (lotId: string, endsAt: string) =>
     id: `${SocketEvent.LOT_EXTENDED}:${lotId}:${endsAt}`, // o mesmo aviso não aparece duas vezes (POST e socket)
     description: ANTI_SNIPING_TEXT,
   });
+
+export const isClosing = (lot: LotDetail, now: number) => new Date(lot.endsAt).getTime() - now <= ANTI_SNIPING_WINDOW_MS;

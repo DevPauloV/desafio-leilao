@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { cn } from 'cn';
 import { Artwork } from '@/components/artwork';
-import { ErrorAlert } from '@/components/form';
-import { Bone } from '@/components/skeleton';
+import { ErrorAlert } from '@/components/error-alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +8,7 @@ import { MET_QUERY_MAX_LENGTH } from '@/constants';
 import { api } from '@/lib/api';
 import { useSubmit } from '@/hooks/use-submit';
 import type { MetArtwork } from '@/types';
+import { MetResultsSkeleton } from './met-results-skeleton';
 
 export function MetSearch({ selected, onSelect }: { selected: MetArtwork | null; onSelect: (artwork: MetArtwork) => void }) {
   const [results, setResults] = useState<MetArtwork[] | null>(null);
@@ -74,22 +73,5 @@ export function MetSearch({ selected, onSelect }: { selected: MetArtwork | null;
         )}
       </div>
     </div>
-  );
-}
-
-// Uma linha só, em qualquer largura: a grade cresce quando os resultados chegam.
-const MET_SKELETON_CARDS = ['grid', 'grid', 'hidden sm:grid', 'hidden xl:grid'];
-
-function MetResultsSkeleton() {
-  return (
-    <ul role="status" aria-label="Buscando no The Met" className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-      {MET_SKELETON_CARDS.map((display, row) => (
-        <li key={row} className={cn(display, 'content-start gap-2 rounded-lg border bg-card p-2')}>
-          <Bone row={row} className="aspect-4/5 rounded-md bg-wall" />
-          <Bone row={row} className="h-3 w-4/5" />
-          <Bone row={row} className="h-2.5 w-3/5" />
-        </li>
-      ))}
-    </ul>
   );
 }

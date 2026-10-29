@@ -1,33 +1,26 @@
 import { useMemo, useRef, useState } from 'react';
-import { cn } from 'cn';
-import { EmptyWall, ErrorWall } from '@/components/empty-wall';
+import { EmptyWall } from '@/components/empty-wall';
+import { ErrorWall } from '@/components/error-wall';
 import { PageTitle } from '@/components/page-title';
-import { Bone } from '@/components/skeleton';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LOCALE, LotStatus, SocketEvent } from '@/constants';
+import { LotStatus, SocketEvent } from '@/constants';
 import { useAuth } from '@/lib/auth';
 import { usePageData } from '@/hooks/use-page-data';
 import { useServerNow } from '@/hooks/use-server-now';
 import { useSocketEvent } from '@/hooks/use-socket-event';
 import { formatMoney } from '@/lib/money';
 import { clockOffset } from '@/lib/time';
-import type { MetArtwork, MyLot, MyLotsResponse } from '@/types';
+import type { MetArtwork, MyLotsResponse } from '@/types';
+import { Kpi } from './kpi';
 import { LiveNow } from './live-now';
-import { ALL_STATUSES, LotsFilter, type StatusFilter } from './lots-filter';
+import { ALL_STATUSES, matchesFilter, type StatusFilter } from './lot-filter';
+import { LotsFilter } from './lots-filter';
 import { MetSearch } from './met-search';
-import { MyLotsSkeleton, MyLotsTable } from './my-lots-table';
+import { MyLotsSkeleton } from './my-lots-skeleton';
+import { MyLotsTable } from './my-lots-table';
 import { NewLotForm } from './new-lot-form';
-
-const PanelTab = { LOTS: 'lots', NEW: 'new' } as const;
-type PanelTab = (typeof PanelTab)[keyof typeof PanelTab];
-const isPanelTab = (value: string): value is PanelTab => Object.values(PanelTab).some((tab) => tab === value);
-
-function matchesFilter(lot: MyLot, status: StatusFilter, query: string): boolean {
-  if (status !== ALL_STATUSES && lot.status !== status) return false;
-  const needle = query.trim().toLocaleLowerCase(LOCALE);
-  return !needle || [lot.title, lot.artist ?? ''].some((text) => text.toLocaleLowerCase(LOCALE).includes(needle));
-}
+import { PanelTab, isPanelTab } from './panel-tab';
 
 /** Mesmo ponto do `lg:` do Tailwind, onde busca e formulário ficam lado a lado. */
 const WIDE_LAYOUT = '(min-width: 64rem)';
@@ -149,28 +142,6 @@ export function AuctioneerPanelPage() {
           </aside>
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-/** `value` nulo = ainda carregando: o bloco ocupa a mesma altura do número. */
-function Kpi({
-  label,
-  value,
-  boneClassName,
-  valueClassName,
-}: {
-  label: string;
-  value: string | null;
-  boneClassName: string;
-  valueClassName?: string;
-}) {
-  return (
-    <div className="grid gap-0.5">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className={cn('flex h-9 items-center text-[22px] leading-none font-bold tracking-tight whitespace-nowrap tabular-nums sm:text-[28px]', valueClassName)}>
-        {value ?? <Bone className={cn('h-7 rounded-md', boneClassName)} />}
-      </dd>
     </div>
   );
 }

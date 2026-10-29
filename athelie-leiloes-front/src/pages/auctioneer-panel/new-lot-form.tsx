@@ -1,17 +1,21 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
-import { cn } from 'cn';
-import { Artwork, MuseumLabel } from '@/components/artwork';
-import { ErrorAlert, Field } from '@/components/form';
+import { Artwork } from '@/components/artwork';
+import { ErrorAlert } from '@/components/error-alert';
+import { Field } from '@/components/field';
+import { MuseumLabel } from '@/components/museum-label';
 import { Button } from '@/components/ui/button';
-import { ANTI_SNIPING_WINDOW_MS, LotStatus } from '@/constants';
+import { ANTI_SNIPING_WINDOW_MS } from '@/constants';
 import { api } from '@/lib/api';
 import { useServerNow } from '@/hooks/use-server-now';
 import { useSubmit } from '@/hooks/use-submit';
 import { parseMoney } from '@/lib/money';
 import { MINUTE_MS, formatShortDate, toDateTimeLocal } from '@/lib/time';
-import { LotCard } from '@/pages/showcase/lot-card';
-import type { CreateLotInput, LotSummary, MetArtwork } from '@/types';
+import type { CreateLotInput, MetArtwork } from '@/types';
+import { Choice } from './choice';
+import { Choices } from './choices';
+import { lotWindow, type Schedule } from './lot-window';
+import { Preview } from './preview';
 
 const DAY_MS = 24 * 60 * MINUTE_MS;
 
@@ -25,20 +29,9 @@ const DURATIONS = [
 /** Folga para o início sugerido, já que a API recusa início no passado. */
 const DEFAULT_START_DELAY_MS = 2 * MINUTE_MS;
 
-const PREVIEW_ID = 'preview';
-
 const ANTI_SNIPING_MINUTES = ANTI_SNIPING_WINDOW_MS / MINUTE_MS;
 
 type FormFields = Partial<Record<keyof CreateLotInput, string>>;
-
-type Schedule = { startNow: boolean; startsAt: string; durationMs: number | null; endsAt: string };
-
-/** Início e fim em ms; NaN quando o campo da data está vazio. */
-function lotWindow(schedule: Schedule, now: number): { start: number; end: number } {
-  const start = schedule.startNow ? now : new Date(schedule.startsAt).getTime();
-  const end = schedule.durationMs === null ? new Date(schedule.endsAt).getTime() : start + schedule.durationMs;
-  return { start, end };
-}
 
 export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetArtwork; serverOffset: number; onCreated: () => void }) {
   const [schedule, setSchedule] = useState<Schedule>(() => {
@@ -171,65 +164,3 @@ export function NewLotForm({ artwork, serverOffset, onCreated }: { artwork: MetA
     </div>
   );
 }
-
-/** O mesmo card da vitrine, com os valores digitados; `inert` porque ainda não existe lote para abrir. */
-function Preview({
-  artwork,
-  startingBid,
-  schedule,
-  now,
-}: {
-  artwork: MetArtwork;
-  startingBid: number;
-  schedule: Schedule;
-  now: number;
-}) {
-  const { start, end } = lotWindow(schedule, now);
-  const valid = Number.isFinite(start) && Number.isFinite(end);
-  const lot: LotSummary = {
-    id: PREVIEW_ID,
-    title: artwork.title,
-    artist: artwork.artist,
-    date: artwork.date,
-    medium: artwork.medium,
-    department: artwork.department,
-    imageUrl: artwork.previewUrl,
-    status: schedule.startNow ? LotStatus.LIVE : LotStatus.SCHEDULED,
-    startsAt: new Date(valid ? start : now).toISOString(),
-    endsAt: new Date(valid ? end : now).toISOString(),
-    startingBid,
-    currentBid: null,
-    bidCount: 0,
-  };
-  return (
-    <div inert className="mx-auto w-full max-w-64 select-none">
-      <LotCard lot={lot} now={now} />
-    </div>
-  );
-}
-
-function Choices({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div role="group" aria-label={label} className="grid gap-1.5">
-      <span className="text-[13px] font-semibold">{label}</span>
-      <div className="flex flex-wrap gap-2">{children}</div>
-    </div>
-  );
-}
-
-function Choice({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      className={cn(
-        'h-9 rounded-md border bg-card px-3.5 text-[13px] font-semibold transition-colors hover:border-primary/60',
-        on && 'border-primary bg-primary-soft text-primary',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-

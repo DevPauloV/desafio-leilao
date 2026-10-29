@@ -1,22 +1,9 @@
-import { useId } from 'react';
-import { SearchIcon } from 'lucide-react';
 import { FiltersScreen } from '@/components/filters-screen';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LotStatus } from '@/constants';
 import type { MyLot } from '@/types';
-
-export const ALL_STATUSES = 'all';
-export type StatusFilter = typeof ALL_STATUSES | LotStatus;
-
-const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: ALL_STATUSES, label: 'Todos' },
-  { value: LotStatus.LIVE, label: 'Ao vivo' },
-  { value: LotStatus.SCHEDULED, label: 'Agendados' },
-  { value: LotStatus.ENDED, label: 'Encerrados' },
-  { value: LotStatus.CANCELLED, label: 'Cancelados' },
-];
-
-const isStatusFilter = (value: string): value is StatusFilter => STATUS_OPTIONS.some((option) => option.value === value);
+import { ALL_STATUSES, STATUS_OPTIONS, isStatusFilter, type StatusFilter } from './lot-filter';
+import { SearchField } from './search-field';
+import { StatusRadios } from './status-radios';
 
 type Props = {
   lots: MyLot[];
@@ -74,51 +61,5 @@ export function LotsFilter({ lots, shown, status, query, onStatus, onQuery }: Pr
         </Select>
       </div>
     </>
-  );
-}
-
-function SearchField({ query, onQuery }: { query: string; onQuery: (query: string) => void }) {
-  return (
-    <label className="flex h-10 items-center gap-2 rounded-lg border border-input bg-card px-3 text-muted-foreground focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
-      <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
-      <input
-        type="search"
-        value={query}
-        onChange={(event) => onQuery(event.target.value)}
-        placeholder="Buscar por obra ou artista"
-        aria-label="Buscar nos meus lotes"
-        className="w-full min-w-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:outline-none"
-      />
-    </label>
-  );
-}
-
-function StatusRadios({
-  status,
-  count,
-  onStatus,
-}: {
-  status: StatusFilter;
-  count: (value: StatusFilter) => number;
-  onStatus: (status: StatusFilter) => void;
-}) {
-  const name = useId();
-  return (
-    <fieldset className="grid gap-0.5">
-      <legend className="mb-2 text-[11px] font-bold tracking-[0.09em] text-muted-foreground uppercase">Status</legend>
-      {STATUS_OPTIONS.map((option) => (
-        <label key={option.value} className="flex cursor-pointer items-center gap-2.5 py-2 text-[15px]">
-          <input
-            type="radio"
-            name={name}
-            checked={status === option.value}
-            onChange={() => onStatus(option.value)}
-            className="size-4 accent-primary"
-          />
-          <span className="flex-1">{option.label}</span>
-          <span className="font-mono text-xs text-muted-foreground">{count(option.value)}</span>
-        </label>
-      ))}
-    </fieldset>
   );
 }
